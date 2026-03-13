@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { generateJobSummary } from '../../lib/ai.js';
+import { humanizeJobPost } from '../../lib/ai.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { description } = req.body as { description: string };
+    const { description, title } = req.body as { description: string; title: string };
 
     if (!description || typeof description !== 'string' || description.trim().length < 20) {
       return res.status(400).json({
@@ -16,12 +16,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const result = await generateJobSummary(description.trim());
+    if (!title || typeof title !== 'string' || title.trim().length < 2) {
+      return res.status(400).json({
+        error: 'Title is required',
+        code: 'BAD_REQUEST',
+      });
+    }
+
+    const result = await humanizeJobPost(description.trim(), title.trim());
     return res.status(200).json(result);
-  } catch (err) {
-    // Fail-open: return fallback response instead of error
+  } catch {
     return res.status(200).json({
-      result: 'AI is temporarily unavailable. Please write a summary manually.',
+      result: { humanized_description: '', standout_perks: [] },
       fallback: true,
     });
   }

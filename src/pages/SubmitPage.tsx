@@ -3,7 +3,7 @@ import SubmitForm from '../components/SubmitForm';
 
 export default function SubmitPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-navy-950">
       <Header />
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">

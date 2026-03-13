@@ -36,10 +36,9 @@ describe('FounderSection', () => {
     expect(screen.queryByText(/Job boards were built/)).not.toBeInTheDocument();
   });
 
-  it('renders feed explanation boxes', () => {
+  it('renders Community Board explanation', () => {
     render(<FounderSection />);
     expect(screen.getByText('Community Board')).toBeInTheDocument();
-    expect(screen.getAllByText(/Web Pulse/).length).toBeGreaterThan(0);
   });
 
   it('renders please note box', () => {

@@ -63,10 +63,15 @@ export async function trackClick(jobId: string): Promise<void> {
 
 // ── AI API ──
 
-export async function generateSummary(description: string): Promise<AIResult> {
+export interface HumanizeResponse {
+  humanized_description: string;
+  standout_perks: string[];
+}
+
+export async function humanizeJob(description: string, title: string): Promise<AIResult<HumanizeResponse>> {
   return request('/ai/generate-summary', {
     method: 'POST',
-    body: JSON.stringify({ description }),
+    body: JSON.stringify({ description, title }),
   });
 }
 
@@ -113,18 +118,5 @@ export async function updateJob(token: string, jobId: string, updates: Partial<J
     method: 'PATCH',
     headers: authHeaders(token),
     body: JSON.stringify(updates),
-  });
-}
-
-export async function triggerAggregation(token: string): Promise<{ inserted: number; skipped: number; errors: number; message: string }> {
-  return request('/admin/aggregate', {
-    method: 'POST',
-    headers: authHeaders(token),
-  });
-}
-
-export async function getLeads(token: string): Promise<{ leads: Array<{ email: string; company: string; title: string; status: string; submitted_at: string }> }> {
-  return request('/admin/leads', {
-    headers: authHeaders(token),
   });
 }

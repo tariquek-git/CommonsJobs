@@ -3,7 +3,6 @@ export type {
   Job,
   SourceType,
   JobStatus,
-  FeedType,
   SortOption,
   SearchRequest,
   SearchResponse,
@@ -15,5 +14,4 @@ export type {
   AdminLoginResponse,
   RuntimeInfo,
   APIError,
-  AggregatedPolicy,
 } from '../../shared/types';

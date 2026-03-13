@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { validateSubmission, sanitizeSubmission } from '../../shared/validation.js';
-import { checkRateLimit, getClientIP } from '../../lib/rate-limit.js';
 import type { SubmissionPayload, SubmissionResponse } from '../../shared/types.js';
 
 function generateRefId(): string {
@@ -20,13 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Rate limit check
-    const ip = getClientIP(req as unknown as Request);
-    const rl = checkRateLimit(ip, 5, 60 * 1000); // 5 submissions per minute
-    if (!rl.allowed) {
-      return res.status(429).json({ error: 'Too many submissions. Please try again later.', code: 'RATE_LIMITED' });
-    }
-
     // Validate
     const validation = validateSubmission(req.body);
 
@@ -77,9 +69,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       source_name: 'community',
       status: 'pending',
       posted_date: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       submission_ref: submissionRef,
       submitter_email: payload.submitter_email || null,
       tags: payload.tags || [],
+      standout_perks: payload.standout_perks || [],
     });
 
     if (error) {

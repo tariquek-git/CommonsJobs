@@ -6,10 +6,6 @@ export const FEEDS = {
     label: 'Community Board',
     description: 'Human-submitted roles, reviewed, warm intro possible.',
   },
-  webpulse: {
-    label: 'Web Pulse 🇨🇦',
-    description: 'Aggregated Canada-only roles, constrained by policy.',
-  },
 } as const;
 
 export const FOUNDER_TEXT = `Hi, it's Tarique 👋
@@ -17,8 +13,6 @@ export const FOUNDER_TEXT = `Hi, it's Tarique 👋
 Job boards were built to solve a real problem — connecting people with opportunity. But somewhere along the way, most became ad-saturated ghost towns full of fake listings and black-hole applications.
 
 Commons Jobs is different. The Community Board only features roles that are submitted directly by real people — reviewed, verified, with the possibility of a warm intro. No scraped spam. No phantom roles.
-
-Web Pulse surfaces the broader Canadian fintech & banking market — aggregated with strict freshness and quality controls — so you always have a pulse on what's out there.
 
 That's what this is.`;
 

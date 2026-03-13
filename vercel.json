@@ -3,8 +3,12 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron/expire", "schedule": "0 0 * * *" }
   ],
   "headers": [
     {
@@ -15,12 +19,6 @@
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/aggregate",
-      "schedule": "0 8 * * *"
     }
   ]
 }

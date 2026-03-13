@@ -1,5 +1,5 @@
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { FOUNDER_TEXT, PLEASE_NOTE, FEEDS } from '../lib/constants';
+import { FOUNDER_TEXT, PLEASE_NOTE } from '../lib/constants';
 
 export default function FounderSection() {
   const [collapsed, setCollapsed] = useLocalStorage('founder-collapsed', false);
@@ -10,7 +10,7 @@ export default function FounderSection() {
       <div className="surface-elevated overflow-hidden">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-navy-800/50 transition-colors"
           aria-expanded={!collapsed}
         >
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -29,7 +29,7 @@ export default function FounderSection() {
           </svg>
         </button>
         {!collapsed && (
-          <div className="px-5 pb-5 border-t border-gray-100 dark:border-gray-800">
+          <div className="px-5 pb-5 border-t border-gray-100 dark:border-navy-700/30">
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line mt-4">
               {FOUNDER_TEXT}
             </p>
@@ -37,24 +37,14 @@ export default function FounderSection() {
         )}
       </div>
 
-      {/* Feed explanation boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="surface-tinted p-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-1.5">
-            Community Board
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-            {FEEDS.community.description}
-          </p>
-        </div>
-        <div className="rounded-xl p-4 bg-sky-50/60 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/30">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 mb-1.5">
-            Web Pulse
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-            {FEEDS.webpulse.description}
-          </p>
-        </div>
+      {/* Community Board explanation */}
+      <div className="surface-tinted p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-accent-600 dark:text-accent-400 mb-1.5">
+          Community Board
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          Human-submitted roles, reviewed, warm intro possible.
+        </p>
       </div>
 
       {/* Please note */}

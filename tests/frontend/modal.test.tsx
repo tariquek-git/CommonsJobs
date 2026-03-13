@@ -23,6 +23,8 @@ const mockJob: Job = {
   submission_ref: 'CJ-TEST1234',
   submitter_email: null,
   tags: ['fintech', 'remote'],
+  standout_perks: [],
+  expires_at: null,
 };
 
 describe('JobDetailModal', () => {
@@ -54,21 +56,32 @@ describe('JobDetailModal', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('shows trust cues for direct source', () => {
+  it('shows community trust cues', () => {
     render(<JobDetailModal job={mockJob} onClose={() => {}} />);
-    expect(screen.getAllByText('Community reviewed').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Warm intro possible').length).toBeGreaterThan(0);
-  });
-
-  it('shows Web Pulse badge for aggregated source', () => {
-    const aggregatedJob = { ...mockJob, source_type: 'aggregated' as const };
-    render(<JobDetailModal job={aggregatedJob} onClose={() => {}} />);
-    expect(screen.getAllByText(/Web Pulse/).length).toBeGreaterThan(0);
+    expect(screen.getByText('Community verified')).toBeInTheDocument();
+    expect(screen.getByText('Warm intro possible')).toBeInTheDocument();
   });
 
   it('renders tags', () => {
     render(<JobDetailModal job={mockJob} onClose={() => {}} />);
     expect(screen.getByText('fintech')).toBeInTheDocument();
     expect(screen.getByText('remote')).toBeInTheDocument();
+  });
+
+  it('shows standout perks when present', () => {
+    const jobWithPerks = {
+      ...mockJob,
+      standout_perks: ['4-day work week', 'Remote-first', '$5K learning budget'],
+    };
+    render(<JobDetailModal job={jobWithPerks} onClose={() => {}} />);
+    expect(screen.getByText('What Stands Out')).toBeInTheDocument();
+    expect(screen.getByText('4-day work week')).toBeInTheDocument();
+    expect(screen.getByText('Remote-first')).toBeInTheDocument();
+    expect(screen.getByText('$5K learning budget')).toBeInTheDocument();
+  });
+
+  it('hides standout perks section when empty', () => {
+    render(<JobDetailModal job={mockJob} onClose={() => {}} />);
+    expect(screen.queryByText('What Stands Out')).not.toBeInTheDocument();
   });
 });

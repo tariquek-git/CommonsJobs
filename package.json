@@ -18,7 +18,8 @@
     "jsonwebtoken": "^9.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.1.0"
+    "react-router-dom": "^7.1.0",
+    "resend": "^6.9.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.0",

@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
-import type { JobStatus } from '../../../../shared/types.js';
+import { sendApprovalEmail } from '../../../../lib/email.js';
+import type { JobStatus, Job } from '../../../../shared/types.js';
 
 const VALID_STATUSES: JobStatus[] = ['pending', 'active', 'rejected', 'archived'];
 
@@ -42,6 +43,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!data) {
       return res.status(404).json({ error: 'Job not found', code: 'NOT_FOUND' });
+    }
+
+    // Send approval email when job goes live
+    if (status === 'active' && (data as Job).submitter_email) {
+      sendApprovalEmail((data as Job).submitter_email!, data as Job).catch(() => {});
     }
 
     return res.status(200).json(data);

@@ -23,15 +23,15 @@ export interface Job {
   submission_ref: string | null;
   submitter_email: string | null;
   tags: string[];
+  standout_perks: string[];
+  expires_at: string | null;
 }
 
 // ── API Request/Response Types ──
 
-export type FeedType = 'community' | 'webpulse';
 export type SortOption = 'newest' | 'oldest';
 
 export interface SearchRequest {
-  feed: FeedType;
   sort?: SortOption;
   page?: number;
   limit?: number;
@@ -39,23 +39,10 @@ export interface SearchRequest {
   tags?: string[];
 }
 
-export interface AggregatedPolicy {
-  country: string;
-  maxAgeDays: number;
-  maxResults: number;
-  maxPerCompany: number;
-}
-
 export interface SearchMeta {
   total: number;
   page: number;
   limit: number;
-  aggregatedPolicyApplied: boolean;
-  aggregatedCounts?: {
-    beforePolicy: number;
-    afterPolicy: number;
-  };
-  policy?: AggregatedPolicy;
 }
 
 export interface SearchResponse {
@@ -73,6 +60,7 @@ export interface SubmissionPayload {
   apply_url?: string;
   company_url?: string;
   tags?: string[];
+  standout_perks?: string[];
   submitter_email?: string;
   // Honeypot - should be empty
   website?: string;

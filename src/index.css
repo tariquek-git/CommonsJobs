@@ -17,58 +17,74 @@
     background-color: rgba(99, 102, 241, 0.2);
     color: inherit;
   }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 @layer components {
   /* ---- Surfaces ---- */
   .surface-elevated {
-    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm;
+    @apply bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700/40 rounded-xl shadow-sm;
   }
 
   .surface-tinted {
-    @apply bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl;
+    @apply bg-accent-50/60 dark:bg-accent-900/10 border border-accent-100 dark:border-accent-800/20 rounded-xl;
   }
 
   .glass-panel {
-    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl;
+    @apply bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700/40 rounded-2xl shadow-xl;
   }
 
   /* ---- Buttons ---- */
   .btn-primary {
     @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg
-           bg-indigo-600 text-white font-semibold text-sm
-           hover:bg-indigo-700 active:bg-indigo-800
-           dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:active:bg-indigo-700
-           transition-colors duration-150
-           focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:ring-offset-2
-           focus:ring-offset-white dark:focus:ring-offset-gray-950;
+           bg-accent-500 text-white font-semibold text-sm
+           hover:bg-accent-600 active:bg-accent-700
+           dark:bg-accent-500 dark:hover:bg-accent-400 dark:active:bg-accent-500
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:ring-offset-2
+           focus:ring-offset-white dark:focus:ring-offset-navy-950
+           shadow-sm hover:shadow-md;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg
-           bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-sm
-           border border-gray-200 dark:border-gray-700
-           hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600
-           transition-colors duration-150
-           focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:ring-offset-2
-           focus:ring-offset-white dark:focus:ring-offset-gray-950;
+           bg-gray-100 dark:bg-navy-800 text-gray-700 dark:text-gray-300 font-medium text-sm
+           border border-gray-200 dark:border-navy-700/50
+           hover:bg-gray-200 dark:hover:bg-navy-700 active:bg-gray-300 dark:active:bg-navy-800
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:ring-offset-2
+           focus:ring-offset-white dark:focus:ring-offset-navy-950;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center px-3 py-2 rounded-lg
            text-gray-600 dark:text-gray-400 font-medium text-sm
-           hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800
-           transition-colors duration-150;
+           hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-navy-800
+           transition-all duration-150;
   }
 
   /* ---- Inputs ---- */
   .input-field {
     @apply w-full px-4 py-2.5 rounded-lg
-           bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700
+           bg-white dark:bg-navy-900 border border-gray-300 dark:border-navy-700/50
            text-gray-900 dark:text-gray-100
            placeholder-gray-400 dark:placeholder-gray-500
-           focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500
-           transition-colors duration-150;
+           focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-400 dark:focus:border-accent-500
+           transition-all duration-150;
   }
 
   /* ---- Badges ---- */
@@ -77,13 +93,8 @@
   }
 
   .badge-community {
-    @apply badge bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400
-           border border-emerald-200 dark:border-emerald-800/40;
-  }
-
-  .badge-webpulse {
-    @apply badge bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400
-           border border-sky-200 dark:border-sky-800/40;
+    @apply badge bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400
+           border border-accent-200 dark:border-accent-800/30;
   }
 
   .badge-pending {
@@ -92,12 +103,33 @@
   }
 
   .badge-active {
-    @apply badge bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400
-           border border-emerald-200 dark:border-emerald-800/40;
+    @apply badge bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400
+           border border-accent-200 dark:border-accent-800/30;
   }
 
   .badge-rejected {
     @apply badge bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400
            border border-red-200 dark:border-red-800/40;
+  }
+
+  /* ---- Card accent borders ---- */
+  .card-accent-community {
+    @apply border-l-[3px] border-l-accent-400 dark:border-l-accent-500;
+  }
+
+  /* ---- Filter chip ---- */
+  .filter-chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+           border border-gray-200 dark:border-navy-700/50
+           bg-white dark:bg-navy-900
+           text-gray-600 dark:text-gray-400
+           hover:bg-gray-50 dark:hover:bg-navy-800
+           transition-all duration-150 cursor-pointer select-none;
+  }
+  .filter-chip-active {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+           bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400
+           border border-accent-200 dark:border-accent-700/40
+           cursor-pointer select-none;
   }
 }

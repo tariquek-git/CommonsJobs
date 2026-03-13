@@ -14,36 +14,58 @@ function getAI(): GoogleGenAI | null {
   return aiClient;
 }
 
-const SUMMARY_PROMPT = `You are a helpful career advisor writing for job seekers. Given a job description, write a clear, humanized summary in 3-5 sentences using plain language.
+// ── Humanize Job Post ──
 
-Rules:
-- Write in a warm, direct tone — like a knowledgeable friend explaining the role
-- Avoid corporate jargon, buzzwords, and robotic phrasing
-- Focus on: what you'd actually do day-to-day, what makes this role interesting, and what kind of person would thrive here
-- Never use phrases like "leverage", "synergize", "drive initiatives", "cross-functional alignment"
-- Keep it readable and helpful
+const HUMANIZE_PROMPT = `You are a career insider who rewrites corporate job postings into plain, authentic language that resonates with the specific role type.
+
+Your task: Given a job title and corporate job description, return a JSON object with:
+1. "humanized_description" — Rewrite the description in 4-8 sentences using language natural to someone in that role. For example:
+   - For a Data Engineer: talk about pipelines, data quality, tooling, and what the day-to-day stack looks like
+   - For a Sales role: talk about quota, deal size, territory, and what the sales motion looks like
+   - For a Product Manager: talk about roadmap ownership, stakeholder dynamics, and shipping cadence
+   Avoid corporate clichés like "leverage", "synergize", "drive initiatives", "cross-functional alignment", "fast-paced environment". Write like you're explaining the role to a friend over coffee.
+2. "standout_perks" — An array of unique/noteworthy benefits that go BEYOND the standard baseline. Standard baseline (DO NOT include these): health insurance, dental, vision, 401k/RRSP match, PTO/vacation, sick days, life insurance, disability insurance.
+   Only include perks that are genuinely distinctive, for example: "4-day work week", "Unlimited PTO", "Remote-first", "$5K annual learning budget", "Equity for all employees", "Sabbatical after 3 years", "On-site childcare", "Home office stipend", "Mental health days", "Dog-friendly office", "Profit sharing", "Relocation assistance".
+   Return an empty array if no standout perks are found.
+
+Return ONLY a valid JSON object, nothing else:
+{
+  "humanized_description": "...",
+  "standout_perks": ["...", "..."]
+}
+
+Job Title: {TITLE}
 
 Job Description:
-`;
+{DESCRIPTION}`;
 
-export async function generateJobSummary(description: string): Promise<AIResult> {
+export interface HumanizeResult {
+  humanized_description: string;
+  standout_perks: string[];
+}
+
+export async function humanizeJobPost(description: string, title: string): Promise<AIResult<HumanizeResult>> {
   const ai = getAI();
   if (!ai) {
     return {
-      result: 'Summary generation is currently unavailable. Please write a manual summary.',
+      result: { humanized_description: '', standout_perks: [] },
       fallback: true,
     };
   }
 
-  const timeout = getEnvInt('AI_TIMEOUT_MS', 8000);
+  const timeout = getEnvInt('AI_TIMEOUT_MS', 12000);
 
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
 
+    const prompt = HUMANIZE_PROMPT
+      .replace('{TITLE}', title)
+      .replace('{DESCRIPTION}', description.slice(0, 10000));
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: SUMMARY_PROMPT + description,
+      contents: prompt,
     });
 
     clearTimeout(timer);
@@ -51,20 +73,37 @@ export async function generateJobSummary(description: string): Promise<AIResult>
     const text = response.text?.trim();
     if (!text) {
       return {
-        result: 'Could not generate a summary. Please write one manually.',
+        result: { humanized_description: '', standout_perks: [] },
         fallback: true,
       };
     }
 
-    return { result: text, fallback: false };
-  } catch (err) {
-    console.error('AI summary generation error:', err);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return {
+        result: { humanized_description: '', standout_perks: [] },
+        fallback: true,
+      };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
     return {
-      result: 'AI summary generation timed out or failed. Please write a manual summary.',
+      result: {
+        humanized_description: parsed.humanized_description || '',
+        standout_perks: Array.isArray(parsed.standout_perks) ? parsed.standout_perks : [],
+      },
+      fallback: false,
+    };
+  } catch (err) {
+    console.error('AI humanize error:', err);
+    return {
+      result: { humanized_description: '', standout_perks: [] },
       fallback: true,
     };
   }
 }
+
+// ── URL Scraping ──
 
 const SCRAPE_PROMPT = `Extract structured job posting data from this webpage content. Return ONLY a JSON object with these fields (use null for missing data):
 {
@@ -89,7 +128,6 @@ export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<{ 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
 
-    // Truncate HTML to avoid token limits
     const truncated = htmlContent.slice(0, 15000);
 
     const response = await ai.models.generateContent({
@@ -104,7 +142,6 @@ export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<{ 
       return { result: {}, fallback: true };
     }
 
-    // Try to parse JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return { result: {}, fallback: true };
