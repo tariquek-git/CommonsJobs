@@ -10,9 +10,9 @@ export const FEEDS = {
 
 export const FOUNDER_TEXT = `Hi, it's Tarique 👋
 
-I'm not anti-automation — I love automation. But the best automation makes human things scale, not replace them. Job boards got that backwards. They automated away the trust and left us with ghost listings and black-hole applications.
+I built Fintech Commons because I kept running into the same problem: job boards in fintech are broken. Ghost listings, black-hole applications, no way to know if a role is even real. I wanted to learn by building something that actually solves it.
 
-Fintech Commons flips that. Real people post roles. A real person reviews them. And if you want a warm intro instead of a cold apply, a real human makes that happen. The tech just makes it all work smoothly behind the scenes.
+The thesis is simple: automate what should be automated — posting, formatting, expiry, notifications — but keep the trust layer human. Real people post roles. A real person reviews them. And if you want a warm intro instead of a cold apply, a real human makes that connection.
 
-That's it. Humans in the loop, automation in the plumbing.`;
+No algorithm decides what you see. No recruiter spam. Just roles that someone thought were worth sharing, translated from corporate-speak into plain language.`;
 

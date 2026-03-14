@@ -96,7 +96,7 @@ export default function FounderSection() {
             <div className="sm:mt-2">
               <p className="text-sm font-semibold text-gray-900">Human-reviewed, not algorithm-sorted</p>
               <p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-                Every listing is read by a person and translated from corporate-speak into plain language. No filters, no AI ranking.
+                Every listing is read by a person and translated from corporate-speak into plain language. No black-box algorithms deciding what you see.
               </p>
             </div>
             <div className="hidden sm:block absolute -right-3 top-6 text-gray-300">
@@ -127,15 +127,43 @@ export default function FounderSection() {
           </div>
         </div>
 
-        {/* Human trust note */}
+        {/* Automation + human note */}
         <div className="mt-5 rounded-xl bg-indigo-50/50 border-l-4 border-l-indigo-400 px-4 py-3 flex items-start gap-2.5">
           <svg className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
           </svg>
           <p className="text-sm text-indigo-700 leading-relaxed">
-            I love automation — it powers everything behind the scenes. But the trust part? That stays human. Real people post, review, and connect. Tech just makes it scale.
+            Automation handles the plumbing — posting, formatting, expiry, notifications. But the trust part stays human. Real people post, real people review, real people connect. That's the whole point.
           </p>
         </div>
+      </div>
+
+      {/* Community callout */}
+      <div className="surface-elevated p-5 sm:p-6 text-center">
+        <div className="flex justify-center mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+            <svg className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">This wouldn't be possible without you</h3>
+        <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto mb-4">
+          If you're personally hiring, or know someone who is — post the role. Help them find the right person, or it might be the right person who finds you. What I need most right now is posts. Once the roles are here, I'll work on getting them in front of the right people.
+        </p>
+        <a
+          href="#submit"
+          className="btn-primary inline-flex"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById('submit')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          Post a role
+          <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </a>
       </div>
 
       {/* Pre-alpha note */}
