@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Job } from '../lib/types';
 import { formatDate, getRelativeTimeLabel } from '../lib/date';
 import { trackClick } from '../lib/api';
+import { shareJob, getUtmParams } from '../lib/utils';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import WarmIntroModal from './WarmIntroModal';
 import { usePostHog } from '@posthog/react';
@@ -53,6 +54,7 @@ function CollapsibleSection({
 export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [showIntro, setShowIntro] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const posthog = usePostHog();
 
@@ -88,7 +90,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
 
   const handleApply = () => {
     if (job.apply_url) {
-      trackClick(job.id);
+      trackClick(job.id, getUtmParams());
       posthog?.capture('job_apply_clicked', {
         job_id: job.id,
         job_title: job.title,
@@ -96,6 +98,20 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
         source: 'modal',
       });
       window.open(job.apply_url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleShare = async () => {
+    const method = await shareJob(job);
+    posthog?.capture('job_shared', {
+      job_id: job.id,
+      job_title: job.title,
+      company: job.company,
+      method: method || 'cancelled',
+    });
+    if (method === 'clipboard') {
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
     }
   };
 
@@ -291,7 +307,23 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200/60 bg-gray-50/50">
+          <div className="flex items-center justify-between p-6 border-t border-gray-200/60 bg-gray-50/50">
+            <button
+              onClick={handleShare}
+              className="relative rounded-full p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              aria-label="Share job"
+              title="Share"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+              </svg>
+              {showCopied && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2.5 py-1 text-xs text-white shadow-lg animate-fade-in">
+                  Link copied!
+                </span>
+              )}
+            </button>
+            <div className="flex items-center gap-3">
             <button onClick={onClose} className="btn-secondary">
               Close
             </button>
@@ -312,6 +344,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
                 </svg>
               </button>
             )}
+            </div>
           </div>
         </div>
       </div>

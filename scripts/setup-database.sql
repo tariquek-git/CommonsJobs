@@ -65,23 +65,33 @@ ALTER TABLE jobs ADD COLUMN IF NOT EXISTS expires_at         TIMESTAMPTZ;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_ip_hash    TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_user_agent TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_referrer   TEXT;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_min           INTEGER;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_max           INTEGER;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_currency      TEXT DEFAULT 'USD';
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS view_count           INTEGER DEFAULT 0;
 
 
 -- ============================================================
 -- 2. CLICKS TABLE (FK → jobs)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS clicks (
-  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  job_id     UUID        REFERENCES jobs(id) ON DELETE CASCADE,
-  ip_hash    TEXT,
-  user_agent TEXT,
-  referrer   TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  id           UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  job_id       UUID        REFERENCES jobs(id) ON DELETE CASCADE,
+  ip_hash      TEXT,
+  user_agent   TEXT,
+  referrer     TEXT,
+  utm_source   TEXT,
+  utm_medium   TEXT,
+  utm_campaign TEXT,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE clicks ADD COLUMN IF NOT EXISTS ip_hash    TEXT;
-ALTER TABLE clicks ADD COLUMN IF NOT EXISTS user_agent TEXT;
-ALTER TABLE clicks ADD COLUMN IF NOT EXISTS referrer   TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS ip_hash      TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS user_agent   TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS referrer     TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS utm_source   TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS utm_medium   TEXT;
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS utm_campaign TEXT;
 
 
 -- ============================================================
@@ -206,6 +216,9 @@ CREATE INDEX IF NOT EXISTS idx_clicks_job_created
   ON clicks(job_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_clicks_created_at
   ON clicks(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_clicks_utm_source
+  ON clicks(utm_source)
+  WHERE utm_source IS NOT NULL;
 
 -- warm_intros
 CREATE INDEX IF NOT EXISTS idx_warm_intros_job_id

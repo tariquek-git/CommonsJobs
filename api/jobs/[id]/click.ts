@@ -38,11 +38,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userAgent = (req.headers['user-agent'] as string) || null;
     const referrer = (req.headers['referer'] as string) || null;
 
+    // Parse UTM params from request body
+    const body = req.body || {};
+    const utmSource = typeof body.utm_source === 'string' ? body.utm_source.slice(0, 100) : null;
+    const utmMedium = typeof body.utm_medium === 'string' ? body.utm_medium.slice(0, 100) : null;
+    const utmCampaign = typeof body.utm_campaign === 'string' ? body.utm_campaign.slice(0, 200) : null;
+
     const { error: clickError } = await supabase.from(getClicksTable()).insert({
       job_id: id,
       ip_hash: ipHash,
       user_agent: userAgent,
       referrer,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
     });
 
     if (clickError) {

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
 import { trackClick } from '../lib/api';
+import { shareJob, getUtmParams } from '../lib/utils';
 
 interface JobCardProps {
   job: Job;
@@ -51,11 +53,22 @@ function getDaysUntilExpiry(expiresAt: string | null): number | null {
 }
 
 export default function JobCard({ job, onSelect }: JobCardProps) {
+  const [showCopied, setShowCopied] = useState(false);
+
   const handleApply = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (job.apply_url) {
-      trackClick(job.id);
+      trackClick(job.id, getUtmParams());
       window.open(job.apply_url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const method = await shareJob(job);
+    if (method === 'clipboard') {
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
     }
   };
 
@@ -184,17 +197,34 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
                 </span>
               )}
             </div>
-            {job.apply_url && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleApply}
-                className="btn-primary py-1.5 px-3.5 text-xs"
+                onClick={handleShare}
+                className="relative rounded-full p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                aria-label="Share job"
+                title="Share"
               >
-                Apply
-                <svg className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
                 </svg>
+                {showCopied && (
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[10px] text-white shadow-lg animate-fade-in">
+                    Link copied!
+                  </span>
+                )}
               </button>
-            )}
+              {job.apply_url && (
+                <button
+                  onClick={handleApply}
+                  className="btn-primary py-1.5 px-3.5 text-xs"
+                >
+                  Apply
+                  <svg className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -53,11 +53,12 @@ export async function submitJob(payload: SubmissionPayload): Promise<SubmissionR
   });
 }
 
-export async function trackClick(jobId: string): Promise<void> {
+export async function trackClick(jobId: string, utmParams?: { utm_source?: string; utm_medium?: string; utm_campaign?: string }): Promise<void> {
   // Fire and forget - don't block on click tracking
   fetch(`${BASE}/jobs/${jobId}/click`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(utmParams || {}),
   }).catch(() => {});
 }
 
