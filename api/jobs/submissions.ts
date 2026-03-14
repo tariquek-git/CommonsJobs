@@ -82,7 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (error) {
-      console.error('Submission insert error:', error);
+      const { logger } = await import('../../lib/logger.js');
+      logger.error('Submission insert error', { endpoint: 'submissions', error });
       return res.status(500).json({ error: 'Failed to save submission', code: 'STORAGE_ERROR' });
     }
 
@@ -92,7 +93,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Job submitted for review. It will appear publicly once approved.',
     } satisfies SubmissionResponse);
   } catch (err) {
-    console.error('Submission error:', err);
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('Submission handler error', { endpoint: 'submissions', error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

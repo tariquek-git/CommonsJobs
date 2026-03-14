@@ -1,11 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { scrapeAndExtract } from '../../lib/ai.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { logger } from '../../lib/logger.js';
 
 // Block requests to private/internal IP ranges (SSRF protection)
 function isPrivateHostname(hostname: string): boolean {
   // Block localhost variants
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') {
+    return true;
+  }
+  // Block IPv6-mapped IPv4 (e.g. ::ffff:127.0.0.1)
+  if (hostname.startsWith('::ffff:')) {
+    return isPrivateHostname(hostname.slice(7));
+  }
+  // Block all IPv6 literals (conservative — safe for a job board)
+  if (hostname.includes(':')) {
     return true;
   }
   // Block common private/internal ranges
@@ -73,15 +82,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       clearTimeout(timer);
 
       if (!response.ok) {
-        return res.status(200).json({
+        logger.warn('URL fetch returned non-OK status', { endpoint: 'scrape-url', url, status: response.status });
+        return res.status(502).json({
+          error: 'Failed to fetch URL',
+          code: 'UPSTREAM_ERROR',
           result: {},
           fallback: true,
         });
       }
 
       htmlContent = await response.text();
-    } catch {
-      return res.status(200).json({
+    } catch (fetchErr) {
+      logger.warn('URL fetch failed', { endpoint: 'scrape-url', url, error: fetchErr });
+      return res.status(502).json({
+        error: 'Failed to fetch URL',
+        code: 'UPSTREAM_ERROR',
         result: {},
         fallback: true,
       });
@@ -91,7 +106,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const result = await scrapeAndExtract(htmlContent);
     return res.status(200).json(result);
   } catch (err) {
-    return res.status(200).json({
+    logger.error('AI scrape extraction failed', { endpoint: 'scrape-url', error: err });
+    return res.status(502).json({
+      error: 'AI extraction failed',
+      code: 'AI_ERROR',
       result: {},
       fallback: true,
     });

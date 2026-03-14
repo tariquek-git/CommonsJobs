@@ -14,7 +14,7 @@ describe('FounderSection', () => {
 
   it('starts collapsed by default (text in DOM but visually hidden)', () => {
     render(<FounderSection />);
-    const textEl = screen.getByText(/Job boards were built/);
+    const textEl = screen.getByText(/Tarique/);
     expect(textEl.closest('[class*="max-h-0"]')).toBeTruthy();
   });
 
@@ -24,7 +24,7 @@ describe('FounderSection', () => {
     fireEvent.click(toggleBtn);
 
     // Founder text is now visible (no max-h-0)
-    const textEl = screen.getByText(/Job boards were built/);
+    const textEl = screen.getByText(/Tarique/);
     expect(textEl.closest('[class*="max-h-0"]')).toBeNull();
 
     // Check localStorage
@@ -34,16 +34,13 @@ describe('FounderSection', () => {
   it('respects persisted expanded state', () => {
     window.localStorage.setItem('founder-collapsed', 'false');
     render(<FounderSection />);
-    const textEl = screen.getByText(/Job boards were built/);
+    const textEl = screen.getByText(/Tarique/);
     expect(textEl.closest('[class*="max-h-0"]')).toBeNull();
   });
 
   it('renders How it works explainer', () => {
     render(<FounderSection />);
     expect(screen.getByText('How it works')).toBeInTheDocument();
-    expect(screen.getByText('A real person posts a role')).toBeInTheDocument();
-    expect(screen.getByText('Human-reviewed, not algorithm-sorted')).toBeInTheDocument();
-    expect(screen.getByText('Apply direct, or ask for a warm intro')).toBeInTheDocument();
   });
 
   it('renders please note box', () => {

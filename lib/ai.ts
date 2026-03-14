@@ -95,7 +95,8 @@ export async function humanizeJobPost(description: string, title: string): Promi
       fallback: false,
     };
   } catch (err) {
-    console.error('AI humanize error:', err);
+    const { logger } = await import('./logger.js');
+    logger.error('AI humanize error', { endpoint: 'ai/humanize', error: err });
     return {
       result: { humanized_description: '', standout_perks: [] },
       fallback: true,
@@ -158,7 +159,8 @@ export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<{ 
       fallback: false,
     };
   } catch (err) {
-    console.error('AI scrape error:', err);
+    const { logger } = await import('./logger.js');
+    logger.error('AI scrape error', { endpoint: 'ai/scrape', error: err });
     return { result: {}, fallback: true };
   }
 }

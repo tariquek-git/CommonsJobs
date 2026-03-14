@@ -41,7 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (clickError) {
-      console.error('Click tracking error:', clickError);
+      const { logger } = await import('../../../lib/logger.js');
+      logger.error('Click tracking error', { endpoint: 'click', jobId: id, error: clickError });
       // Don't fail the request - click tracking is non-critical
     }
 

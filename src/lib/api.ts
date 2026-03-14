@@ -86,17 +86,23 @@ export interface HumanizeResponse {
 }
 
 export async function humanizeJob(description: string, title: string): Promise<AIResult<HumanizeResponse>> {
-  return request('/ai/generate-summary', {
+  const res = await fetch(`${BASE}/ai/generate-summary`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ description, title }),
   });
+  const body = await res.json();
+  return body;
 }
 
 export async function scrapeUrl(url: string): Promise<AIResult<{ title?: string; company?: string; description?: string; location?: string }>> {
-  return request('/ai/scrape-url', {
+  const res = await fetch(`${BASE}/ai/scrape-url`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
   });
+  const body = await res.json();
+  return body;
 }
 
 // ── Admin API ──

@@ -29,8 +29,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const result = await humanizeJobPost(description.trim(), title.trim());
     return res.status(200).json(result);
-  } catch {
-    return res.status(200).json({
+  } catch (err) {
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('AI humanize failed', { endpoint: 'generate-summary', error: err });
+    return res.status(502).json({
+      error: 'AI processing failed',
+      code: 'AI_ERROR',
       result: { humanized_description: '', standout_perks: [] },
       fallback: true,
     });

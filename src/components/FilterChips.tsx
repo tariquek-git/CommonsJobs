@@ -41,7 +41,7 @@ export default function FilterChips({ activeFilters, onToggle, onClear }: Filter
       {activeFilters.length > 0 && (
         <button
           onClick={onClear}
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors ml-1"
+          className="text-xs text-gray-500 hover:text-accent-600 transition-colors ml-1"
         >
           Clear all
         </button>

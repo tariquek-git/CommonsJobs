@@ -33,7 +33,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = createAdminToken();
     return res.status(200).json({ token });
   } catch (err) {
-    console.error('Admin login error:', err);
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('Admin login error', { endpoint: 'admin-login', error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

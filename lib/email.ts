@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { getEnv } from './env.js';
+import { logger } from './logger.js';
 import type { Job } from '../shared/types.js';
 
 let resendClient: Resend | null = null;
@@ -13,11 +14,22 @@ function getResend(): Resend | null {
   return resendClient;
 }
 
+function escHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export async function sendApprovalEmail(to: string, job: Job): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
   const jobUrl = `https://commonsjobs.com/job/${job.id}`;
+  const safeTitle = escHtml(job.title);
+  const safeCompany = escHtml(job.company);
 
   try {
     await resend.emails.send({
@@ -28,7 +40,7 @@ export async function sendApprovalEmail(to: string, job: Job): Promise<boolean> 
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #0A1628; margin-bottom: 8px;">Your job is live on Fintech Commons</h2>
           <p style="color: #64748B; font-size: 15px; line-height: 1.6;">
-            Great news — <strong>${job.title}</strong> at <strong>${job.company}</strong> has been reviewed and approved by our community moderators.
+            Great news — <strong>${safeTitle}</strong> at <strong>${safeCompany}</strong> has been reviewed and approved by our community moderators.
           </p>
           <p style="color: #64748B; font-size: 15px; line-height: 1.6;">
             It's now visible to job seekers on the Fintech Commons board.
@@ -45,7 +57,7 @@ export async function sendApprovalEmail(to: string, job: Job): Promise<boolean> 
     });
     return true;
   } catch (err) {
-    console.error('Email send error:', err);
+    logger.error('Email send error', { endpoint: 'email', to, error: err });
     return false;
   }
 }

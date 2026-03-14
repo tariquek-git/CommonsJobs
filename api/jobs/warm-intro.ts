@@ -46,7 +46,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (error) {
-      console.error('Warm intro insert error:', error);
+      const { logger } = await import('../../lib/logger.js');
+      logger.error('Warm intro insert error', { endpoint: 'warm-intro', error });
       return res.status(500).json({ error: 'Failed to save request', code: 'STORAGE_ERROR' });
     }
 
@@ -90,7 +91,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
     } catch (emailErr) {
-      console.error('Warm intro email error:', emailErr);
+      const { logger } = await import('../../lib/logger.js');
+      logger.warn('Warm intro email failed', { endpoint: 'warm-intro', error: emailErr });
     }
 
     return res.status(201).json({
@@ -98,7 +100,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Your warm intro request has been submitted. We\'ll reach out to the job poster on your behalf.',
     });
   } catch (err) {
-    console.error('Warm intro error:', err);
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('Warm intro handler error', { endpoint: 'warm-intro', error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

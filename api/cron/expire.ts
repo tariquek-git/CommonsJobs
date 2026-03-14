@@ -24,7 +24,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select('id');
 
     if (error) {
-      console.error('Expire cron error:', error);
+      const { logger } = await import('../../lib/logger.js');
+      logger.error('Expire cron query error', { endpoint: 'cron/expire', error });
       return res.status(500).json({ error: 'Failed to expire jobs' });
     }
 
@@ -33,7 +34,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       timestamp: now,
     });
   } catch (err) {
-    console.error('Expire cron error:', err);
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('Expire cron handler error', { endpoint: 'cron/expire', error: err });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
