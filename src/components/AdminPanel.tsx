@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../hooks/useAdmin';
-import { getAnalytics, getWarmIntros, updateWarmIntroStatus } from '../lib/api';
+import { getAnalytics, getWarmIntros, updateWarmIntroStatus, updateJob } from '../lib/api';
 import type { AnalyticsData, WarmIntroRecord } from '../lib/api';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
@@ -87,50 +87,190 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={classes[status] || 'badge'}>{status}</span>;
 }
 
-function JobRow({ job, onStatusChange }: { job: Job; onStatusChange: (id: string, status: string) => void }) {
+const EDITABLE_FIELDS: { key: keyof Job; label: string; type: 'text' | 'textarea' | 'boolean' | 'tags' }[] = [
+  { key: 'title', label: 'Title', type: 'text' },
+  { key: 'company', label: 'Company', type: 'text' },
+  { key: 'location', label: 'Location', type: 'text' },
+  { key: 'country', label: 'Country', type: 'text' },
+  { key: 'apply_url', label: 'Apply URL', type: 'text' },
+  { key: 'company_url', label: 'Company URL', type: 'text' },
+  { key: 'company_logo_url', label: 'Logo URL', type: 'text' },
+  { key: 'summary', label: 'Summary', type: 'textarea' },
+  { key: 'description', label: 'Description', type: 'textarea' },
+  { key: 'warm_intro_ok', label: 'Warm intro OK', type: 'boolean' },
+  { key: 'standout_perks', label: 'Standout perks (comma-separated)', type: 'tags' },
+  { key: 'tags', label: 'Tags (comma-separated)', type: 'tags' },
+  { key: 'expires_at', label: 'Expires at (ISO date)', type: 'text' },
+];
+
+function JobRow({ job, token, onStatusChange, onJobUpdated }: {
+  job: Job;
+  token: string;
+  onStatusChange: (id: string, status: string) => void;
+  onJobUpdated: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState<Record<string, string | boolean | string[]>>({});
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const startEditing = () => {
+    const initial: Record<string, string | boolean | string[]> = {};
+    for (const field of EDITABLE_FIELDS) {
+      const val = job[field.key];
+      if (field.type === 'tags') {
+        initial[field.key] = (val as string[] || []).join(', ');
+      } else if (field.type === 'boolean') {
+        initial[field.key] = val as boolean;
+      } else {
+        initial[field.key] = (val as string) || '';
+      }
+    }
+    setEditing(initial);
+    setExpanded(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updates: Partial<Job> = {};
+      for (const field of EDITABLE_FIELDS) {
+        const val = editing[field.key];
+        if (field.type === 'tags') {
+          const arr = (val as string).split(',').map((s: string) => s.trim()).filter(Boolean);
+          if (JSON.stringify(arr) !== JSON.stringify(job[field.key])) {
+            (updates as Record<string, unknown>)[field.key] = arr;
+          }
+        } else if (field.type === 'boolean') {
+          if (val !== job[field.key]) {
+            (updates as Record<string, unknown>)[field.key] = val;
+          }
+        } else {
+          const strVal = (val as string) || null;
+          if (strVal !== (job[field.key] || null)) {
+            (updates as Record<string, unknown>)[field.key] = strVal;
+          }
+        }
+      }
+      if (Object.keys(updates).length > 0) {
+        await updateJob(token, job.id, updates);
+        onJobUpdated();
+      }
+      setExpanded(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="surface-elevated p-4 flex items-center justify-between gap-4">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-sm font-medium text-gray-900 truncate">{job.title}</h3>
-          <StatusBadge status={job.status} />
+    <div className="surface-elevated overflow-hidden">
+      <div className="p-4 flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1 cursor-pointer" onClick={() => expanded ? setExpanded(false) : startEditing()}>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-sm font-medium text-gray-900 truncate">{job.title}</h3>
+            <StatusBadge status={job.status} />
+          </div>
+          <p className="text-xs text-gray-500">
+            {job.company} · {job.location || 'No location'} · {getRelativeTimeLabel(job.created_at)}
+          </p>
+          {job.submitter_email && (
+            <p className="text-xs text-indigo-600/70 mt-0.5">{job.submitter_email}</p>
+          )}
+          {job.submission_ref && (
+            <p className="text-xs text-gray-400 mt-0.5 font-mono">{job.submission_ref}</p>
+          )}
         </div>
-        <p className="text-xs text-gray-500">
-          {job.company} · {job.location || 'No location'} · {getRelativeTimeLabel(job.created_at)}
-        </p>
-        {job.submitter_email && (
-          <p className="text-xs text-indigo-600/70 mt-0.5">{job.submitter_email}</p>
-        )}
-        {job.submission_ref && (
-          <p className="text-xs text-gray-400 mt-0.5 font-mono">{job.submission_ref}</p>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => expanded ? setExpanded(false) : startEditing()}
+            className="text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+          >
+            {expanded ? 'Close' : 'Edit'}
+          </button>
+          {job.status !== 'active' && (
+            <button
+              onClick={() => onStatusChange(job.id, 'active')}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+            >
+              Approve
+            </button>
+          )}
+          {job.status !== 'rejected' && (
+            <button
+              onClick={() => onStatusChange(job.id, 'rejected')}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
+            >
+              Reject
+            </button>
+          )}
+          {job.status !== 'archived' && (
+            <button
+              onClick={() => onStatusChange(job.id, 'archived')}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              Archive
+            </button>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        {job.status !== 'active' && (
-          <button
-            onClick={() => onStatusChange(job.id, 'active')}
-            className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-          >
-            Approve
-          </button>
-        )}
-        {job.status !== 'rejected' && (
-          <button
-            onClick={() => onStatusChange(job.id, 'rejected')}
-            className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
-          >
-            Reject
-          </button>
-        )}
-        {job.status !== 'archived' && (
-          <button
-            onClick={() => onStatusChange(job.id, 'archived')}
-            className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-          >
-            Archive
-          </button>
-        )}
-      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-100 px-4 py-4 space-y-3 bg-gray-50/50">
+          {saveError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 p-2">
+              <p className="text-xs text-red-700">{saveError}</p>
+            </div>
+          )}
+          {EDITABLE_FIELDS.map((field) => (
+            <div key={field.key}>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{field.label}</label>
+              {field.type === 'boolean' ? (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editing[field.key] as boolean}
+                    onChange={(e) => setEditing({ ...editing, [field.key]: e.target.checked })}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-xs text-gray-700">{editing[field.key] ? 'Yes' : 'No'}</span>
+                </label>
+              ) : field.type === 'textarea' ? (
+                <textarea
+                  value={editing[field.key] as string}
+                  onChange={(e) => setEditing({ ...editing, [field.key]: e.target.value })}
+                  rows={3}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={editing[field.key] as string}
+                  onChange={(e) => setEditing({ ...editing, [field.key]: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              )}
+            </div>
+          ))}
+          <div className="flex items-center gap-2 pt-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-primary py-1.5 px-4 text-xs"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              onClick={() => setExpanded(false)}
+              className="btn-ghost py-1.5 px-4 text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -591,7 +731,7 @@ export default function AdminPanel() {
           ) : (
             <div className="space-y-2">
               {sortedJobs.map((job) => (
-                <JobRow key={job.id} job={job} onStatusChange={changeJobStatus} />
+                <JobRow key={job.id} job={job} token={token} onStatusChange={changeJobStatus} onJobUpdated={refreshJobs} />
               ))}
             </div>
           )}
