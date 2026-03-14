@@ -33,8 +33,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         clickCount: clicksResult.count || 0,
       },
       ai: {
-        provider: 'gemini',
-        configured: !!getEnv('GEMINI_API_KEY'),
+        provider: 'claude',
+        configured: !!getEnv('ANTHROPIC_API_KEY'),
       },
       uptime: Math.floor((Date.now() - startTime) / 1000),
     };

@@ -1,22 +1,22 @@
-import { GoogleGenAI } from '@google/genai';
+import Anthropic from '@anthropic-ai/sdk';
 import { getEnv, getEnvInt } from './env.js';
 import type { AIResult } from '../shared/types.js';
 
-let aiClient: GoogleGenAI | null = null;
+let aiClient: Anthropic | null = null;
 
-function getAI(): GoogleGenAI | null {
-  const key = getEnv('GEMINI_API_KEY');
+function getAI(): Anthropic | null {
+  const key = getEnv('ANTHROPIC_API_KEY');
   if (!key) return null;
 
   if (!aiClient) {
-    aiClient = new GoogleGenAI({ apiKey: key });
+    aiClient = new Anthropic({ apiKey: key });
   }
   return aiClient;
 }
 
 // ── Humanize Job Post ──
 
-const HUMANIZE_PROMPT = `You are a career insider who rewrites corporate job postings into plain, authentic language that resonates with the specific role type.
+const HUMANIZE_SYSTEM = `You are a career insider who rewrites corporate job postings into plain, authentic language that resonates with the specific role type.
 
 Your task: Given a job title and corporate job description, return a JSON object with:
 1. "humanized_description" — Rewrite the description in 4-8 sentences using language natural to someone in that role. For example:
@@ -32,12 +32,7 @@ Return ONLY a valid JSON object, nothing else:
 {
   "humanized_description": "...",
   "standout_perks": ["...", "..."]
-}
-
-Job Title: {TITLE}
-
-Job Description:
-{DESCRIPTION}`;
+}`;
 
 export interface HumanizeResult {
   humanized_description: string;
@@ -56,21 +51,16 @@ export async function humanizeJobPost(description: string, title: string): Promi
   const timeout = getEnvInt('AI_TIMEOUT_MS', 12000);
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+    const userMessage = `Job Title: ${title}\n\nJob Description:\n${description.slice(0, 10000)}`;
 
-    const prompt = HUMANIZE_PROMPT
-      .replace('{TITLE}', title)
-      .replace('{DESCRIPTION}', description.slice(0, 10000));
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
+    const response = await ai.messages.create({
+      model: 'claude-3-5-haiku-latest',
+      max_tokens: 1024,
+      system: HUMANIZE_SYSTEM,
+      messages: [{ role: 'user', content: userMessage }],
     });
 
-    clearTimeout(timer);
-
-    const text = response.text?.trim();
+    const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
     if (!text) {
       return {
         result: { humanized_description: '', standout_perks: [] },
@@ -106,16 +96,13 @@ export async function humanizeJobPost(description: string, title: string): Promi
 
 // ── URL Scraping ──
 
-const SCRAPE_PROMPT = `Extract structured job posting data from this webpage content. Return ONLY a JSON object with these fields (use null for missing data):
+const SCRAPE_SYSTEM = `Extract structured job posting data from webpage content. Return ONLY a valid JSON object with these fields (use null for missing data):
 {
   "title": "job title",
   "company": "company name",
   "location": "job location",
   "description": "full job description text"
-}
-
-Webpage content:
-`;
+}`;
 
 export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<{ title?: string; company?: string; description?: string; location?: string }>> {
   const ai = getAI();
@@ -123,22 +110,17 @@ export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<{ 
     return { result: {}, fallback: true };
   }
 
-  const timeout = getEnvInt('AI_TIMEOUT_MS', 8000);
-
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
     const truncated = htmlContent.slice(0, 15000);
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: SCRAPE_PROMPT + truncated,
+    const response = await ai.messages.create({
+      model: 'claude-3-5-haiku-latest',
+      max_tokens: 1024,
+      system: SCRAPE_SYSTEM,
+      messages: [{ role: 'user', content: `Webpage content:\n${truncated}` }],
     });
 
-    clearTimeout(timer);
-
-    const text = response.text?.trim();
+    const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
     if (!text) {
       return { result: {}, fallback: true };
     }
