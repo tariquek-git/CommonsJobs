@@ -73,7 +73,7 @@ export default function JobPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -94,7 +94,7 @@ export default function JobPage() {
       {/* Nav */}
       <header className="border-b border-gray-200 dark:border-navy-800/50 bg-white/80 dark:bg-navy-950/80 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link to="/" className="text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 text-sm font-medium">
+          <Link to="/" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium">
             &larr; All Jobs
           </Link>
         </div>
@@ -104,19 +104,22 @@ export default function JobPage() {
         <article className="surface-elevated p-6 sm:p-8 space-y-6">
           {/* Header */}
           <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-50 dark:bg-accent-900/20 text-lg font-bold text-accent-600 dark:text-accent-400 shrink-0">
-              {job.company_logo_url ? (
-                <img
-                  src={job.company_logo_url}
-                  alt={job.company}
-                  className="h-14 w-14 rounded-xl object-contain bg-gray-100 dark:bg-navy-800 p-2"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              ) : (
-                job.company.charAt(0).toUpperCase()
-              )}
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-lg font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
+              {(() => {
+                const logoUrl = job.company_logo_url || (job.company_url ? (() => { try { return `https://logo.clearbit.com/${new URL(job.company_url).hostname}`; } catch { return null; } })() : null);
+                return logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={job.company}
+                    className="h-14 w-14 rounded-xl object-contain bg-gray-100 dark:bg-navy-800 p-2"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  job.company.charAt(0).toUpperCase()
+                );
+              })()}
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{job.title}</h1>
@@ -138,13 +141,20 @@ export default function JobPage() {
 
           {/* Badges */}
           <div className="flex items-center gap-2">
-            <span className="badge-community">
-              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-900/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
               </svg>
-              Community verified
+              Reviewed
             </span>
-            <span className="badge-community">Warm intro possible</span>
+            {job.warm_intro_ok && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 dark:bg-indigo-900/15 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-400">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Warm intro available
+              </span>
+            )}
           </div>
 
           {/* Standout Perks */}
@@ -195,7 +205,7 @@ export default function JobPage() {
                   href={job.company_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300"
+                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                 >
                   Company website
                 </a>

@@ -7,13 +7,24 @@ interface JobCardProps {
   onSelect: (job: Job) => void;
 }
 
+function getAutoLogoUrl(job: Job): string | null {
+  if (job.company_logo_url) return job.company_logo_url;
+  if (job.company_url) {
+    try {
+      return `https://logo.clearbit.com/${new URL(job.company_url).hostname}`;
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
 function CompanyLogo({ job }: { job: Job }) {
-  if (job.company_logo_url) {
+  const logoUrl = getAutoLogoUrl(job);
+  if (logoUrl) {
     return (
       <img
-        src={job.company_logo_url}
+        src={logoUrl}
         alt={`${job.company} logo`}
-        className="h-11 w-11 rounded-xl object-contain bg-gray-100 dark:bg-navy-800 p-1.5"
+        className="h-12 w-12 rounded-xl object-contain bg-gray-100 dark:bg-navy-800 p-1.5"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
           (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -27,7 +38,7 @@ function CompanyLogo({ job }: { job: Job }) {
 function FallbackIcon({ company }: { company: string }) {
   const letter = company.charAt(0).toUpperCase();
   return (
-    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 dark:bg-accent-900/20 text-sm font-bold text-accent-600 dark:text-accent-400">
+    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-sm font-bold text-indigo-600 dark:text-indigo-400">
       {letter}
     </div>
   );
@@ -51,10 +62,9 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
   return (
     <article
       onClick={() => onSelect(job)}
-      className="surface-elevated card-accent-community p-5 cursor-pointer
-        hover:border-accent-300 dark:hover:border-accent-700/60 hover:shadow-md
-        hover:-translate-y-0.5
-        transition-all duration-200 group"
+      className="relative surface-elevated p-5 cursor-pointer overflow-hidden
+        hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5
+        transition-all duration-300 ease-out group"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -66,8 +76,13 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
     >
       <div className="flex items-start gap-3.5">
         <div className="shrink-0">
-          {job.company_logo_url ? (
-            <CompanyLogo job={job} />
+          {getAutoLogoUrl(job) ? (
+            <>
+              <CompanyLogo job={job} />
+              <div className="hidden">
+                <FallbackIcon company={job.company} />
+              </div>
+            </>
           ) : (
             <FallbackIcon company={job.company} />
           )}
@@ -76,12 +91,23 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors leading-snug">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug">
                 {job.title}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{job.company}</p>
             </div>
-            <div className="shrink-0 text-right">
+            <div className="shrink-0 text-right flex items-center gap-1.5">
+              {(() => {
+                const diffDays = Math.floor((Date.now() - new Date(job.posted_date).getTime()) / (1000 * 60 * 60 * 24));
+                if (diffDays < 7) {
+                  return (
+                    <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-900/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      New
+                    </span>
+                  );
+                }
+                return null;
+              })()}
               <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
                 {getRelativeTimeLabel(job.posted_date)}
               </span>
@@ -116,7 +142,7 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
               {job.standout_perks.slice(0, 3).map((perk) => (
                 <span
                   key={perk}
-                  className="inline-flex items-center gap-1 rounded-md bg-sky-50 dark:bg-sky-900/15 px-2 py-0.5 text-xs font-medium text-sky-700 dark:text-sky-400"
+                  className="inline-flex items-center gap-1 rounded-md bg-indigo-50 dark:bg-indigo-900/15 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-400"
                 >
                   <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -125,7 +151,7 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
                 </span>
               ))}
               {job.standout_perks.length > 3 && (
-                <span className="text-xs text-sky-600 dark:text-sky-400 font-medium">
+                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                   +{job.standout_perks.length - 3} more
                 </span>
               )}
@@ -140,18 +166,23 @@ export default function JobCard({ job, onSelect }: JobCardProps) {
 
           <div className="mt-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
+              {job.tags?.includes('example') && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 dark:bg-amber-900/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/30">
+                  Example
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-900/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 Reviewed
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md bg-accent-50 dark:bg-accent-900/15 px-2 py-0.5 text-[11px] font-medium text-accent-700 dark:text-accent-400">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-                Warm intro
-              </span>
+              {job.warm_intro_ok && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 dark:bg-indigo-900/15 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                  Warm intro
+                </span>
+              )}
             </div>
             {job.apply_url && (
               <button

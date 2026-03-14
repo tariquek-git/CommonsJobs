@@ -137,3 +137,19 @@ export async function updateJob(token: string, jobId: string, updates: Partial<J
     body: JSON.stringify(updates),
   });
 }
+
+// ── Analytics API ──
+
+export interface AnalyticsData {
+  clicksByDay: { date: string; count: number }[];
+  introsByDay: { date: string; count: number }[];
+  topJobs: { id: string; title: string; company: string; clicks: number }[];
+  statusCounts: Record<string, number>;
+  totals: { clicks30d: number; intros30d: number };
+}
+
+export async function getAnalytics(token: string): Promise<AnalyticsData> {
+  return request('/admin/analytics', {
+    headers: authHeaders(token),
+  });
+}

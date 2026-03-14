@@ -28,6 +28,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       query = query.ilike('location', `%${body.location}%`);
     }
 
+    if (body.tags && body.tags.length > 0) {
+      query = query.overlaps('tags', body.tags);
+    }
+
     query = query.order('posted_date', { ascending: sort === 'oldest' });
     query = query.range(offset, offset + limit - 1);
 

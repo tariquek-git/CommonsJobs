@@ -12,28 +12,30 @@ describe('FounderSection', () => {
     expect(screen.getByText('Why I built Commons Jobs')).toBeInTheDocument();
   });
 
-  it('shows founder text when expanded', () => {
+  it('starts collapsed by default (text in DOM but visually hidden)', () => {
     render(<FounderSection />);
-    // Initially expanded (first visit)
-    expect(screen.getByText(/Job boards were built/)).toBeInTheDocument();
+    const textEl = screen.getByText(/Job boards were built/);
+    expect(textEl.closest('[class*="max-h-0"]')).toBeTruthy();
   });
 
-  it('collapses and persists to localStorage', () => {
+  it('expands on click and persists to localStorage', () => {
     render(<FounderSection />);
     const toggleBtn = screen.getByText('Why I built Commons Jobs');
     fireEvent.click(toggleBtn);
 
-    // Founder text should be hidden
-    expect(screen.queryByText(/Job boards were built/)).not.toBeInTheDocument();
+    // Founder text is now visible (no max-h-0)
+    const textEl = screen.getByText(/Job boards were built/);
+    expect(textEl.closest('[class*="max-h-0"]')).toBeNull();
 
     // Check localStorage
-    expect(window.localStorage.getItem('founder-collapsed')).toBe('true');
+    expect(window.localStorage.getItem('founder-collapsed')).toBe('false');
   });
 
-  it('respects persisted collapsed state', () => {
-    window.localStorage.setItem('founder-collapsed', 'true');
+  it('respects persisted expanded state', () => {
+    window.localStorage.setItem('founder-collapsed', 'false');
     render(<FounderSection />);
-    expect(screen.queryByText(/Job boards were built/)).not.toBeInTheDocument();
+    const textEl = screen.getByText(/Job boards were built/);
+    expect(textEl.closest('[class*="max-h-0"]')).toBeNull();
   });
 
   it('renders How it works explainer', () => {

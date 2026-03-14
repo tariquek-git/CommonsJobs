@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { requestWarmIntro } from '../lib/api';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import type { Job } from '../lib/types';
 
 interface WarmIntroModalProps {
@@ -12,9 +13,11 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [linkedin, setLinkedin] = useState('');
+  const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const isMobile = useMediaQuery('(max-width: 1023px)');
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -37,6 +40,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         name: name.trim(),
         email: email.trim(),
         linkedin: linkedin.trim() || undefined,
+        message: message.trim() || undefined,
       });
       setSubmitted(true);
     } catch (err) {
@@ -50,12 +54,23 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
     return (
       <div
         ref={overlayRef}
-        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4 animate-fade-in"
+        className={`fixed inset-0 z-[60] flex bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4 animate-fade-in ${
+          isMobile ? 'items-end' : 'items-center justify-center'
+        }`}
         onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Warm intro request submitted"
       >
-        <div className="w-full max-w-md glass-panel p-8 text-center animate-scale-in">
-          {/* Success checkmark */}
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/20 mb-4">
+        <div className={`w-full max-w-md glass-panel p-8 text-center animate-scale-in ${
+          isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
+        }`}>
+          {isMobile && (
+            <div className="flex justify-center mb-4">
+              <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-navy-600" />
+            </div>
+          )}
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/20 mb-4">
             <svg className="h-7 w-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -66,8 +81,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             If there's a connection, you'll hear from me via email.
           </p>
 
-          {/* Honest note */}
-          <div className="mt-4 rounded-lg bg-amber-50/80 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-800/20 p-3">
+          <div className="mt-4 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/20 p-3">
             <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
               <span className="font-semibold">Real talk:</span> Not every intro leads to a reply.
               Hiring timelines shift, roles get filled, people get busy. That's not on you.
@@ -84,28 +98,41 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4 animate-fade-in"
+      className={`fixed inset-0 z-[60] flex bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4 animate-fade-in ${
+        isMobile ? 'items-end' : 'items-center justify-center'
+      }`}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="warm-intro-title"
     >
-      <div className="w-full max-w-md glass-panel p-0 overflow-hidden animate-slide-up">
+      <div className={`w-full max-w-md glass-panel p-0 overflow-hidden animate-slide-up ${
+        isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
+      }`}>
+        {isMobile && (
+          <div className="flex justify-center pt-3">
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-navy-600" />
+          </div>
+        )}
+
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-navy-700/40">
+        <div className="p-6 border-b border-gray-200/60 dark:border-navy-700/40">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-50 dark:bg-accent-900/20">
-                <svg className="h-5 w-5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20">
+                <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Warm Intro</h3>
+              <h3 id="warm-intro-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">Warm Intro</h3>
             </div>
-            <button onClick={onClose} className="btn-ghost p-2 -mr-2" aria-label="Close">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-navy-800 hover:bg-gray-200 dark:hover:bg-navy-700 transition-colors" aria-label="Close">
+              <svg className="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5 ml-[46px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5 ml-[50px]">
             for <span className="font-medium text-gray-700 dark:text-gray-300">{job.title}</span> at {job.company}
           </p>
         </div>
@@ -113,18 +140,18 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         {/* Body */}
         <div className="p-6 space-y-4">
           {/* How it works callout */}
-          <div className="rounded-xl bg-accent-50/60 dark:bg-accent-900/10 border border-accent-200/60 dark:border-accent-800/20 p-4">
+          <div className="rounded-xl bg-indigo-50/60 dark:bg-indigo-900/10 border border-indigo-200/60 dark:border-indigo-800/20 p-4">
             <div className="flex gap-3">
               <div className="shrink-0 mt-0.5">
-                <svg className="h-5 w-5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-accent-700 dark:text-accent-400 mb-1">
+                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-400 mb-1">
                   I'd love to get your info in front of the right person
                 </p>
-                <p className="text-xs text-accent-600/80 dark:text-accent-400/70 leading-relaxed">
+                <p className="text-xs text-indigo-600/80 dark:text-indigo-400/70 leading-relaxed">
                   This isn't automated. I personally review each request and reach out to the job poster on your behalf. A real intro from a real person — that's the whole point.
                 </p>
               </div>
@@ -168,39 +195,48 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           {/* Form fields */}
           <div className="space-y-3 pt-1">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Your Name <span className="text-red-400">*</span>
+              <label htmlFor="warm-intro-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Your Name <span className="text-red-400" aria-hidden="true">*</span>
+                <span className="sr-only">(required)</span>
               </label>
               <input
+                id="warm-intro-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="input-field"
                 placeholder="Jane Doe"
                 autoFocus
+                required
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Your Email <span className="text-red-400">*</span>
+              <label htmlFor="warm-intro-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Your Email <span className="text-red-400" aria-hidden="true">*</span>
+                <span className="sr-only">(required)</span>
               </label>
               <input
+                id="warm-intro-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-field"
                 placeholder="you@email.com"
+                required
+                aria-required="true"
               />
               <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">So I can follow up with you. Never shared with anyone.</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label htmlFor="warm-intro-linkedin" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 LinkedIn
                 <span className="text-xs text-gray-400 dark:text-gray-500 ml-1.5 font-normal">optional, but helps</span>
               </label>
               <input
+                id="warm-intro-linkedin"
                 type="url"
                 value={linkedin}
                 onChange={(e) => setLinkedin(e.target.value)}
@@ -208,10 +244,27 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                 placeholder="linkedin.com/in/yourprofile"
               />
             </div>
+
+            <div>
+              <label htmlFor="warm-intro-message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                A bit about you
+                <span className="text-xs text-gray-400 dark:text-gray-500 ml-1.5 font-normal">optional</span>
+              </label>
+              <textarea
+                id="warm-intro-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="input-field resize-y"
+                rows={3}
+                maxLength={500}
+                placeholder="Who you are, why this role caught your eye, anything you'd want the hiring person to know..."
+              />
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">This goes directly to the job poster along with your intro.</p>
+            </div>
           </div>
 
           {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200/60 dark:border-red-800/20 p-3 flex items-center gap-2">
+            <div className="rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200/60 dark:border-red-800/20 p-3 flex items-center gap-2" role="alert">
               <svg className="h-4 w-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
               </svg>
@@ -221,20 +274,21 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-navy-700/40 bg-gray-50/50 dark:bg-navy-900/20">
-          <p className="text-[11px] text-gray-400 dark:text-gray-500">
+        <div className="flex items-center justify-between p-6 border-t border-gray-200/60 dark:border-navy-700/40 bg-gray-50/50 dark:bg-navy-900/20">
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:block">
             Scout's honour — I'll get this in front of the right person.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-auto">
             <button onClick={onClose} className="btn-secondary text-sm">Cancel</button>
             <button
               onClick={handleSubmit}
               disabled={submitting || !name.trim() || !email.trim()}
               className="btn-primary text-sm disabled:opacity-40"
+              aria-busy={submitting}
             >
               {submitting ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -242,7 +296,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                 </>
               ) : (
                 <>
-                  <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
                   Send My Info

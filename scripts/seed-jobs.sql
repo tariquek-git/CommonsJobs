@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS warm_intros (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-INSERT INTO jobs (title, company, location, country, description, summary, apply_url, company_url, company_logo_url, source_type, source_name, status, posted_date, expires_at, submission_ref, submitter_name, submitter_email, tags, standout_perks) VALUES
+INSERT INTO jobs (title, company, location, country, description, summary, apply_url, company_url, company_logo_url, source_type, source_name, status, posted_date, expires_at, submission_ref, submitter_name, submitter_email, tags, standout_perks, warm_intro_ok) VALUES
 
 -- 1. Stripe
 (
@@ -35,8 +35,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '28 days',
   'CJ-STRIPE01',
   'Alex Chen', 'alex@example.com',
-  ARRAY['backend', 'payments', 'distributed-systems'],
-  ARRAY['Remote-first', 'Equity for all employees', '$10K annual learning budget', 'Paid sabbatical after 5 years']
+  ARRAY['Engineering', 'example'],
+  ARRAY['Remote-first', 'Equity for all employees', '$10K annual learning budget', 'Paid sabbatical after 5 years'],
+  true
 ),
 
 -- 2. Wealthsimple
@@ -55,8 +56,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '29 days',
   'CJ-WEALTH01',
   'Priya Sharma', 'priya@example.com',
-  ARRAY['data-engineering', 'python', 'snowflake'],
-  ARRAY['4-day work week pilot', 'Remote across Canada', '$5K wellness budget', 'Stock options']
+  ARRAY['Engineering', 'example'],
+  ARRAY['4-day work week pilot', 'Remote across Canada', '$5K wellness budget', 'Stock options'],
+  true
 ),
 
 -- 3. Plaid
@@ -75,8 +77,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '27 days',
   'CJ-PLAID001',
   'Jordan Lee', 'jordan@example.com',
-  ARRAY['product', 'open-banking', 'api'],
-  ARRAY['Hybrid (2 days office)', 'Top-tier health coverage', 'Annual team offsite', 'Generous equity refresh']
+  ARRAY['Product', 'example'],
+  ARRAY['Hybrid (2 days office)', 'Top-tier health coverage', 'Annual team offsite', 'Generous equity refresh'],
+  false
 ),
 
 -- 4. Nubank
@@ -95,8 +98,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '26 days',
   'CJ-NUBANK01',
   'Maria Santos', 'maria@example.com',
-  ARRAY['ios', 'mobile', 'swift'],
-  ARRAY['Fully remote option', 'NuCare mental health program', 'Equity participation', 'Meal and transport allowance']
+  ARRAY['Engineering', 'Remote', 'example'],
+  ARRAY['Fully remote option', 'NuCare mental health program', 'Equity participation', 'Meal and transport allowance'],
+  true
 ),
 
 -- 5. Coinbase
@@ -115,8 +119,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '25 days',
   'CJ-COINB001',
   'Sam Rivera', 'sam@example.com',
-  ARRAY['security', 'blockchain', 'solidity'],
-  ARRAY['Fully remote', '$5K home office budget', 'Quarterly crypto bonus', 'Unlimited PTO (actually used)']
+  ARRAY['Engineering', 'Remote', 'example'],
+  ARRAY['Fully remote', '$5K home office budget', 'Quarterly crypto bonus', 'Unlimited PTO (actually used)'],
+  false
 ),
 
 -- 6. Revolut
@@ -135,8 +140,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '29 days',
   'CJ-REVOL001',
   'Elena Volkov', 'elena@example.com',
-  ARRAY['risk', 'compliance', 'python'],
-  ARRAY['Hybrid flex (London)', 'Free Revolut Metal plan', 'Stock options', 'Learning budget']
+  ARRAY['Operations', 'example'],
+  ARRAY['Hybrid flex (London)', 'Free Revolut Metal plan', 'Stock options', 'Learning budget'],
+  true
 ),
 
 -- 7. Square (Block)
@@ -155,8 +161,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '24 days',
   'CJ-BLOCK001',
   'David Kim', 'david@example.com',
-  ARRAY['fullstack', 'react-native', 'kotlin'],
-  ARRAY['Hybrid flexible', 'Bitcoin matching program', 'Generous parental leave', 'Annual wellness stipend']
+  ARRAY['Engineering', 'example'],
+  ARRAY['Hybrid flexible', 'Bitcoin matching program', 'Generous parental leave', 'Annual wellness stipend'],
+  true
 ),
 
 -- 8. Wise (TransferWise)
@@ -175,8 +182,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '27 days',
   'CJ-WISE0001',
   'Katrin Tamm', 'katrin@example.com',
-  ARRAY['engineering-management', 'payments', 'leadership'],
-  ARRAY['Remote across EU', 'Wise shares (RSUs)', 'Relocation support', 'No-meeting Wednesdays']
+  ARRAY['Engineering', 'Remote', 'example'],
+  ARRAY['Remote across EU', 'Wise shares (RSUs)', 'Relocation support', 'No-meeting Wednesdays'],
+  false
 ),
 
 -- 9. Robinhood
@@ -195,8 +203,9 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '28 days',
   'CJ-ROBIN001',
   'James Park', 'james@example.com',
-  ARRAY['machine-learning', 'fraud', 'python'],
-  ARRAY['Hybrid (3 days office)', 'Free Robinhood Gold', 'Competitive equity', '401k match']
+  ARRAY['Engineering', 'example'],
+  ARRAY['Hybrid (3 days office)', 'Free Robinhood Gold', 'Competitive equity', '401k match'],
+  true
 ),
 
 -- 10. Affirm
@@ -215,6 +224,7 @@ INSERT INTO jobs (title, company, location, country, description, summary, apply
   NOW() + INTERVAL '29 days',
   'CJ-AFFIRM01',
   'Rachel Torres', 'rachel@example.com',
-  ARRAY['frontend', 'react', 'typescript'],
-  ARRAY['Fully remote (US/Canada)', '$1.5K quarterly WFH stipend', 'Affirm equity', '18 weeks parental leave']
+  ARRAY['Engineering', 'Remote', 'example'],
+  ARRAY['Fully remote (US/Canada)', '$1.5K quarterly WFH stipend', 'Affirm equity', '18 weeks parental leave'],
+  true
 );

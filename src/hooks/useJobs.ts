@@ -9,6 +9,8 @@ interface UseJobsReturn {
   error: string | null;
   sort: SortOption;
   setSort: (sort: SortOption) => void;
+  tags: string[];
+  setTags: (tags: string[]) => void;
   refresh: () => void;
 }
 
@@ -18,12 +20,13 @@ export function useJobs(): UseJobsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>('newest');
+  const [tags, setTags] = useState<string[]>([]);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await searchJobs({ sort, limit: 50 });
+      const result = await searchJobs({ sort, limit: 50, tags: tags.length > 0 ? tags : undefined });
       setJobs(result.jobs);
       setMeta(result.meta);
     } catch (err) {
@@ -32,11 +35,11 @@ export function useJobs(): UseJobsReturn {
     } finally {
       setLoading(false);
     }
-  }, [sort]);
+  }, [sort, tags]);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
-  return { jobs, meta, loading, error, sort, setSort, refresh: fetchJobs };
+  return { jobs, meta, loading, error, sort, setSort, tags, setTags, refresh: fetchJobs };
 }
