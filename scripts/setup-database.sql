@@ -153,8 +153,9 @@ UPDATE jobs SET status = 'archived'
   WHERE status IS NULL OR status NOT IN ('pending', 'active', 'rejected', 'archived');
 UPDATE jobs SET source_type = 'direct'
   WHERE source_type IS NULL OR source_type NOT IN ('direct', 'aggregated');
+UPDATE warm_intros SET status = 'contacted' WHERE status = 'sent';
 UPDATE warm_intros SET status = 'pending'
-  WHERE status IS NULL OR status NOT IN ('pending', 'sent', 'connected', 'no_response');
+  WHERE status IS NULL OR status NOT IN ('pending', 'contacted', 'connected', 'no_response');
 UPDATE email_logs SET status = 'sent'
   WHERE status IS NULL OR status NOT IN ('sent', 'failed', 'bounced');
 
@@ -180,7 +181,7 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_warm_intros_status') THEN
     ALTER TABLE warm_intros ADD CONSTRAINT chk_warm_intros_status
-      CHECK (status IN ('pending', 'sent', 'connected', 'no_response'));
+      CHECK (status IN ('pending', 'contacted', 'connected', 'no_response'));
   END IF;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

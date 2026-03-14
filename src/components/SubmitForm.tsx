@@ -96,7 +96,7 @@ export default function SubmitForm() {
       }
     } catch {
       setScrapeFailed(true);
-      toast('Scraping failed. Enter details manually.', 'error');
+      toast('Could not auto-fill from URL. Please enter details manually.', 'error');
     } finally {
       setScraping(false);
     }
@@ -225,7 +225,7 @@ export default function SubmitForm() {
           <div className="space-y-5">
             <h3 className="text-lg font-semibold text-gray-900 mb-1">Job Details</h3>
 
-            {/* Scout's honour callout */}
+            {/* Scout's honor callout */}
             <div className="rounded-xl bg-indigo-50/50 border border-indigo-200/40 p-4">
               <div className="flex gap-3">
                 <div className="shrink-0 mt-0.5">
@@ -234,7 +234,7 @@ export default function SubmitForm() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-indigo-700 mb-0.5">Scout's honour</p>
+                  <p className="text-sm font-medium text-indigo-700 mb-0.5">Scout's honor</p>
                   <p className="text-xs text-gray-600 leading-relaxed">
                     Every role posted here is personally reviewed before it goes live.
                     No spam, no ghost listings.

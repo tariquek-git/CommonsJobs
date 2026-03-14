@@ -53,7 +53,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
           <div className="rounded-xl bg-amber-50/50 border border-amber-200/40 p-4">
             <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1.5">The short version</p>
             <p className="text-sm text-amber-800">
-              This is a hobby project. Be a decent human. You've been on the internet long enough to know what that means.
+              This is a hobby project. Be a decent human. Be respectful and use the platform in good faith.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Don't be dumb</h4>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Play fair</h4>
             <p>
               Don't post fake jobs. Don't spam warm intros. Don't scrape the site. Don't use it to harvest emails.
               Don't do anything you wouldn't want done to you. You know the deal.

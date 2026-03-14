@@ -95,7 +95,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             <p className="text-xs text-amber-700 leading-relaxed">
               <span className="font-semibold">Real talk:</span> Not every intro leads to a reply.
               Hiring timelines shift, roles get filled, people get busy. That's not on you.
-              I'll do my part — the rest is out of our hands.
+              I'll do my part — the rest is out of my hands.
             </p>
           </div>
 
@@ -255,7 +255,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200/60 bg-gray-50/50">
           <p className="text-[11px] text-gray-600 hidden sm:block">
-            Scout's honour — I'll get this in front of the right person.
+            Scout's honor — I'll get this in front of the right person.
           </p>
           <div className="flex items-center gap-3 ml-auto">
             <button onClick={onClose} className="btn-secondary text-sm">Cancel</button>
