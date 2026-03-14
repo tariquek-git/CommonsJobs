@@ -446,6 +446,25 @@ function WarmIntrosTab({ token }: { token: string }) {
   );
 }
 
+type SortKey = 'newest' | 'oldest' | 'company' | 'title';
+
+function sortJobs(jobs: Job[], sortKey: SortKey): Job[] {
+  return [...jobs].sort((a, b) => {
+    switch (sortKey) {
+      case 'newest':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'oldest':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'company':
+        return a.company.localeCompare(b.company);
+      case 'title':
+        return a.title.localeCompare(b.title);
+      default:
+        return 0;
+    }
+  });
+}
+
 export default function AdminPanel() {
   const {
     token, jobs, runtime, loading, error,
@@ -454,6 +473,9 @@ export default function AdminPanel() {
   } = useAdmin();
   const [activeTab, setActiveTab] = useState<'jobs' | 'intros' | 'analytics'>('jobs');
   const [introsKey, setIntrosKey] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
+
+  const sortedJobs = sortJobs(jobs, sortKey);
 
   if (!token) {
     return <GoogleLoginForm onGoogleLogin={loginWithGoogle} loading={loading} error={error} />;
@@ -527,21 +549,33 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* Status filter tabs */}
-          <div className="flex gap-1 rounded-xl bg-gray-100/60 p-1">
-            {['pending', 'active', 'rejected', 'archived', ''].map((s) => (
-              <button
-                key={s || 'all'}
-                onClick={() => setStatusFilter(s)}
-                className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-                  statusFilter === s
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                {s || 'All'}
-              </button>
-            ))}
+          {/* Status filter + sort */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex gap-1 rounded-xl bg-gray-100/60 p-1">
+              {['pending', 'active', 'rejected', 'archived', ''].map((s) => (
+                <button
+                  key={s || 'all'}
+                  onClick={() => setStatusFilter(s)}
+                  className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                    statusFilter === s
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  {s || 'All'}
+                </button>
+              ))}
+            </div>
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="company">Company A–Z</option>
+              <option value="title">Title A–Z</option>
+            </select>
           </div>
 
           {error && (
@@ -556,7 +590,7 @@ export default function AdminPanel() {
             <div className="text-center text-gray-500 py-8">No jobs with this status.</div>
           ) : (
             <div className="space-y-2">
-              {jobs.map((job) => (
+              {sortedJobs.map((job) => (
                 <JobRow key={job.id} job={job} onStatusChange={changeJobStatus} />
               ))}
             </div>
