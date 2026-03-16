@@ -12,6 +12,8 @@ interface UseJobsReturn {
   setSort: (sort: SortOption) => void;
   tags: string[];
   setTags: (tags: string[]) => void;
+  category: string | null;
+  setCategory: (category: string | null) => void;
   refresh: () => void;
 }
 
@@ -25,6 +27,7 @@ export function useJobs(): UseJobsReturn {
   const sortParam = searchParams.get('sort');
   const sort: SortOption = sortParam === 'oldest' ? 'oldest' : 'newest';
   const tags = searchParams.getAll('tag');
+  const category = searchParams.get('category');
 
   const setSort = (s: SortOption) => {
     setSearchParams((prev) => {
@@ -42,11 +45,19 @@ export function useJobs(): UseJobsReturn {
     });
   };
 
+  const setCategory = (c: string | null) => {
+    setSearchParams((prev) => {
+      if (c) prev.set('category', c);
+      else prev.delete('category');
+      return prev;
+    });
+  };
+
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await searchJobs({ sort, limit: 50, tags: tags.length > 0 ? tags : undefined });
+      const result = await searchJobs({ sort, limit: 50, tags: tags.length > 0 ? tags : undefined, category: category || undefined });
       setJobs(result.jobs);
       setMeta(result.meta);
     } catch (err) {
@@ -55,11 +66,11 @@ export function useJobs(): UseJobsReturn {
     } finally {
       setLoading(false);
     }
-  }, [sort, tags.join(',')]);
+  }, [sort, tags.join(','), category]);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
-  return { jobs, meta, loading, error, sort, setSort, tags, setTags, refresh: fetchJobs };
+  return { jobs, meta, loading, error, sort, setSort, tags, setTags, category, setCategory, refresh: fetchJobs };
 }

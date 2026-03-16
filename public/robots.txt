@@ -1,6 +1,32 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /api/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: FacebookExternalHit
+Allow: /
+
+User-agent: Applebot
+Allow: /
 
 Sitemap: https://www.fintechcommons.com/sitemap.xml

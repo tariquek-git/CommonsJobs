@@ -9,13 +9,15 @@ interface FilterRailProps {
   meta: SearchMeta | null;
   tags: string[];
   onTagsChange: (tags: string[]) => void;
+  category: string | null;
+  onCategoryChange: (category: string | null) => void;
 }
 
-export default function FilterRail({ sort, onSortChange, meta, tags, onTagsChange }: FilterRailProps) {
+export default function FilterRail({ sort, onSortChange, meta, tags, onTagsChange, category, onCategoryChange }: FilterRailProps) {
   const roleCount = useCountUp(meta?.total ?? 0, 600, !!meta);
 
-  const toggleTag = (tag: string) => {
-    onTagsChange(tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag]);
+  const toggleCategory = (cat: string) => {
+    onCategoryChange(category === cat ? null : cat);
   };
 
   return (
@@ -46,9 +48,9 @@ export default function FilterRail({ sort, onSortChange, meta, tags, onTagsChang
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                onClick={() => toggleTag(cat)}
+                onClick={() => toggleCategory(cat)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
-                  tags.includes(cat)
+                  category === cat
                     ? 'bg-brand-50 text-brand-500 font-semibold'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
@@ -56,9 +58,9 @@ export default function FilterRail({ sort, onSortChange, meta, tags, onTagsChang
                 {cat}
               </button>
             ))}
-            {tags.length > 0 && (
+            {category && (
               <button
-                onClick={() => onTagsChange([])}
+                onClick={() => onCategoryChange(null)}
                 className="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-600 hover:text-gray-700 transition-colors"
               >
                 Clear filters

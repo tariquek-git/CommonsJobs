@@ -32,6 +32,7 @@ export interface Job {
   work_arrangement: string | null;
   featured: boolean;
   view_count: number;
+  category: string | null;
 }
 
 // ── API Request/Response Types ──
@@ -44,6 +45,7 @@ export interface SearchRequest {
   limit?: number;
   location?: string;
   tags?: string[];
+  category?: string;
 }
 
 export interface SearchMeta {

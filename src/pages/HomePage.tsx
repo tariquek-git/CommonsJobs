@@ -15,7 +15,7 @@ const FintechGlobe = lazy(() => import('../components/FintechGlobe'));
 
 export default function HomePage() {
   const posthog = usePostHog();
-  const { jobs, meta, loading, error, sort, setSort, tags, setTags, refresh } = useJobs();
+  const { jobs, meta, loading, error, sort, setSort, tags, setTags, category, setCategory, refresh } = useJobs();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
@@ -57,10 +57,10 @@ export default function HomePage() {
       {/* Light content zone */}
       <main className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-8 space-y-5">
         <CircuitLines />
-        <SortStrip sort={sort} onSortChange={setSort} meta={meta} onRefresh={refresh} tags={tags} onTagsChange={setTags} />
+        <SortStrip sort={sort} onSortChange={setSort} meta={meta} onRefresh={refresh} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
 
         <div className="flex gap-8">
-          <FilterRail sort={sort} onSortChange={setSort} meta={meta} tags={tags} onTagsChange={setTags} />
+          <FilterRail sort={sort} onSortChange={setSort} meta={meta} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
 
           <div className="flex-1 min-w-0">
             <JobGrid jobs={jobs} loading={loading} error={error} onSelectJob={setSelectedJob} />

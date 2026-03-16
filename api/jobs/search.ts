@@ -35,6 +35,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       query = query.overlaps('tags', body.tags);
     }
 
+    if (body.category) {
+      query = query.eq('category', body.category);
+    }
+
     // Featured jobs always appear first, then sort by date
     query = query.order('featured', { ascending: false, nullsFirst: false });
     query = query.order('posted_date', { ascending: sort === 'oldest' });
@@ -46,8 +50,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Search failed', code: 'SEARCH_ERROR' });
     }
 
+    // Strip sensitive PII and internal fields before responding
+    const PII_FIELDS = ['submitter_name', 'submitter_email', 'submitter_ip_hash', 'submitter_user_agent', 'submitter_referrer', 'ai_summary', 'tags_text'];
+    const sanitizedJobs = ((data || []) as Record<string, unknown>[]).map((row) => {
+      const clean = { ...row };
+      for (const key of PII_FIELDS) delete clean[key];
+      return clean;
+    });
+
     const response: SearchResponse = {
-      jobs: (data as Job[]) || [],
+      jobs: sanitizedJobs as unknown as Job[],
       meta: {
         total: count || 0,
         page,

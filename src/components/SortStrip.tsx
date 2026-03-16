@@ -9,20 +9,21 @@ interface SortStripProps {
   onRefresh: () => void;
   tags: string[];
   onTagsChange: (tags: string[]) => void;
+  category: string | null;
+  onCategoryChange: (category: string | null) => void;
 }
 
-export default function SortStrip({ sort, onSortChange, meta, onRefresh, tags, onTagsChange }: SortStripProps) {
+export default function SortStrip({ sort, onSortChange, meta, onRefresh, tags, onTagsChange, category, onCategoryChange }: SortStripProps) {
   const posthog = usePostHog();
 
-  const toggleTag = (tag: string) => {
-    const newTags = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
+  const toggleCategory = (cat: string) => {
+    const newCategory = category === cat ? null : cat;
     posthog?.capture('job_filter_applied', {
-      filter_type: 'tag',
-      tag,
-      action: tags.includes(tag) ? 'removed' : 'added',
-      active_tags: newTags,
+      filter_type: 'category',
+      category: cat,
+      action: category === cat ? 'removed' : 'added',
     });
-    onTagsChange(newTags);
+    onCategoryChange(newCategory);
   };
 
   const handleSortChange = (value: SortOption) => {
@@ -63,9 +64,9 @@ export default function SortStrip({ sort, onSortChange, meta, onRefresh, tags, o
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
-            onClick={() => toggleTag(cat)}
+            onClick={() => toggleCategory(cat)}
             className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              tags.includes(cat)
+              category === cat
                 ? 'bg-brand-500 text-white'
                 : 'bg-gray-100 text-gray-600'
             }`}
@@ -73,9 +74,9 @@ export default function SortStrip({ sort, onSortChange, meta, onRefresh, tags, o
             {cat}
           </button>
         ))}
-        {tags.length > 0 && (
+        {category && (
           <button
-            onClick={() => onTagsChange([])}
+            onClick={() => onCategoryChange(null)}
             className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-700"
           >
             Clear

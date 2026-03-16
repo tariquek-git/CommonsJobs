@@ -73,6 +73,7 @@ ALTER TABLE jobs ADD COLUMN IF NOT EXISTS employment_type      TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS work_arrangement     TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS featured             BOOLEAN DEFAULT FALSE;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS view_count           INTEGER DEFAULT 0;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS category             TEXT;
 
 
 -- ============================================================
