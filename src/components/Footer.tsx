@@ -91,16 +91,23 @@ export default function Footer() {
 
           {/* Bottom bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-6 text-xs text-white/30">
-            <span>&copy; 2024–2026 Fintech Commons. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} Fintech Commons</span>
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5">
-                Powered by
-                <span className="text-white/50 font-medium">React</span>
-                <span className="text-white/20">+</span>
-                <span className="text-white/50 font-medium">Supabase</span>
-                <span className="text-white/20">+</span>
-                <span className="text-white/50 font-medium">Claude</span>
-              </span>
+              <button
+                onClick={() => {
+                  const feedback = window.prompt('How can we improve? Share your feedback:');
+                  if (feedback && feedback.trim()) {
+                    posthog?.capture('user_feedback', {
+                      page: window.location.pathname,
+                      feedback: feedback.trim(),
+                    });
+                    alert('Thanks for the feedback!');
+                  }
+                }}
+                className="text-white/40 hover:text-white/60 transition-colors"
+              >
+                Feedback
+              </button>
             </div>
           </div>
         </div>

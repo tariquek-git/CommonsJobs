@@ -5,7 +5,7 @@ export interface ValidationResult {
   errors: string[];
 }
 
-// Require HTTPS, valid domain with TLD of 2+ chars, no IP-only URLs
+// Require valid URL with proper domain (TLD of 2+ chars), no IP-only URLs
 const URL_PATTERN = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/.*)?$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_TITLE_LENGTH = 200;
@@ -40,13 +40,13 @@ export function validateSubmission(payload: unknown): ValidationResult {
   // Optional fields with validation
   if (data.apply_url !== undefined && data.apply_url !== null && data.apply_url !== '') {
     if (typeof data.apply_url !== 'string' || data.apply_url.toLowerCase().startsWith('javascript:') || !URL_PATTERN.test(data.apply_url)) {
-      errors.push('Apply URL must be a valid HTTPS URL with a proper domain');
+      errors.push('Apply URL must be a valid URL with a proper domain (e.g. https://company.com/careers)');
     }
   }
 
   if (data.company_url !== undefined && data.company_url !== null && data.company_url !== '') {
     if (typeof data.company_url !== 'string' || data.company_url.toLowerCase().startsWith('javascript:') || !URL_PATTERN.test(data.company_url)) {
-      errors.push('Company URL must be a valid HTTPS URL with a proper domain');
+      errors.push('Company URL must be a valid URL with a proper domain (e.g. https://company.com)');
     }
   }
 
