@@ -31,9 +31,14 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
           className={`w-full flex items-center justify-between px-5 py-4 text-left ${hoverBg} transition-colors`}
           aria-expanded={!collapsed}
         >
-          <span className={`text-sm font-semibold ${dark ? 'text-white/80' : 'text-gray-700'}`}>
-            Why I built Fintech Commons
-          </span>
+          <div>
+            <span className={`text-sm font-semibold ${dark ? 'text-white/80' : 'text-gray-700'}`}>
+              Why I built Fintech Commons
+            </span>
+            <p className={`text-xs mt-0.5 ${dark ? 'text-white/40' : 'text-gray-400'}`}>
+              Job boards in fintech are broken. I wanted to fix that with trust and transparency.
+            </p>
+          </div>
           <svg
             className={`h-4 w-4 ${textChevron} transition-transform duration-300 ${
               collapsed ? '' : 'rotate-180'
@@ -158,7 +163,12 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
             className={`w-full flex items-center justify-between px-5 sm:px-8 py-3 text-left ${hoverBg} transition-colors`}
             aria-expanded={detailsOpen}
           >
-            <span className={`text-xs font-semibold ${textMuted}`}>How it actually works</span>
+            <div>
+              <span className={`text-xs font-semibold ${textMuted}`}>How it actually works</span>
+              <p className={`text-[10px] mt-0.5 ${dark ? 'text-white/30' : 'text-gray-400'}`}>
+                Post → Review → AI humanizes → Apply or get a warm intro
+              </p>
+            </div>
             <svg
               className={`h-3.5 w-3.5 ${textChevron} transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}

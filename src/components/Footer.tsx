@@ -7,17 +7,26 @@ export default function Footer() {
   const posthog = usePostHog();
   const [showTerms, setShowTerms] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showBugReport, setShowBugReport] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showAiDisclosure, setShowAiDisclosure] = useState(false);
+  const [formText, setFormText] = useState('');
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const handleBugReport = () => {
-    const description = window.prompt('Describe the issue you encountered:');
-    if (description && description.trim()) {
-      posthog?.capture('bug_report', {
-        page: window.location.pathname,
-        description: description.trim(),
-        userAgent: navigator.userAgent,
-      });
-      alert("Thanks for the report! We'll look into it.");
-    }
+  const handleFormSubmit = (type: 'bug_report' | 'user_feedback') => {
+    if (!formText.trim()) return;
+    posthog?.capture(type, {
+      page: window.location.pathname,
+      [type === 'bug_report' ? 'description' : 'feedback']: formText.trim(),
+      ...(type === 'bug_report' ? { userAgent: navigator.userAgent } : {}),
+    });
+    setFormText('');
+    setFormSubmitted(true);
+    setTimeout(() => {
+      setFormSubmitted(false);
+      setShowBugReport(false);
+      setShowFeedback(false);
+    }, 2000);
   };
 
   return (
@@ -63,7 +72,7 @@ export default function Footer() {
                   </button>
                 </li>
                 <li>
-                  <button onClick={handleBugReport} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+                  <button onClick={() => setShowBugReport(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
                     Report a Bug
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0112 12.75zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 01-1.152-6.135 23.846 23.846 0 01.497-5.14c.04-.2-.022-.404-.144-.558a.682.682 0 00-.496-.247c-.59-.045-1.184-.068-1.782-.068-5.032 0-9.36 3.064-11.21 7.42A23.856 23.856 0 0112 12.75z" />
@@ -74,16 +83,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <button
-                    onClick={() => {
-                      const feedback = window.prompt('How can we improve? Share your feedback:');
-                      if (feedback && feedback.trim()) {
-                        posthog?.capture('user_feedback', {
-                          page: window.location.pathname,
-                          feedback: feedback.trim(),
-                        });
-                        alert('Thanks for the feedback!');
-                      }
-                    }}
+                    onClick={() => setShowFeedback(true)}
                     className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
                   >
                     Feedback
@@ -104,9 +104,44 @@ export default function Footer() {
                     Terms & Conditions
                   </button>
                 </li>
-                <li><span className="text-white/60">MIT License</span></li>
+                <li>
+                  <a href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    MIT License
+                  </a>
+                </li>
+                <li>
+                  <button onClick={() => setShowAiDisclosure(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+                    AI & Tools Disclosure
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  </button>
+                </li>
               </ul>
             </div>
+          </div>
+
+          {/* WhatsApp Community */}
+          <div className="py-6 border-b border-white/10">
+            <a
+              href="https://chat.whatsapp.com/F2uXa3KjZ3UAzKnrsfx1pG"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between rounded-xl bg-gradient-to-r from-emerald-600/20 to-emerald-500/10 border border-emerald-500/20 px-5 py-4 group hover:from-emerald-600/30 hover:to-emerald-500/20 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <svg className="h-6 w-6 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-white">Join the Fintech Commons WhatsApp group</p>
+                  <p className="text-xs text-white/50 mt-0.5">Connect with the community, get updates, share opportunities</p>
+                </div>
+              </div>
+              <svg className="h-4 w-4 text-white/40 group-hover:text-white/70 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+              </svg>
+            </a>
           </div>
 
           {/* Bottom bar */}
@@ -119,6 +154,212 @@ export default function Footer() {
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 
       {/* Contact modal */}
+      {/* AI & Tools Disclosure Modal */}
+      {showAiDisclosure && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAiDisclosure(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <svg className="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                </svg>
+                AI & Tools Disclosure
+              </h2>
+              <button onClick={() => setShowAiDisclosure(false)} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors" aria-label="Close">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5 text-sm text-gray-600 leading-relaxed">
+              <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
+                <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-1.5">The short version</p>
+                <p className="text-sm text-brand-800">
+                  AI was used for a vast majority of this project. Without it, Fintech Commons wouldn't exist. But it's not just about AI — it's everything built around it.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Why I'm disclosing this</h4>
+                <p>
+                  It goes without saying at this point — but I think it's important to be upfront. AI played a central role in building Fintech Commons, across code, copy, design decisions, and problem-solving.
+                  I want people to know that, not because it diminishes the work, but because I think transparency about how things are built matters.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1.5">The AI models</h4>
+                <p>
+                  This project was built using a combination of AI models from multiple providers, each used for different tasks throughout the process:
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-brand-400" />
+                    <span><span className="font-medium text-gray-900">Anthropic (Claude)</span> — Claude Opus, Sonnet, and Haiku for code generation, architecture decisions, debugging, and copy</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span><span className="font-medium text-gray-900">OpenAI</span> — GPT models for brainstorming, drafting, and various development tasks</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span><span className="font-medium text-gray-900">Google (Gemini)</span> — Gemini models for research, content generation, and supplementary tasks</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1.5">The tools & ecosystem</h4>
+                <p>
+                  But here's the thing — AI alone didn't build this. It was the glue that brought everything together. The real story is the ecosystem of tools that made it possible for one person to ship something like this:
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Vercel</p>
+                    <p className="text-xs text-gray-500">Deployment & hosting</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Supabase</p>
+                    <p className="text-xs text-gray-500">Database & auth</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">PostHog</p>
+                    <p className="text-xs text-gray-500">Analytics & session replay</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Resend</p>
+                    <p className="text-xs text-gray-500">Transactional email</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">GitHub</p>
+                    <p className="text-xs text-gray-500">Version control & CI</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">React + Vite</p>
+                    <p className="text-xs text-gray-500">Frontend framework</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1.5">The bigger picture</h4>
+                <p>
+                  I think one of the great things about this moment isn't just AI itself — it's everything built around it.
+                  The combination of AI with modern developer tools, open-source libraries, and cloud infrastructure has made it possible for anyone with an idea and determination to build something real.
+                  That's true of any new technology. The tools lower the barrier; the vision and persistence are still on you.
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-gray-50 border border-gray-200/60 p-4">
+                <p className="text-xs text-gray-600">
+                  Have questions about how this was built? I'm happy to walk you through it.{' '}
+                  <button
+                    onClick={() => { setShowAiDisclosure(false); setShowContact(true); }}
+                    className="text-brand-500 hover:text-brand-600 font-medium underline underline-offset-2 transition-colors"
+                  >
+                    Reach out
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bug Report Modal */}
+      {showBugReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowBugReport(false); setFormText(''); setFormSubmitted(false); }} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0112 12.75zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 01-1.152-6.135 23.846 23.846 0 01.497-5.14c.04-.2-.022-.404-.144-.558a.682.682 0 00-.496-.247c-.59-.045-1.184-.068-1.782-.068-5.032 0-9.36 3.064-11.21 7.42A23.856 23.856 0 0112 12.75z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 9.75h-3m3 3h-3m14.25-3h3m-3 3h3M12 15.75v6" />
+                </svg>
+                Report a Bug
+              </h2>
+              <button onClick={() => { setShowBugReport(false); setFormText(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {formSubmitted ? (
+              <div className="text-center py-4">
+                <p className="text-sm font-medium text-emerald-600">Thanks for the report! We'll look into it.</p>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={formText}
+                  onChange={(e) => setFormText(e.target.value)}
+                  placeholder="Describe the issue you encountered..."
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 resize-none"
+                  rows={4}
+                  autoFocus
+                />
+                <button
+                  onClick={() => handleFormSubmit('bug_report')}
+                  disabled={!formText.trim()}
+                  className="btn-primary w-full py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Submit Report
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {showFeedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowFeedback(false); setFormText(''); setFormSubmitted(false); }} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg className="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                </svg>
+                Feedback
+              </h2>
+              <button onClick={() => { setShowFeedback(false); setFormText(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {formSubmitted ? (
+              <div className="text-center py-4">
+                <p className="text-sm font-medium text-emerald-600">Thanks for the feedback!</p>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={formText}
+                  onChange={(e) => setFormText(e.target.value)}
+                  placeholder="How can we improve? Share your thoughts..."
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 resize-none"
+                  rows={4}
+                  autoFocus
+                />
+                <button
+                  onClick={() => handleFormSubmit('user_feedback')}
+                  disabled={!formText.trim()}
+                  className="btn-primary w-full py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Send Feedback
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {showContact && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowContact(false)} />

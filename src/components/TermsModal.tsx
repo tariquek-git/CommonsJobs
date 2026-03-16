@@ -68,9 +68,9 @@ export default function TermsModal({ onClose }: TermsModalProps) {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Open source</h4>
             <p>
-              The source code for Fintech Commons is available under the <span className="font-medium text-gray-900">Apache License 2.0</span>.
-              That means you can use it, fork it, modify it, sell it — whatever. Just include the license and don't pretend you wrote it.
-              Standard Apache 2.0 stuff.
+              The source code for Fintech Commons is available under the <span className="font-medium text-gray-900">MIT License</span>.
+              That means you can use it, fork it, modify it, sell it — whatever. Just include the copyright notice and license.
+              Standard MIT stuff.
             </p>
           </div>
 
@@ -88,6 +88,24 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             <p>
               Don't post fake jobs. Don't spam warm intros. Don't scrape the site. Don't use it to harvest emails.
               Don't do anything you wouldn't want done to you. You know the deal.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Analytics & cookies</h4>
+            <p>
+              We use PostHog for basic analytics and session replay to understand how people use the site and fix bugs.
+              Form inputs are masked in replays. We don't run ads or share analytics data with third parties.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">AI & tools disclosure</h4>
+            <p>
+              AI was used extensively to build this project — across code, copy, and design decisions — using a combination of
+              models from Anthropic (Claude), OpenAI, and Google (Gemini). Without AI, this project wouldn't exist.
+              But it's not just AI — it's the ecosystem: Vercel, Supabase, PostHog, Resend, GitHub, and the open-source libraries
+              that made it all possible. AI was the glue; the tools around it are what made building accessible.
             </p>
           </div>
 

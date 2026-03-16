@@ -4,6 +4,7 @@ import { getJob, trackClick } from '../lib/api';
 import type { Job } from '../lib/types';
 import { usePostHog } from '@posthog/react';
 import CompanyLogo from '../components/CompanyLogo';
+import WarmIntroModal from '../components/WarmIntroModal';
 
 function JsonLd({ job }: { job: Job }) {
   const schema = {
@@ -46,6 +47,7 @@ export default function JobPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showWarmIntro, setShowWarmIntro] = useState(false);
   const posthog = usePostHog();
 
   useEffect(() => {
@@ -210,17 +212,34 @@ export default function JobPage() {
                 </a>
               )}
             </div>
-            {job.apply_url && (
-              <button onClick={handleApply} className="btn-primary">
-                Apply Now
-                <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {job.warm_intro_ok && (
+                <button
+                  onClick={() => setShowWarmIntro(true)}
+                  className="btn-primary bg-gradient-to-r from-brand-500 to-accent-purple hover:from-brand-600 hover:to-accent-purple/90 shadow-md shadow-brand-500/20"
+                >
+                  <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                  Request Warm Intro
+                </button>
+              )}
+              {job.apply_url && (
+                <button onClick={handleApply} className="btn-primary">
+                  Apply Now
+                  <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </article>
       </main>
+
+      {showWarmIntro && job && (
+        <WarmIntroModal job={job} onClose={() => setShowWarmIntro(false)} />
+      )}
     </div>
   );
 }
