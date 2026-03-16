@@ -69,7 +69,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
       <div ref={stepsRef} className={`rounded-2xl border overflow-hidden ${cardBg}`}>
         <div className="px-5 sm:px-8 py-6 sm:py-8">
           <div className="flex items-start justify-between sm:justify-center sm:gap-0">
-            {/* Step 1 */}
+            {/* Step 1: Post */}
             <div
               className={`flex flex-col items-center text-center flex-1 transition-all duration-500 ${
                 stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -81,46 +81,23 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
               </div>
-              <p className={`text-sm font-bold ${textHeading}`}>Post</p>
-              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>Real people, real roles</p>
+              <p className={`text-sm font-bold ${textHeading}`}>Submit</p>
+              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>You post the role</p>
             </div>
 
             {/* Connector 1→2 */}
             <div className={`flex items-center pt-7 sm:pt-8 px-1 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '100ms' }}>
               <div className={`h-1 w-1 rounded-full ${dark ? 'bg-white/40' : 'bg-brand-400'}`} />
-              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-brand-400 to-emerald-400'}`} />
-              <div className={`h-1.5 w-1.5 rounded-full ${dark ? 'bg-white/40' : 'bg-emerald-400'}`} />
+              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-brand-400 to-[#FF3B8B]'}`} />
+              <div className={`h-1.5 w-1.5 rounded-full ${dark ? 'bg-white/40' : 'bg-[#FF3B8B]'}`} />
             </div>
 
-            {/* Step 2 */}
+            {/* Step 2: Humanize */}
             <div
               className={`flex flex-col items-center text-center flex-1 transition-all duration-500 ${
                 stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
               style={{ transitionDelay: '150ms' }}
-            >
-              <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-3">
-                <svg className="h-7 w-7 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className={`text-sm font-bold ${textHeading}`}>Review</p>
-              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>Human-vetted, no bots</p>
-            </div>
-
-            {/* Connector 2→3 */}
-            <div className={`flex items-center pt-7 sm:pt-8 px-1 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '250ms' }}>
-              <div className={`h-1 w-1 rounded-full ${dark ? 'bg-white/40' : 'bg-emerald-400'}`} />
-              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-emerald-400 to-[#FF3B8B]'}`} />
-              <div className={`h-1.5 w-1.5 rounded-full ${dark ? 'bg-white/40' : 'bg-[#FF3B8B]'}`} />
-            </div>
-
-            {/* Step 3 */}
-            <div
-              className={`flex flex-col items-center text-center flex-1 transition-all duration-500 ${
-                stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-              style={{ transitionDelay: '300ms' }}
             >
               <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-accent-pink to-accent-orange flex items-center justify-center shadow-lg shadow-[#FF3B8B]/20 mb-3">
                 <svg className="h-7 w-7 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -128,17 +105,40 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                 </svg>
               </div>
               <p className={`text-sm font-bold ${textHeading}`}>Humanize</p>
-              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>AI cuts the corporate speak</p>
+              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>AI rewrites the fluff</p>
+            </div>
+
+            {/* Connector 2→3 */}
+            <div className={`flex items-center pt-7 sm:pt-8 px-1 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '250ms' }}>
+              <div className={`h-1 w-1 rounded-full ${dark ? 'bg-white/40' : 'bg-[#FF3B8B]'}`} />
+              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-[#FF3B8B] to-emerald-400'}`} />
+              <div className={`h-1.5 w-1.5 rounded-full ${dark ? 'bg-white/40' : 'bg-emerald-400'}`} />
+            </div>
+
+            {/* Step 3: Review */}
+            <div
+              className={`flex flex-col items-center text-center flex-1 transition-all duration-500 ${
+                stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '300ms' }}
+            >
+              <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-3">
+                <svg className="h-7 w-7 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className={`text-sm font-bold ${textHeading}`}>Review</p>
+              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>Someone vets the role</p>
             </div>
 
             {/* Connector 3→4 */}
             <div className={`flex items-center pt-7 sm:pt-8 px-1 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '400ms' }}>
-              <div className={`h-1 w-1 rounded-full ${dark ? 'bg-white/40' : 'bg-[#FF6B00]'}`} />
-              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-[#FF6B00] to-[#7B61FF]'}`} />
+              <div className={`h-1 w-1 rounded-full ${dark ? 'bg-white/40' : 'bg-emerald-400'}`} />
+              <div className={`w-6 sm:w-12 h-0.5 ${dark ? 'bg-gradient-to-r from-white/30 to-white/20' : 'bg-gradient-to-r from-emerald-400 to-[#7B61FF]'}`} />
               <div className={`h-1.5 w-1.5 rounded-full ${dark ? 'bg-white/40' : 'bg-[#7B61FF]'}`} />
             </div>
 
-            {/* Step 4 */}
+            {/* Step 4: Connect */}
             <div
               className={`flex flex-col items-center text-center flex-1 transition-all duration-500 ${
                 stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -166,7 +166,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
             <div>
               <span className={`text-xs font-semibold ${textMuted}`}>How it actually works</span>
               <p className={`text-[10px] mt-0.5 ${dark ? 'text-white/30' : 'text-gray-400'}`}>
-                Post → Review → AI humanizes → Apply or get a warm intro
+                You submit → AI humanizes → I review → People connect
               </p>
             </div>
             <svg
