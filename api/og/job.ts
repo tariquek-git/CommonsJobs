@@ -16,9 +16,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
   const ua = req.headers['user-agent'] || '';
 
-  // Real users: serve cached static SPA — skip DB query entirely
+  // Real users: serve static SPA — skip DB query entirely (saves serverless cost)
   if (!BOT_PATTERN.test(ua)) {
-    res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=86400');
     return serveFallback(res);
   }
 

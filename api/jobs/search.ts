@@ -83,8 +83,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
-    // Cache for 60s at CDN edge, serve stale for 5 min while revalidating
-    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json(response);
   } catch (err) {
     return res.status(500).json({
