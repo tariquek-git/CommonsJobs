@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import SubmitPage from './pages/SubmitPage';
 import AdminPage from './pages/AdminPage';
 import JobPage from './pages/JobPage';
+import CompanyPage from './pages/CompanyPage';
 import Footer from './components/Footer';
 
 function NotFound() {
@@ -34,6 +35,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/job/:id" element={<JobPage />} />
+        <Route path="/company/:slug" element={<CompanyPage />} />
         <Route path="/submit" element={<SubmitPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFound />} />

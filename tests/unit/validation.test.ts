@@ -37,7 +37,7 @@ describe('validateSubmission', () => {
       apply_url: 'not-a-url',
     });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Apply URL must be a valid HTTP/HTTPS URL');
+    expect(result.errors).toContain('Apply URL must be a valid URL with a proper domain (e.g. https://company.com/careers)');
   });
 
   it('accepts valid HTTP URL', () => {

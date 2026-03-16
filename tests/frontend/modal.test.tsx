@@ -53,15 +53,15 @@ describe('JobDetailModal', () => {
   it('calls onClose when Close button is clicked', () => {
     const onClose = vi.fn();
     render(<JobDetailModal job={mockJob} onClose={onClose} />);
-    const closeBtn = screen.getByText('Close');
+    const closeBtn = screen.getByLabelText('Close');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('shows trust cues and warm intro button', () => {
     render(<JobDetailModal job={mockJob} onClose={() => {}} />);
-    expect(screen.getByText('Verified')).toBeInTheDocument();
-    expect(screen.getByText('Warm Intro')).toBeInTheDocument();
+    expect(screen.getByText('Reviewed')).toBeInTheDocument();
+    expect(screen.getByText('Request Warm Intro')).toBeInTheDocument();
   });
 
   it('shows standout perks when present', () => {

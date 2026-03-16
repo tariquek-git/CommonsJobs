@@ -42,7 +42,9 @@ export default function HomePage() {
   }, [jobs, query]);
 
   useEffect(() => {
+    document.title = 'Fintech Commons — Fintech & Banking Jobs';
     posthog?.capture('page_viewed', { page: 'home' });
+    return () => { document.title = 'Fintech Commons'; };
   }, [posthog]);
 
   return (

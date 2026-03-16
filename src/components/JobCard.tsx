@@ -1,4 +1,5 @@
 import { useState, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePostHog } from '@posthog/react';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
@@ -19,6 +20,7 @@ function getDaysUntilExpiry(expiresAt: string | null): number | null {
 
 export default memo(function JobCard({ job, onSelect, className = '' }: JobCardProps) {
   const posthog = usePostHog();
+  const navigate = useNavigate();
   const [showCopied, setShowCopied] = useState(false);
 
   const handleCardClick = () => {
@@ -69,7 +71,15 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
               <h3 className="text-lg font-semibold text-gray-900 group-hover:text-brand-500 transition-colors leading-snug">
                 {job.title}
               </h3>
-              <p className="text-sm font-medium text-gray-600 mt-1">{job.company}</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/company/${encodeURIComponent(job.company.toLowerCase().replace(/\s+/g, '-'))}`);
+                }}
+                className="text-sm font-medium text-gray-600 hover:text-brand-500 transition-colors mt-1 text-left"
+              >
+                {job.company}
+              </button>
             </div>
             <div className="shrink-0 text-right flex flex-wrap items-center gap-1.5">
               {job.pinned && (
