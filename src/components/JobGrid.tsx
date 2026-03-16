@@ -77,7 +77,7 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
           className="opacity-0 animate-stagger-fade-up"
           style={{ animationDelay: `${Math.min(i, 10) * 60}ms` }}
         >
-          <JobCard job={job} onSelect={onSelectJob} />
+          <JobCard job={job} onSelect={onSelectJob} className="h-full" />
         </div>
       ))}
     </div>

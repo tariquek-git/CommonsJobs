@@ -8,6 +8,7 @@ import CompanyLogo from './CompanyLogo';
 interface JobCardProps {
   job: Job;
   onSelect: (job: Job) => void;
+  className?: string;
 }
 
 function getDaysUntilExpiry(expiresAt: string | null): number | null {
@@ -16,7 +17,7 @@ function getDaysUntilExpiry(expiresAt: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-export default memo(function JobCard({ job, onSelect }: JobCardProps) {
+export default memo(function JobCard({ job, onSelect, className = '' }: JobCardProps) {
   const posthog = usePostHog();
   const [showCopied, setShowCopied] = useState(false);
 
@@ -41,9 +42,9 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
   return (
     <article
       onClick={handleCardClick}
-      className="relative surface-elevated p-6 lg:p-7 cursor-pointer overflow-hidden
+      className={`relative surface-elevated p-6 lg:p-7 cursor-pointer overflow-hidden
         hover:shadow-card-hover hover:-translate-y-0.5
-        transition-all duration-300 ease-out group gradient-border"
+        transition-all duration-300 ease-out group gradient-border ${className}`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

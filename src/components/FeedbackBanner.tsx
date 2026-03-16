@@ -11,6 +11,8 @@ export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
   const posthog = usePostHog();
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(STORAGE_KEY) === '1');
   const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [text, setText] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -26,9 +28,13 @@ export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
     if (!text.trim()) return;
     posthog?.capture('user_feedback', {
       feedback: text.trim(),
+      name: name.trim() || undefined,
+      email: email.trim() || undefined,
       page: window.location.pathname,
       source: 'top_banner',
     });
+    setName('');
+    setEmail('');
     setText('');
     setSubmitted(true);
     setTimeout(() => {
@@ -66,7 +72,7 @@ export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
 
       {showModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowModal(false); setText(''); setSubmitted(false); }} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowModal(false); setName(''); setEmail(''); setText(''); setSubmitted(false); }} />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -75,7 +81,7 @@ export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
                 </svg>
                 Feedback
               </h2>
-              <button onClick={() => { setShowModal(false); setText(''); setSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={() => { setShowModal(false); setName(''); setEmail(''); setText(''); setSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -87,13 +93,29 @@ export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
               </div>
             ) : (
               <>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Name"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                    autoFocus
+                  />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                  />
+                </div>
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="What would make this site more useful for you?"
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 resize-none"
                   rows={4}
-                  autoFocus
                 />
                 <button
                   onClick={handleSubmit}
