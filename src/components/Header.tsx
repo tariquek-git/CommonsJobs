@@ -82,14 +82,14 @@ export default function Header({ dark = false }: HeaderProps) {
               className={`btn-ghost px-4 flex items-center gap-1.5 ${
                 onDark ? 'text-white/70 hover:text-white hover:bg-white/10' : ''
               }`}
-              title="About Tarique"
+              title="About Brim & Me"
             >
               <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
                 onDark ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-500'
               }`}>
                 TK
               </div>
-              <span className="hidden sm:inline text-sm">About Me</span>
+              <span className="hidden sm:inline text-sm">About Brim & Me</span>
             </button>
             <Link
               to="/submit"
