@@ -9,13 +9,13 @@ export async function shareJob(job: Job): Promise<'native' | 'clipboard' | null>
   const title = `${job.title} at ${job.company}`;
   const text = `Check out this role on Fintech Commons`;
 
-  // Try native share (mobile browsers)
-  if (navigator.share) {
+  // Only use native share on mobile/touch devices where it's actually useful
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (isMobile && navigator.share) {
     try {
       await navigator.share({ title, text, url });
       return 'native';
     } catch (err) {
-      // User cancelled or share failed — fall through to clipboard
       if (err instanceof Error && err.name === 'AbortError') {
         return null; // User cancelled
       }
