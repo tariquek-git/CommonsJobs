@@ -44,7 +44,7 @@ export default function Footer() {
                 <span className="font-bold text-lg">Fintech Commons</span>
               </div>
               <p className="text-white/50 text-sm leading-relaxed">
-                Community-reviewed fintech & banking roles. Real talk, not corporate fluff.
+                Community-reviewed fintech & banking roles. Real talk, not corporate jargon.
               </p>
             </div>
 
@@ -52,8 +52,14 @@ export default function Footer() {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Product</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><Link to="/" className="text-white/60 hover:text-white transition-colors">Browse Jobs</Link></li>
-                <li><Link to="/submit" className="text-white/60 hover:text-white transition-colors">Submit a Role</Link></li>
+                <li><Link to="/" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                  Browse Jobs
+                </Link></li>
+                <li><Link to="/submit" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  Submit a Role
+                </Link></li>
               </ul>
             </div>
 
@@ -62,12 +68,14 @@ export default function Footer() {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">About</h4>
               <ul className="space-y-2.5 text-sm">
                 <li>
-                  <a href="https://www.linkedin.com/in/tariquekhan1/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                    Built by Tarique Khan
+                  <a href="https://www.linkedin.com/in/tariquekhan1/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    Built by Tarique
                   </a>
                 </li>
                 <li>
-                  <button onClick={() => setShowContact(true)} className="text-white/60 hover:text-white transition-colors">
+                  <button onClick={() => setShowContact(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                     Contact
                   </button>
                 </li>
@@ -100,12 +108,14 @@ export default function Footer() {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Legal & Open Source</h4>
               <ul className="space-y-2.5 text-sm">
                 <li>
-                  <button onClick={() => setShowTerms(true)} className="text-white/60 hover:text-white transition-colors">
+                  <button onClick={() => setShowTerms(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" /></svg>
                     Terms & Conditions
                   </button>
                 </li>
                 <li>
-                  <a href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
+                  <a href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                     MIT License
                   </a>
                 </li>

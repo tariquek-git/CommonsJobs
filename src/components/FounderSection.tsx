@@ -205,7 +205,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
         {/* Bottom strip */}
         <div className={`border-t ${borderColor} px-5 sm:px-8 py-3 flex items-center justify-between ${dark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
           <p className={`text-xs ${textMuted}`}>
-            Automation does the plumbing. The trust stays human.
+            Automation does the heavy lifting. The trust stays human.
           </p>
           <Link to="/submit" className="text-xs font-semibold text-brand-500 hover:text-brand-400 transition-colors flex items-center gap-1">
             Submit a role

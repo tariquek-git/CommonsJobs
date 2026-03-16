@@ -56,8 +56,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                 B
               </div>
               <div>
-                <p className="text-base font-bold text-gray-900">Brim Financial</p>
-                <p className="text-xs text-gray-500">Where I work &middot; Toronto &middot; US & Canada</p>
+                <a href="https://www.brimfinancial.com" target="_blank" rel="noopener noreferrer" className="text-base font-bold text-gray-900 hover:text-brand-500 transition-colors">Brim Financial</a>
+                <p className="text-xs text-gray-500">Platform-as-a-Service &middot; Toronto &middot; US & Canada</p>
               </div>
             </div>
 
@@ -93,7 +93,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             {/* Who we serve — categories */}
             <div className="mb-4">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Who we serve</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3">
                   <div className="flex items-center gap-2 mb-1.5">
                     <svg className="h-4 w-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -101,7 +101,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                     </svg>
                     <p className="text-xs font-semibold text-gray-800">FIs</p>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">Banks & credit unions issuing credit, prepaid, and loyalty cards</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">Banks & credit unions issuing cards</p>
                 </div>
                 <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -110,16 +110,16 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                     </svg>
                     <p className="text-xs font-semibold text-gray-800">Fintechs</p>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">Fintechs & vertical SaaS embedding card issuance into their platforms</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">SaaS embedding card issuance</p>
                 </div>
-                <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3 col-span-2">
+                <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3">
                   <div className="flex items-center gap-2 mb-1.5">
                     <svg className="h-4 w-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0V8.999a3 3 0 013-3h12a3 3 0 013 3v.35M12 6.75h.008v.008H12V6.75z" />
                     </svg>
-                    <p className="text-xs font-semibold text-gray-800">Non-FIs & Brands</p>
+                    <p className="text-xs font-semibold text-gray-800">Brands</p>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">Consumer brands, SMBs, and large corporates using card programs to drive loyalty, rewards, and embedded finance</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">Loyalty, rewards & embedded finance</p>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                 TK
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Tarique Khan</p>
+                <a href="https://www.linkedin.com/in/tariquekhan1/" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-brand-500 transition-colors">Tarique Khan</a>
                 <p className="text-xs text-gray-500">Business Development at Brim</p>
               </div>
             </div>

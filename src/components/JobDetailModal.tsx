@@ -314,7 +314,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
                   <p className="text-sm font-semibold text-gray-700 mb-1">Two ways in</p>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     <span className="font-semibold">Apply directly</span> — the link goes straight to {job.company}'s application.
-                    Or <span className="font-semibold">request a warm intro</span> and I'll personally put your name in front of the right person.
+                    Or <span className="font-semibold">request a warm intro</span> and I'll put your name in front of the right person.
                   </p>
                 </div>
               </div>
