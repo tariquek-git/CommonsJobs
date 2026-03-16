@@ -89,7 +89,7 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
               )}
               {(() => {
                 const diffDays = Math.floor((Date.now() - new Date(job.posted_date).getTime()) / (1000 * 60 * 60 * 24));
-                if (diffDays < 7) {
+                if (diffDays < 3) {
                   return (
                     <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
                       New

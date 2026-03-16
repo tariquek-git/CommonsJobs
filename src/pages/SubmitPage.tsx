@@ -7,7 +7,9 @@ export default function SubmitPage() {
   const posthog = usePostHog();
 
   useEffect(() => {
+    document.title = 'Submit a Role — Fintech Commons';
     posthog?.capture('page_viewed', { page: 'submit' });
+    return () => { document.title = 'Fintech Commons — Community-reviewed fintech & banking roles'; };
   }, [posthog]);
 
   return (
