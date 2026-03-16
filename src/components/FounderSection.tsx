@@ -36,7 +36,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
               Why I built Fintech Commons
             </span>
             <p className={`text-xs mt-0.5 ${dark ? 'text-white/40' : 'text-gray-400'}`}>
-              Job boards in fintech are broken. I wanted to fix that with trust and transparency.
+              Job search is broken. Here's what I'm doing about it.
             </p>
           </div>
           <svg
