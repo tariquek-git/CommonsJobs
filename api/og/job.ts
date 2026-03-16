@@ -3,13 +3,24 @@ import { getSupabase } from '../../lib/supabase.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+const BOT_PATTERN =
+  /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Discordbot|Googlebot|bingbot|yandex|baidu|duckduckbot|Applebot|Pinterestbot|TelegramBot/i;
+
 /**
  * Serves the SPA index.html with injected Open Graph meta tags for social sharing.
  * Vercel rewrite: /job/:id → /api/og/job?id=:id
- * Crawlers get rich previews; real users get the normal SPA experience.
+ * Only queries DB for bot/crawler user-agents to save serverless invocation costs.
+ * Real users get the static SPA shell immediately (React hydrates the job data client-side).
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
+  const ua = req.headers['user-agent'] || '';
+
+  // Real users: serve cached static SPA — skip DB query entirely
+  if (!BOT_PATTERN.test(ua)) {
+    res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=86400');
+    return serveFallback(res);
+  }
 
   if (!id || typeof id !== 'string') {
     return serveFallback(res);
