@@ -15,7 +15,7 @@ export function useInView(options?: IntersectionObserverInit) {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, rootMargin: '50px', ...options }
+      { threshold: 0.1, rootMargin: '50px', ...options },
     );
 
     // Check if already in view before observer fires (handles above-the-fold elements)

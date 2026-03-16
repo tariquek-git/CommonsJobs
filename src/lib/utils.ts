@@ -43,7 +43,11 @@ export async function shareJob(job: Job): Promise<'native' | 'clipboard' | null>
 /**
  * Get UTM params from the current URL.
  */
-export function getUtmParams(): { utm_source?: string; utm_medium?: string; utm_campaign?: string } {
+export function getUtmParams(): {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+} {
   const params = new URLSearchParams(window.location.search);
   const result: Record<string, string> = {};
   for (const key of ['utm_source', 'utm_medium', 'utm_campaign'] as const) {

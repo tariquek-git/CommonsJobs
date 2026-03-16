@@ -37,7 +37,9 @@ describe('validateSubmission', () => {
       apply_url: 'not-a-url',
     });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Apply URL must be a valid URL with a proper domain (e.g. https://company.com/careers)');
+    expect(result.errors).toContain(
+      'Apply URL must be a valid URL with a proper domain (e.g. https://company.com/careers)',
+    );
   });
 
   it('accepts valid HTTP URL', () => {
@@ -98,7 +100,7 @@ describe('validateSubmission', () => {
 describe('sanitizeString', () => {
   it('escapes HTML characters', () => {
     expect(sanitizeString('<script>alert("xss")</script>')).toBe(
-      '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+      '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
     );
   });
 

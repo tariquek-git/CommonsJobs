@@ -5,7 +5,9 @@ import AdminPanel from '../components/AdminPanel';
 export default function AdminPage() {
   useEffect(() => {
     document.title = 'Admin | Fintech Commons';
-    return () => { document.title = 'Fintech Commons'; };
+    return () => {
+      document.title = 'Fintech Commons';
+    };
   }, []);
 
   return (

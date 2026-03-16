@@ -95,7 +95,7 @@ export function useAdmin(): UseAdminReturn {
         setError(err instanceof Error ? err.message : 'Failed to update status');
       }
     },
-    [token, fetchJobs]
+    [token, fetchJobs],
   );
 
   return {

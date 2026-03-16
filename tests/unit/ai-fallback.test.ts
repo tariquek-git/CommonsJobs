@@ -27,7 +27,10 @@ describe('AI fallback handling', () => {
   });
 
   it('AI result always has { result, fallback } shape', () => {
-    interface AIResult { result: string; fallback: boolean }
+    interface AIResult {
+      result: string;
+      fallback: boolean;
+    }
 
     const validResponse: AIResult = { result: 'test', fallback: false };
     const fallbackResponse: AIResult = { result: 'fallback text', fallback: true };
@@ -38,7 +41,7 @@ describe('AI fallback handling', () => {
   });
 
   it('handles timeout gracefully by returning fallback', () => {
-    const handleAIError = (error: unknown): { result: string; fallback: boolean } => {
+    const handleAIError = (_error: unknown): { result: string; fallback: boolean } => {
       return {
         result: 'AI is temporarily unavailable. Please write a summary manually.',
         fallback: true,

@@ -8,7 +8,12 @@ interface CompanyLogoProps {
   size?: 'sm' | 'md';
 }
 
-export default function CompanyLogo({ companyName, companyUrl, companyLogoUrl, size = 'md' }: CompanyLogoProps) {
+export default function CompanyLogo({
+  companyName,
+  companyUrl,
+  companyLogoUrl,
+  size = 'md',
+}: CompanyLogoProps) {
   const candidates = getLogoCandidates(companyUrl, companyLogoUrl);
   const [candidateIndex, setCandidateIndex] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -19,7 +24,9 @@ export default function CompanyLogo({ companyName, companyUrl, companyLogoUrl, s
   const currentUrl = candidates[candidateIndex];
 
   const letterFallback = (
-    <div className={`flex ${sizeClasses} items-center justify-center rounded-xl bg-brand-50 ${textSize} font-bold text-brand-500`}>
+    <div
+      className={`flex ${sizeClasses} items-center justify-center rounded-xl bg-brand-50 ${textSize} font-bold text-brand-500`}
+    >
       {companyName.charAt(0).toUpperCase()}
     </div>
   );

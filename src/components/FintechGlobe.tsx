@@ -12,7 +12,7 @@ export default function FintechGlobe({ className }: FintechGlobeProps) {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    let width = 600;
+    const width = 600;
     const globe = createGlobe(canvasRef.current, {
       devicePixelRatio: 2,
       width: width * 2,
@@ -27,14 +27,14 @@ export default function FintechGlobe({ className }: FintechGlobeProps) {
       markerColor: [0.39, 0.36, 1],
       glowColor: [0.25, 0.12, 0.4],
       markers: [
-        { location: [40.7128, -74.006], size: 0.07 },    // NYC
-        { location: [51.5074, -0.1278], size: 0.06 },    // London
-        { location: [1.3521, 103.8198], size: 0.05 },    // Singapore
-        { location: [43.6532, -79.3832], size: 0.05 },   // Toronto
-        { location: [37.7749, -122.4194], size: 0.06 },  // SF
-        { location: [-33.8688, 151.2093], size: 0.04 },  // Sydney
-        { location: [35.6762, 139.6503], size: 0.05 },   // Tokyo
-        { location: [22.3193, 114.1694], size: 0.05 },   // Hong Kong
+        { location: [40.7128, -74.006], size: 0.07 }, // NYC
+        { location: [51.5074, -0.1278], size: 0.06 }, // London
+        { location: [1.3521, 103.8198], size: 0.05 }, // Singapore
+        { location: [43.6532, -79.3832], size: 0.05 }, // Toronto
+        { location: [37.7749, -122.4194], size: 0.06 }, // SF
+        { location: [-33.8688, 151.2093], size: 0.04 }, // Sydney
+        { location: [35.6762, 139.6503], size: 0.05 }, // Tokyo
+        { location: [22.3193, 114.1694], size: 0.05 }, // Hong Kong
       ],
       onRender: (state) => {
         state.phi = phiRef.current;

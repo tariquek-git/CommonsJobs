@@ -43,17 +43,19 @@ export function mockRes() {
 }
 
 /** Create a mock Supabase client with configurable responses */
-export function mockSupabase(overrides: {
-  insertResult?: { error: unknown };
-  selectResult?: { data: unknown; error: unknown };
-  fromChain?: Record<string, unknown>;
-} = {}) {
+export function mockSupabase(
+  overrides: {
+    insertResult?: { error: unknown };
+    selectResult?: { data: unknown; error: unknown };
+    fromChain?: Record<string, unknown>;
+  } = {},
+) {
   const chain: Record<string, unknown> = {
     insert: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue(
-          overrides.insertResult || { data: { id: 'mock-id' }, error: null }
-        ),
+        single: vi
+          .fn()
+          .mockResolvedValue(overrides.insertResult || { data: { id: 'mock-id' }, error: null }),
       }),
       ...(overrides.insertResult || { error: null }),
     }),

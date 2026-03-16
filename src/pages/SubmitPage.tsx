@@ -9,7 +9,9 @@ export default function SubmitPage() {
   useEffect(() => {
     document.title = 'Submit a Role — Fintech Commons';
     posthog?.capture('page_viewed', { page: 'submit' });
-    return () => { document.title = 'Fintech Commons — Community-reviewed fintech & banking roles'; };
+    return () => {
+      document.title = 'Fintech Commons — Community-reviewed fintech & banking roles';
+    };
   }, [posthog]);
 
   return (
@@ -20,10 +22,13 @@ export default function SubmitPage() {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-gray-900">Submit a Role</h1>
           <p className="text-gray-500 text-sm mt-1 max-w-lg mx-auto">
-            Post a fintech role — whether you're the hiring manager, recruiter, or someone who knows them.
+            Post a fintech role — whether you're the hiring manager, recruiter, or someone who knows
+            them.
           </p>
           <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">
-            Your listing gets AI-humanized, reviewed by a real person, and shared with a community that cares about fintech. Candidates can request warm intros — you decide who to talk to.
+            Your listing gets AI-humanized, reviewed by a real person, and shared with a community
+            that cares about fintech. Candidates can request warm intros — you decide who to talk
+            to.
           </p>
         </div>
 

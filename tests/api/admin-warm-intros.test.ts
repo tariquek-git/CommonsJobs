@@ -33,7 +33,9 @@ const mockIn = vi.fn().mockResolvedValue({ data: mockJobsData, error: null });
 const mockJobSelect = vi.fn().mockReturnValue({ in: mockIn });
 
 // Update mocks
-const mockUpdateSingle = vi.fn().mockResolvedValue({ data: { id: 'intro-1', status: 'contacted' }, error: null });
+const mockUpdateSingle = vi
+  .fn()
+  .mockResolvedValue({ data: { id: 'intro-1', status: 'contacted' }, error: null });
 const mockUpdateSelect = vi.fn().mockReturnValue({ single: mockUpdateSingle });
 const mockUpdateEq = vi.fn().mockReturnValue({ select: mockUpdateSelect });
 const mockUpdate = vi.fn().mockReturnValue({ eq: mockUpdateEq });
@@ -117,7 +119,10 @@ describe('PATCH /api/admin/warm-intros/[id]/status', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (requireAdmin as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    mockUpdateSingle.mockResolvedValue({ data: { id: 'intro-1', status: 'contacted' }, error: null });
+    mockUpdateSingle.mockResolvedValue({
+      data: { id: 'intro-1', status: 'contacted' },
+      error: null,
+    });
   });
 
   it('rejects non-PATCH methods', async () => {
@@ -129,7 +134,11 @@ describe('PATCH /api/admin/warm-intros/[id]/status', () => {
 
   it('rejects unauthorized requests', async () => {
     (requireAdmin as ReturnType<typeof vi.fn>).mockReturnValue(false);
-    const req = mockReq({ method: 'PATCH', query: { id: 'intro-1' }, body: { status: 'contacted' } });
+    const req = mockReq({
+      method: 'PATCH',
+      query: { id: 'intro-1' },
+      body: { status: 'contacted' },
+    });
     const res = mockRes();
     await statusHandler(req, res);
     expect(res._status).toBe(401);
@@ -143,7 +152,11 @@ describe('PATCH /api/admin/warm-intros/[id]/status', () => {
   });
 
   it('updates status on valid request', async () => {
-    const req = mockReq({ method: 'PATCH', query: { id: 'intro-1' }, body: { status: 'contacted' } });
+    const req = mockReq({
+      method: 'PATCH',
+      query: { id: 'intro-1' },
+      body: { status: 'contacted' },
+    });
     const res = mockRes();
     await statusHandler(req, res);
     expect(res._status).toBe(200);

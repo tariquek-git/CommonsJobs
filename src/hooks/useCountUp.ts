@@ -4,7 +4,10 @@ export function useCountUp(target: number, duration = 600, active = true) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!active || target === 0) { setCount(target); return; }
+    if (!active || target === 0) {
+      setCount(target);
+      return;
+    }
 
     let start = 0;
     const startTime = performance.now();

@@ -52,7 +52,16 @@ class AppErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'system-ui, sans-serif',
+            padding: '2rem',
+          }}
+        >
           <div style={{ textAlign: 'center', maxWidth: '400px' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>Something went wrong</div>
             <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
@@ -60,7 +69,15 @@ class AppErrorBoundary extends React.Component<
             </p>
             <button
               onClick={() => window.location.reload()}
-              style={{ padding: '0.75rem 1.5rem', borderRadius: '9999px', background: '#635BFF', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '9999px',
+                background: '#635BFF',
+                color: 'white',
+                border: 'none',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
             >
               Refresh Page
             </button>
@@ -85,5 +102,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </AppErrorBoundary>
       </PostHogErrorBoundary>
     </PostHogProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

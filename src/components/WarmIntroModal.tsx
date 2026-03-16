@@ -67,39 +67,56 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         className={`fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in ${
           isMobile ? 'items-end' : 'items-center justify-center'
         }`}
-        onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+        onClick={(e) => {
+          if (e.target === overlayRef.current) onClose();
+        }}
         role="dialog"
         aria-modal="true"
         aria-label="Warm intro request submitted"
       >
-        <div className={`w-full max-w-md glass-panel p-8 text-center animate-scale-in ${
-          isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
-        }`}>
+        <div
+          className={`w-full max-w-md glass-panel p-8 text-center animate-scale-in ${
+            isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
+          }`}
+        >
           {isMobile && (
             <div className="flex justify-center mb-4">
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
           )}
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 mb-4">
-            <svg className="h-7 w-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="h-7 w-7 text-emerald-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Request received</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
-            I'll connect you if there's a fit — I reach out to the hiring contact at <span className="font-medium text-gray-800">{job.company}</span> on your behalf.
-            If there's a connection, you'll hear from me via email.
+            I'll connect you if there's a fit — I reach out to the hiring contact at{' '}
+            <span className="font-medium text-gray-800">{job.company}</span> on your behalf. If
+            there's a connection, you'll hear from me via email.
           </p>
 
           <div className="mt-4 rounded-xl bg-amber-50/40 border border-amber-200/60 p-3">
             <p className="text-xs text-amber-700 leading-relaxed">
               <span className="font-semibold">Real talk:</span> Not every intro leads to a reply.
-              Hiring timelines shift, roles get filled, people get busy. That's not on you.
-              I'll do my part — the rest is out of my hands.
+              Hiring timelines shift, roles get filled, people get busy. That's not on you. I'll do
+              my part — the rest is out of my hands.
             </p>
           </div>
 
-          <button onClick={onClose} className="btn-primary mt-6">Got it, thanks</button>
+          <button onClick={onClose} className="btn-primary mt-6">
+            Got it, thanks
+          </button>
         </div>
       </div>
     );
@@ -111,14 +128,18 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
       className={`fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in ${
         isMobile ? 'items-end' : 'items-center justify-center'
       }`}
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="warm-intro-title"
     >
-      <div className={`w-full max-w-md glass-panel p-0 overflow-hidden animate-slide-up ${
-        isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
-      }`}>
+      <div
+        className={`w-full max-w-md glass-panel p-0 overflow-hidden animate-slide-up ${
+          isMobile ? 'rounded-t-2xl rounded-b-none max-h-[90vh] overflow-y-auto' : ''
+        }`}
+      >
         {isMobile && (
           <div className="flex justify-center pt-3">
             <div className="w-10 h-1 rounded-full bg-gray-300" />
@@ -130,14 +151,36 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50">
-                <svg className="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                <svg
+                  className="h-5 w-5 text-brand-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                  />
                 </svg>
               </div>
-              <h3 id="warm-intro-title" className="text-lg font-semibold text-gray-900">Warm Intro</h3>
+              <h3 id="warm-intro-title" className="text-lg font-semibold text-gray-900">
+                Warm Intro
+              </h3>
             </div>
-            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors" aria-label="Close">
-              <svg className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Close"
+            >
+              <svg
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -153,8 +196,18 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           <div className="rounded-xl bg-brand-50/60 border border-brand-200/60 p-4">
             <div className="flex gap-3">
               <div className="shrink-0 mt-0.5">
-                <svg className="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                <svg
+                  className="h-5 w-5 text-brand-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                  />
                 </svg>
               </div>
               <div className="space-y-1.5">
@@ -162,7 +215,9 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                   I'll take a careful look and put your name in front of the right person.
                 </p>
                 <p className="text-xs text-brand-500/80 leading-relaxed">
-                  Not automated — I review each request and reach out to the job poster on your behalf. The poster opted in, so they're expecting it. Just be genuine — real interest, real profile.
+                  Not automated — I review each request and reach out to the job poster on your
+                  behalf. The poster opted in, so they're expecting it. Just be genuine — real
+                  interest, real profile.
                 </p>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   No guarantees — hiring is messy and timelines shift. But it beats a cold apply.
@@ -174,8 +229,14 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           {/* Form fields */}
           <div className="space-y-3 pt-1">
             <div>
-              <label htmlFor="warm-intro-name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Your Name <span className="text-red-400" aria-hidden="true">*</span>
+              <label
+                htmlFor="warm-intro-name"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Your Name{' '}
+                <span className="text-red-400" aria-hidden="true">
+                  *
+                </span>
                 <span className="sr-only">(required)</span>
               </label>
               <input
@@ -192,8 +253,14 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             </div>
 
             <div>
-              <label htmlFor="warm-intro-email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Your Email <span className="text-red-400" aria-hidden="true">*</span>
+              <label
+                htmlFor="warm-intro-email"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Your Email{' '}
+                <span className="text-red-400" aria-hidden="true">
+                  *
+                </span>
                 <span className="sr-only">(required)</span>
               </label>
               <input
@@ -206,13 +273,20 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                 required
                 aria-required="true"
               />
-              <p className="text-[11px] text-gray-600 mt-1">So I can follow up with you. Never shared with anyone.</p>
+              <p className="text-[11px] text-gray-600 mt-1">
+                So I can follow up with you. Never shared with anyone.
+              </p>
             </div>
 
             <div>
-              <label htmlFor="warm-intro-linkedin" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="warm-intro-linkedin"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 LinkedIn
-                <span className="text-xs text-gray-600 ml-1.5 font-normal">optional, but helps</span>
+                <span className="text-xs text-gray-600 ml-1.5 font-normal">
+                  optional, but helps
+                </span>
               </label>
               <input
                 id="warm-intro-linkedin"
@@ -225,7 +299,10 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             </div>
 
             <div>
-              <label htmlFor="warm-intro-message" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="warm-intro-message"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 A bit about you
                 <span className="text-xs text-gray-600 ml-1.5 font-normal">optional</span>
               </label>
@@ -238,14 +315,29 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                 maxLength={500}
                 placeholder="Tell us about yourself and why this role caught your eye"
               />
-              <p className="text-[11px] text-gray-600 mt-1">This goes directly to the job poster along with your intro.</p>
+              <p className="text-[11px] text-gray-600 mt-1">
+                This goes directly to the job poster along with your intro.
+              </p>
             </div>
           </div>
 
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200/60 p-3 flex items-center gap-2" role="alert">
-              <svg className="h-4 w-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+            <div
+              className="rounded-xl bg-red-50 border border-red-200/60 p-3 flex items-center gap-2"
+              role="alert"
+            >
+              <svg
+                className="h-4 w-4 text-red-500 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"
+                />
               </svg>
               <p className="text-sm text-red-600">{error}</p>
             </div>
@@ -258,7 +350,9 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             I'll get this in front of the right person.
           </p>
           <div className="flex items-center gap-3 ml-auto">
-            <button onClick={onClose} className="btn-secondary text-sm">Cancel</button>
+            <button onClick={onClose} className="btn-secondary text-sm">
+              Cancel
+            </button>
             <button
               onClick={handleSubmit}
               disabled={submitting || !name.trim() || !email.trim()}
@@ -267,16 +361,43 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
             >
               {submitting ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  <svg
+                    className="animate-spin h-4 w-4 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Sending...
                 </>
               ) : (
                 <>
-                  <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  <svg
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                    />
                   </svg>
                   Request Intro
                 </>

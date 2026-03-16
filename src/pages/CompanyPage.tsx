@@ -28,14 +28,16 @@ export default function CompanyPage() {
     searchJobs({ sort: 'newest', page: 1, limit: 50 })
       .then((res) => {
         const companyJobs = res.jobs.filter(
-          (j) => j.company.toLowerCase() === companyName.toLowerCase()
+          (j) => j.company.toLowerCase() === companyName.toLowerCase(),
         );
         setJobs(companyJobs);
       })
       .catch(() => setJobs([]))
       .finally(() => setLoading(false));
 
-    return () => { document.title = 'Fintech Commons'; };
+    return () => {
+      document.title = 'Fintech Commons';
+    };
   }, [companyName, posthog]);
 
   const firstJob = jobs[0];
@@ -57,7 +59,9 @@ export default function CompanyPage() {
         <Header />
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <p className="text-gray-500">No active jobs found for "{companyName}"</p>
-          <Link to="/" className="btn-primary">Browse all jobs</Link>
+          <Link to="/" className="btn-primary">
+            Browse all jobs
+          </Link>
         </div>
       </div>
     );
@@ -87,8 +91,18 @@ export default function CompanyPage() {
                   rel="noopener noreferrer"
                   className="text-sm text-brand-500 hover:text-brand-600 inline-flex items-center gap-1"
                 >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                  <svg
+                    className="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+                    />
                   </svg>
                   Website
                 </a>
@@ -101,9 +115,22 @@ export default function CompanyPage() {
         </div>
 
         {/* Back link */}
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
           </svg>
           All jobs
         </Link>

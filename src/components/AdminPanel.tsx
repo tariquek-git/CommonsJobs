@@ -5,7 +5,11 @@ import type { AnalyticsData, WarmIntroRecord } from '../lib/api';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
 
-function LoginForm({ onLogin, loading, error }: {
+function LoginForm({
+  onLogin,
+  loading,
+  error,
+}: {
   onLogin: (username: string, password: string) => void;
   loading: boolean;
   error: string | null;
@@ -22,8 +26,18 @@ function LoginForm({ onLogin, loading, error }: {
     <div className="max-w-sm mx-auto surface-elevated p-8">
       <div className="text-center mb-6">
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 mb-3">
-          <svg className="h-6 w-6 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          <svg
+            className="h-6 w-6 text-brand-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+            />
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-900">Admin Login</h2>
@@ -36,7 +50,9 @@ function LoginForm({ onLogin, loading, error }: {
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700 mb-1">
+            Username
+          </label>
           <input
             id="admin-username"
             type="text"
@@ -48,7 +64,9 @@ function LoginForm({ onLogin, loading, error }: {
           />
         </div>
         <div>
-          <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
           <input
             id="admin-password"
             type="password"
@@ -81,7 +99,11 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={classes[status] || 'badge'}>{status}</span>;
 }
 
-const EDITABLE_FIELDS: { key: keyof Job; label: string; type: 'text' | 'textarea' | 'boolean' | 'tags' }[] = [
+const EDITABLE_FIELDS: {
+  key: keyof Job;
+  label: string;
+  type: 'text' | 'textarea' | 'boolean' | 'tags';
+}[] = [
   { key: 'title', label: 'Title', type: 'text' },
   { key: 'company', label: 'Company', type: 'text' },
   { key: 'location', label: 'Location', type: 'text' },
@@ -102,7 +124,12 @@ const EDITABLE_FIELDS: { key: keyof Job; label: string; type: 'text' | 'textarea
   { key: 'expires_at', label: 'Expires at (ISO date)', type: 'text' },
 ];
 
-function JobRow({ job, token, onStatusChange, onJobUpdated }: {
+function JobRow({
+  job,
+  token,
+  onStatusChange,
+  onJobUpdated,
+}: {
   job: Job;
   token: string;
   onStatusChange: (id: string, status: string) => void;
@@ -136,7 +163,7 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
     for (const field of EDITABLE_FIELDS) {
       const val = job[field.key];
       if (field.type === 'tags') {
-        initial[field.key] = (val as string[] || []).join(', ');
+        initial[field.key] = ((val as string[]) || []).join(', ');
       } else if (field.type === 'boolean') {
         initial[field.key] = val as boolean;
       } else {
@@ -155,7 +182,10 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
       for (const field of EDITABLE_FIELDS) {
         const val = editing[field.key];
         if (field.type === 'tags') {
-          const arr = (val as string).split(',').map((s: string) => s.trim()).filter(Boolean);
+          const arr = (val as string)
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter(Boolean);
           if (JSON.stringify(arr) !== JSON.stringify(job[field.key])) {
             (updates as Record<string, unknown>)[field.key] = arr;
           }
@@ -185,7 +215,10 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
   return (
     <div className="surface-elevated overflow-hidden">
       <div className="p-4 flex items-center justify-between gap-4">
-        <div className="min-w-0 flex-1 cursor-pointer" onClick={() => expanded ? setExpanded(false) : startEditing()}>
+        <div
+          className="min-w-0 flex-1 cursor-pointer"
+          onClick={() => (expanded ? setExpanded(false) : startEditing())}
+        >
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-medium text-gray-900 truncate">{job.title}</h3>
             <StatusBadge status={job.status} />
@@ -240,7 +273,7 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
             {job.featured ? 'Unfeature' : 'Feature'}
           </button>
           <button
-            onClick={() => expanded ? setExpanded(false) : startEditing()}
+            onClick={() => (expanded ? setExpanded(false) : startEditing())}
             className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
           >
             {expanded ? 'Close' : 'Edit'}
@@ -317,10 +350,7 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
-            <button
-              onClick={() => setExpanded(false)}
-              className="btn-ghost py-1.5 px-4 text-xs"
-            >
+            <button onClick={() => setExpanded(false)} className="btn-ghost py-1.5 px-4 text-xs">
               Cancel
             </button>
           </div>
@@ -331,7 +361,15 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
 }
 
 // Simple CSS bar chart
-function MiniChart({ data, color, label }: { data: { date: string; count: number }[]; color: string; label: string }) {
+function MiniChart({
+  data,
+  color,
+  label,
+}: {
+  data: { date: string; count: number }[];
+  color: string;
+  label: string;
+}) {
   const max = Math.max(...data.map((d) => d.count), 1);
 
   return (
@@ -388,13 +426,25 @@ function AnalyticsTab({ token }: { token: string }) {
     return (
       <div className="surface-elevated p-8 text-center">
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mb-3">
-          <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          <svg
+            className="h-6 w-6 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+            />
           </svg>
         </div>
         <p className="text-red-600 font-semibold">Failed to load analytics</p>
         {analyticsError && <p className="text-gray-500 text-sm mt-1">{analyticsError}</p>}
-        <button onClick={fetchAnalytics} className="btn-secondary mt-3 text-xs">Try Again</button>
+        <button onClick={fetchAnalytics} className="btn-secondary mt-3 text-xs">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -423,14 +473,24 @@ function AnalyticsTab({ token }: { token: string }) {
 
       {/* Charts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <MiniChart data={data.clicksByDay} color="rgb(99 102 241)" label="Apply Clicks — Last 30 Days" />
-        <MiniChart data={data.introsByDay} color="rgb(16 185 129)" label="Warm Intros — Last 30 Days" />
+        <MiniChart
+          data={data.clicksByDay}
+          color="rgb(99 102 241)"
+          label="Apply Clicks — Last 30 Days"
+        />
+        <MiniChart
+          data={data.introsByDay}
+          color="rgb(16 185 129)"
+          label="Warm Intros — Last 30 Days"
+        />
       </div>
 
       {/* Top jobs */}
       {data.topJobs.length > 0 && (
         <div className="surface-elevated p-4">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Top Jobs by Clicks</h4>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Top Jobs by Clicks
+          </h4>
           <div className="space-y-2">
             {data.topJobs.map((job, i) => (
               <div key={job.id} className="flex items-center justify-between text-sm">
@@ -450,7 +510,9 @@ function AnalyticsTab({ token }: { token: string }) {
 
       {/* Status breakdown */}
       <div className="surface-elevated p-4">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Jobs by Status</h4>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Jobs by Status
+        </h4>
         <div className="flex gap-4">
           {Object.entries(data.statusCounts).map(([status, count]) => (
             <div key={status} className="flex items-center gap-2 text-sm">
@@ -480,13 +542,21 @@ function IntroStatusBadge({ status }: { status: string }) {
     no_response: 'No Response',
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] || styles.pending}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] || styles.pending}`}
+    >
       {labels[status] || status}
     </span>
   );
 }
 
-function IntroCard({ intro, onStatusChange }: { intro: WarmIntroRecord; onStatusChange: (id: string, status: string) => void }) {
+function IntroCard({
+  intro,
+  onStatusChange,
+}: {
+  intro: WarmIntroRecord;
+  onStatusChange: (id: string, status: string) => void;
+}) {
   return (
     <div className="surface-elevated p-4 space-y-3">
       {/* Header: requester + date */}
@@ -494,9 +564,16 @@ function IntroCard({ intro, onStatusChange }: { intro: WarmIntroRecord; onStatus
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-gray-900">{intro.name}</h3>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <a href={`mailto:${intro.email}`} className="text-xs text-brand-500 hover:underline">{intro.email}</a>
+            <a href={`mailto:${intro.email}`} className="text-xs text-brand-500 hover:underline">
+              {intro.email}
+            </a>
             {intro.linkedin && (
-              <a href={intro.linkedin} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+              <a
+                href={intro.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:underline"
+              >
                 LinkedIn
               </a>
             )}
@@ -523,7 +600,10 @@ function IntroCard({ intro, onStatusChange }: { intro: WarmIntroRecord; onStatus
         {intro.job_submitter_email && (
           <p>
             <span className="text-gray-400">Job posted by:</span>{' '}
-            <a href={`mailto:${intro.job_submitter_email}`} className="text-brand-500 hover:underline">
+            <a
+              href={`mailto:${intro.job_submitter_email}`}
+              className="text-brand-500 hover:underline"
+            >
               {intro.job_submitter_name || intro.job_submitter_email}
             </a>
           </p>
@@ -629,7 +709,9 @@ function WarmIntrosTab({ token }: { token: string }) {
       {loading ? (
         <div className="text-center text-gray-500 py-8">Loading warm intros...</div>
       ) : intros.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">No warm intro requests{filter ? ` with status "${filter}"` : ''}.</div>
+        <div className="text-center text-gray-500 py-8">
+          No warm intro requests{filter ? ` with status "${filter}"` : ''}.
+        </div>
       ) : (
         <div className="space-y-3">
           {intros.map((intro) => (
@@ -662,9 +744,17 @@ function sortJobs(jobs: Job[], sortKey: SortKey): Job[] {
 
 export default function AdminPanel() {
   const {
-    token, jobs, runtime, loading, error,
-    statusFilter, login, logout,
-    setStatusFilter, changeJobStatus, refreshJobs,
+    token,
+    jobs,
+    runtime,
+    loading,
+    error,
+    statusFilter,
+    login,
+    logout,
+    setStatusFilter,
+    changeJobStatus,
+    refreshJobs,
   } = useAdmin();
   const [activeTab, setActiveTab] = useState<'jobs' | 'intros' | 'analytics'>('jobs');
   const [introsKey, setIntrosKey] = useState(0);
@@ -676,7 +766,13 @@ export default function AdminPanel() {
   const filteredJobs = searchQuery.trim()
     ? jobs.filter((j) => {
         const q = searchQuery.toLowerCase();
-        return j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || (j.location?.toLowerCase().includes(q) ?? false) || (j.submitter_email?.toLowerCase().includes(q) ?? false) || (j.submission_ref?.toLowerCase().includes(q) ?? false);
+        return (
+          j.title.toLowerCase().includes(q) ||
+          j.company.toLowerCase().includes(q) ||
+          (j.location?.toLowerCase().includes(q) ?? false) ||
+          (j.submitter_email?.toLowerCase().includes(q) ?? false) ||
+          (j.submission_ref?.toLowerCase().includes(q) ?? false)
+        );
       })
     : jobs;
   const sortedJobs = sortJobs(filteredJobs, sortKey);
@@ -684,7 +780,8 @@ export default function AdminPanel() {
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -709,11 +806,26 @@ export default function AdminPanel() {
   };
 
   const handleExportCsv = () => {
-    const headers = ['title', 'company', 'location', 'status', 'salary_range', 'employment_type', 'work_arrangement', 'posted_date', 'submitter_email', 'submission_ref'];
-    const rows = sortedJobs.map((j) => headers.map((h) => {
-      const val = j[h as keyof Job];
-      return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : String(val ?? '');
-    }).join(','));
+    const headers = [
+      'title',
+      'company',
+      'location',
+      'status',
+      'salary_range',
+      'employment_type',
+      'work_arrangement',
+      'posted_date',
+      'submitter_email',
+      'submission_ref',
+    ];
+    const rows = sortedJobs.map((j) =>
+      headers
+        .map((h) => {
+          const val = j[h as keyof Job];
+          return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : String(val ?? '');
+        })
+        .join(','),
+    );
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -734,9 +846,19 @@ export default function AdminPanel() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">Admin Panel</h2>
         <div className="flex items-center gap-3">
-          {activeTab === 'jobs' && <button onClick={refreshJobs} className="btn-ghost text-xs">Refresh</button>}
-          {activeTab === 'intros' && <button onClick={() => setIntrosKey((k) => k + 1)} className="btn-ghost text-xs">Refresh</button>}
-          <button onClick={logout} className="btn-ghost text-xs text-red-600">Logout</button>
+          {activeTab === 'jobs' && (
+            <button onClick={refreshJobs} className="btn-ghost text-xs">
+              Refresh
+            </button>
+          )}
+          {activeTab === 'intros' && (
+            <button onClick={() => setIntrosKey((k) => k + 1)} className="btn-ghost text-xs">
+              Refresh
+            </button>
+          )}
+          <button onClick={logout} className="btn-ghost text-xs text-red-600">
+            Logout
+          </button>
         </div>
       </div>
 
@@ -775,7 +897,13 @@ export default function AdminPanel() {
             <div className="surface-tinted p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="text-gray-500 text-xs">Storage</p>
-                <p className={runtime.storage.healthy ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
+                <p
+                  className={
+                    runtime.storage.healthy
+                      ? 'text-emerald-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  }
+                >
                   {runtime.storage.healthy ? 'Healthy' : 'Unhealthy'}
                 </p>
               </div>
@@ -789,7 +917,13 @@ export default function AdminPanel() {
               </div>
               <div>
                 <p className="text-gray-500 text-xs">AI</p>
-                <p className={runtime.ai.configured ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>
+                <p
+                  className={
+                    runtime.ai.configured
+                      ? 'text-emerald-600 font-medium'
+                      : 'text-amber-600 font-medium'
+                  }
+                >
                   {runtime.ai.configured ? 'Configured' : 'Not configured'}
                 </p>
               </div>
@@ -799,8 +933,18 @@ export default function AdminPanel() {
           {/* Search bar */}
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
               </svg>
               <input
                 type="text"
@@ -810,9 +954,23 @@ export default function AdminPanel() {
                 className="w-full rounded-lg border border-gray-200 bg-white pl-10 pr-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
-            <button onClick={handleExportCsv} className="btn-ghost text-xs shrink-0" title="Export CSV">
-              <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            <button
+              onClick={handleExportCsv}
+              className="btn-ghost text-xs shrink-0"
+              title="Export CSV"
+            >
+              <svg
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                />
               </svg>
               Export
             </button>
@@ -850,17 +1008,34 @@ export default function AdminPanel() {
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2 rounded-xl bg-brand-50 border border-brand-200/60 p-3">
-              <span className="text-xs font-medium text-brand-700">{selectedIds.size} selected</span>
-              <button onClick={() => handleBulkAction('active')} disabled={bulkLoading} className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50">
+              <span className="text-xs font-medium text-brand-700">
+                {selectedIds.size} selected
+              </span>
+              <button
+                onClick={() => handleBulkAction('active')}
+                disabled={bulkLoading}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+              >
                 Approve All
               </button>
-              <button onClick={() => handleBulkAction('rejected')} disabled={bulkLoading} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50">
+              <button
+                onClick={() => handleBulkAction('rejected')}
+                disabled={bulkLoading}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
+              >
                 Reject All
               </button>
-              <button onClick={() => handleBulkAction('archived')} disabled={bulkLoading} className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50">
+              <button
+                onClick={() => handleBulkAction('archived')}
+                disabled={bulkLoading}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
                 Archive All
               </button>
-              <button onClick={() => setSelectedIds(new Set())} className="text-xs text-gray-500 hover:text-gray-700 ml-auto">
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-xs text-gray-500 hover:text-gray-700 ml-auto"
+              >
                 Clear
               </button>
             </div>
@@ -875,7 +1050,9 @@ export default function AdminPanel() {
           {loading ? (
             <div className="text-center text-gray-500 py-8">Loading...</div>
           ) : sortedJobs.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">{searchQuery ? 'No jobs match your search.' : 'No jobs with this status.'}</div>
+            <div className="text-center text-gray-500 py-8">
+              {searchQuery ? 'No jobs match your search.' : 'No jobs with this status.'}
+            </div>
           ) : (
             <div className="space-y-2">
               {/* Select all */}
@@ -897,7 +1074,12 @@ export default function AdminPanel() {
                     className="mt-5 rounded border-gray-300 text-brand-500 focus:ring-brand-500 shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <JobRow job={job} token={token} onStatusChange={changeJobStatus} onJobUpdated={refreshJobs} />
+                    <JobRow
+                      job={job}
+                      token={token}
+                      onStatusChange={changeJobStatus}
+                      onJobUpdated={refreshJobs}
+                    />
                   </div>
                 </div>
               ))}

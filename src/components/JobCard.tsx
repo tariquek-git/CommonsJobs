@@ -74,7 +74,9 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/company/${encodeURIComponent(job.company.toLowerCase().replace(/\s+/g, '-'))}`);
+                  navigate(
+                    `/company/${encodeURIComponent(job.company.toLowerCase().replace(/\s+/g, '-'))}`,
+                  );
                 }}
                 className="text-sm font-medium text-gray-600 hover:text-brand-500 transition-colors mt-1 text-left"
               >
@@ -99,7 +101,9 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
                 </span>
               )}
               {(() => {
-                const diffDays = Math.floor((Date.now() - new Date(job.posted_date).getTime()) / (1000 * 60 * 60 * 24));
+                const diffDays = Math.floor(
+                  (Date.now() - new Date(job.posted_date).getTime()) / (1000 * 60 * 60 * 24),
+                );
                 if (diffDays < 3) {
                   return (
                     <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
@@ -129,9 +133,23 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {job.location && (
               <span className="inline-flex items-center gap-1 text-sm text-gray-600">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z" />
+                <svg
+                  className="h-3 w-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z"
+                  />
                 </svg>
                 {job.location}
               </span>
@@ -175,9 +193,7 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
           )}
 
           {job.summary && (
-            <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-3">
-              {job.summary}
-            </p>
+            <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-3">{job.summary}</p>
           )}
 
           <div className="mt-4 flex items-center justify-between">
@@ -193,7 +209,10 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
               </span>
               {job.warm_intro_ok && (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-50 to-purple-50 px-2 py-0.5 text-xs font-semibold text-brand-700 border border-brand-200/60">
-                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                  </span>
                   Warm intro available
                 </span>
               )}
@@ -205,8 +224,18 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
                 aria-label="Share job"
                 title="Share"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+                  />
                 </svg>
                 {showCopied && (
                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[10px] text-white shadow-lg animate-fade-in">
@@ -220,4 +249,4 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
       </div>
     </article>
   );
-})
+});

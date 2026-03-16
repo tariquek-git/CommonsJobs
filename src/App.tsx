@@ -14,7 +14,10 @@ function NotFound() {
       <div className="text-center space-y-4">
         <h1 className="text-6xl font-bold text-gray-200">404</h1>
         <p className="text-lg text-gray-600">Page not found.</p>
-        <Link to="/" className="inline-block mt-2 text-brand-500 hover:text-brand-600 font-medium underline underline-offset-2">
+        <Link
+          to="/"
+          className="inline-block mt-2 text-brand-500 hover:text-brand-600 font-medium underline underline-offset-2"
+        >
           Back to jobs
         </Link>
       </div>

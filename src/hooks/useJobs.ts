@@ -57,7 +57,12 @@ export function useJobs(): UseJobsReturn {
     setLoading(true);
     setError(null);
     try {
-      const result = await searchJobs({ sort, limit: 50, tags: tags.length > 0 ? tags : undefined, category: category || undefined });
+      const result = await searchJobs({
+        sort,
+        limit: 50,
+        tags: tags.length > 0 ? tags : undefined,
+        category: category || undefined,
+      });
       setJobs(result.jobs);
       setMeta(result.meta);
     } catch (err) {
@@ -72,5 +77,17 @@ export function useJobs(): UseJobsReturn {
     fetchJobs();
   }, [fetchJobs]);
 
-  return { jobs, meta, loading, error, sort, setSort, tags, setTags, category, setCategory, refresh: fetchJobs };
+  return {
+    jobs,
+    meta,
+    loading,
+    error,
+    sort,
+    setSort,
+    tags,
+    setTags,
+    category,
+    setCategory,
+    refresh: fetchJobs,
+  };
 }

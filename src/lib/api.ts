@@ -66,7 +66,10 @@ export async function submitJob(payload: SubmissionPayload): Promise<SubmissionR
   });
 }
 
-export async function trackClick(jobId: string, utmParams?: { utm_source?: string; utm_medium?: string; utm_campaign?: string }): Promise<void> {
+export async function trackClick(
+  jobId: string,
+  utmParams?: { utm_source?: string; utm_medium?: string; utm_campaign?: string },
+): Promise<void> {
   // Fire and forget - don't block on click tracking
   fetch(`${BASE}/jobs/${jobId}/click`, {
     method: 'POST',
@@ -85,7 +88,9 @@ export interface WarmIntroPayload {
   message?: string;
 }
 
-export async function requestWarmIntro(payload: WarmIntroPayload): Promise<{ success: boolean; message: string }> {
+export async function requestWarmIntro(
+  payload: WarmIntroPayload,
+): Promise<{ success: boolean; message: string }> {
   return request('/jobs/warm-intro', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -127,17 +132,19 @@ export async function humanizeJob(
   return body;
 }
 
-export async function scrapeUrl(url: string): Promise<AIResult<{
-  title?: string;
-  company?: string;
-  description?: string;
-  location?: string;
-  country?: string;
-  company_url?: string;
-  salary_range?: string;
-  employment_type?: string;
-  work_arrangement?: string;
-}>> {
+export async function scrapeUrl(url: string): Promise<
+  AIResult<{
+    title?: string;
+    company?: string;
+    description?: string;
+    location?: string;
+    country?: string;
+    company_url?: string;
+    salary_range?: string;
+    employment_type?: string;
+    work_arrangement?: string;
+  }>
+> {
   const res = await fetch(`${BASE}/ai/scrape-url`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -166,7 +173,11 @@ export async function getRuntime(token: string): Promise<RuntimeInfo> {
   });
 }
 
-export async function getAdminJobs(token: string, status?: string, page = 1): Promise<{ jobs: Job[]; meta: { total: number; page: number; limit: number } }> {
+export async function getAdminJobs(
+  token: string,
+  status?: string,
+  page = 1,
+): Promise<{ jobs: Job[]; meta: { total: number; page: number; limit: number } }> {
   const params = new URLSearchParams({ page: String(page) });
   if (status) params.set('status', status);
   return request(`/admin/jobs?${params}`, {
@@ -223,14 +234,21 @@ export interface WarmIntroRecord {
   job_submitter_name: string | null;
 }
 
-export async function getWarmIntros(token: string, status?: string): Promise<{ intros: WarmIntroRecord[] }> {
+export async function getWarmIntros(
+  token: string,
+  status?: string,
+): Promise<{ intros: WarmIntroRecord[] }> {
   const params = status ? `?status=${encodeURIComponent(status)}` : '';
   return request(`/admin/warm-intros${params}`, {
     headers: authHeaders(token),
   });
 }
 
-export async function updateWarmIntroStatus(token: string, id: string, status: string): Promise<{ success: boolean }> {
+export async function updateWarmIntroStatus(
+  token: string,
+  id: string,
+  status: string,
+): Promise<{ success: boolean }> {
   return request(`/admin/warm-intros/${id}/status`, {
     method: 'PATCH',
     headers: authHeaders(token),

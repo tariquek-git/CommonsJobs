@@ -16,7 +16,19 @@ const FintechGlobe = lazy(() => import('../components/FintechGlobe'));
 
 export default function HomePage() {
   const posthog = usePostHog();
-  const { jobs, meta, loading, error, sort, setSort, tags, setTags, category, setCategory, refresh } = useJobs();
+  const {
+    jobs,
+    meta,
+    loading,
+    error,
+    sort,
+    setSort,
+    tags,
+    setTags,
+    category,
+    setCategory,
+    refresh,
+  } = useJobs();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -32,18 +44,21 @@ export default function HomePage() {
   const filteredJobs = useMemo(() => {
     if (!query.trim()) return jobs;
     const lower = query.toLowerCase();
-    return jobs.filter((job) =>
-      job.title.toLowerCase().includes(lower) ||
-      job.company.toLowerCase().includes(lower) ||
-      (job.summary && job.summary.toLowerCase().includes(lower)) ||
-      (job.location && job.location.toLowerCase().includes(lower)) ||
-      (job.tags && job.tags.some((t) => t.toLowerCase().includes(lower)))
+    return jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(lower) ||
+        job.company.toLowerCase().includes(lower) ||
+        (job.summary && job.summary.toLowerCase().includes(lower)) ||
+        (job.location && job.location.toLowerCase().includes(lower)) ||
+        (job.tags && job.tags.some((t) => t.toLowerCase().includes(lower))),
     );
   }, [jobs, query]);
 
   useEffect(() => {
     document.title = 'Fintech Commons — Fintech & Banking Jobs';
-    return () => { document.title = 'Fintech Commons'; };
+    return () => {
+      document.title = 'Fintech Commons';
+    };
   }, []);
 
   useEffect(() => {
@@ -60,7 +75,8 @@ export default function HomePage() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,91,255,0.3), transparent), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(255,59,139,0.2), transparent), radial-gradient(ellipse 50% 30% at 20% 80%, rgba(255,107,0,0.15), transparent)'
+            background:
+              'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,91,255,0.3), transparent), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(255,59,139,0.2), transparent), radial-gradient(ellipse 50% 30% at 20% 80%, rgba(255,107,0,0.15), transparent)',
           }}
         />
 
@@ -72,11 +88,10 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-8">
-          <h1 className="text-hero text-white mb-2">
-            Fintech Commons Jobs
-          </h1>
+          <h1 className="text-hero text-white mb-2">Fintech Commons Jobs</h1>
           <p className="text-lg text-white/75 max-w-xl mb-6">
-            Fintech roles with a human behind them. Every listing is reviewed. Every intro is personal.
+            Fintech roles with a human behind them. Every listing is reviewed. Every intro is
+            personal.
           </p>
           <FounderSection dark />
         </div>
@@ -85,13 +100,35 @@ export default function HomePage() {
       {/* Light content zone */}
       <main className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-8 space-y-5">
         <CircuitLines />
-        <SortStrip sort={sort} onSortChange={setSort} meta={meta} onRefresh={refresh} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
-        <p className="text-sm text-gray-500">Every role below has a real person behind it. Request a warm intro and skip the black hole.</p>
+        <SortStrip
+          sort={sort}
+          onSortChange={setSort}
+          meta={meta}
+          onRefresh={refresh}
+          tags={tags}
+          onTagsChange={setTags}
+          category={category}
+          onCategoryChange={setCategory}
+        />
+        <p className="text-sm text-gray-500">
+          Every role below has a real person behind it. Request a warm intro and skip the black
+          hole.
+        </p>
 
         {/* Search bar */}
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
           </svg>
           <input
             type="text"
@@ -106,7 +143,13 @@ export default function HomePage() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Clear search"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -114,10 +157,23 @@ export default function HomePage() {
         </div>
 
         <div className="flex gap-8">
-          <FilterRail sort={sort} onSortChange={setSort} meta={meta} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
+          <FilterRail
+            sort={sort}
+            onSortChange={setSort}
+            meta={meta}
+            tags={tags}
+            onTagsChange={setTags}
+            category={category}
+            onCategoryChange={setCategory}
+          />
 
           <div className="flex-1 min-w-0">
-            <JobGrid jobs={filteredJobs} loading={loading} error={error} onSelectJob={setSelectedJob} />
+            <JobGrid
+              jobs={filteredJobs}
+              loading={loading}
+              error={error}
+              onSelectJob={setSelectedJob}
+            />
           </div>
         </div>
       </main>
