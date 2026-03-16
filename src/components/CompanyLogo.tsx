@@ -35,7 +35,7 @@ export default function CompanyLogo({ companyName, companyUrl, companyLogoUrl, s
       onError={() => setCandidateIndex((i) => i + 1)}
       onLoad={(e) => {
         const img = e.target as HTMLImageElement;
-        // Skip tiny placeholder images (1x1 tracking pixels, etc.)
+        // Skip broken or tiny placeholder images (0x0, 1x1 tracking pixels, etc.)
         if (img.naturalWidth < 16 || img.naturalHeight < 16) {
           setCandidateIndex((i) => i + 1);
         }

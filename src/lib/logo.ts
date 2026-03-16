@@ -34,5 +34,6 @@ export function getLogoCandidates(companyUrl?: string | null, companyLogoUrl?: s
     } catch { /* invalid URL, skip */ }
   }
 
-  return urls;
+  // Deduplicate while preserving order
+  return [...new Set(urls)];
 }
