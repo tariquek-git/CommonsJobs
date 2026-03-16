@@ -1,4 +1,5 @@
 import { useState, memo } from 'react';
+import { usePostHog } from '@posthog/react';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
 import { trackClick } from '../lib/api';
@@ -17,11 +18,25 @@ function getDaysUntilExpiry(expiresAt: string | null): number | null {
 }
 
 export default memo(function JobCard({ job, onSelect }: JobCardProps) {
+  const posthog = usePostHog();
   const [showCopied, setShowCopied] = useState(false);
+
+  const handleCardClick = () => {
+    posthog?.capture('job_clicked', {
+      job_id: job.id,
+      job_title: job.title,
+      job_source: 'job_grid',
+    });
+    onSelect(job);
+  };
 
   const handleApply = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (job.apply_url) {
+      posthog?.capture('apply_clicked', {
+        job_id: job.id,
+        job_title: job.title,
+      });
       trackClick(job.id, getUtmParams());
       window.open(job.apply_url, '_blank', 'noopener,noreferrer');
     }
@@ -38,7 +53,7 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
 
   return (
     <article
-      onClick={() => onSelect(job)}
+      onClick={handleCardClick}
       className="relative surface-elevated p-6 lg:p-7 cursor-pointer overflow-hidden
         hover:shadow-card-hover hover:-translate-y-0.5
         transition-all duration-300 ease-out group gradient-border"
@@ -47,7 +62,7 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onSelect(job);
+          handleCardClick();
         }
       }}
     >
