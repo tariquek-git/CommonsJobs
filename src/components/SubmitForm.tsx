@@ -321,6 +321,18 @@ export default function SubmitForm() {
     setForm((prev) => ({ ...prev, standout_perks: prev.standout_perks?.filter((p) => p !== perk) }));
   };
 
+  const normalizeUrl = (url: string | undefined): string | undefined => {
+    if (!url || !url.trim()) return url;
+    let u = url.trim();
+    if (u && !u.startsWith('https://') && !u.startsWith('http://')) {
+      u = 'https://' + u;
+    }
+    if (u.startsWith('http://')) {
+      u = 'https://' + u.slice(7);
+    }
+    return u;
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
@@ -332,7 +344,12 @@ export default function SubmitForm() {
         });
       }
 
-      const payload: SubmissionPayload & { website?: string } = { ...form, website };
+      const payload: SubmissionPayload & { website?: string } = {
+        ...form,
+        apply_url: normalizeUrl(form.apply_url),
+        company_url: normalizeUrl(form.company_url),
+        website,
+      };
       const res = await submitJob(payload);
       posthog?.capture('job_submitted', {
         job_title: form.title,

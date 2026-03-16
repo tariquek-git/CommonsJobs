@@ -29,7 +29,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new ApiError(body.error || `HTTP ${res.status}`, res.status);
+    let message = body.error || `HTTP ${res.status}`;
+    if (body.details && Array.isArray(body.details)) {
+      message += ': ' + body.details.join(', ');
+    }
+    throw new ApiError(message, res.status);
   }
 
   return res.json();
