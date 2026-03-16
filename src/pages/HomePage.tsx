@@ -50,6 +50,7 @@ export default function HomePage() {
           <p className="text-lg text-white/75 max-w-xl mb-6">
             Fintech roles with a human behind them. Every listing is reviewed. Every intro is personal.
           </p>
+          <FounderSection dark />
         </div>
       </div>
 
@@ -67,18 +68,6 @@ export default function HomePage() {
           </div>
         </div>
       </main>
-
-      <div className="bg-navy-900 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,91,255,0.3), transparent), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(255,59,139,0.2), transparent), radial-gradient(ellipse 50% 30% at 20% 80%, rgba(255,107,0,0.15), transparent)'
-          }}
-        />
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <FounderSection dark />
-        </div>
-      </div>
 
       <BottomNav />
       <JobDetailModal job={selectedJob} onClose={() => setSelectedJob(null)} />
