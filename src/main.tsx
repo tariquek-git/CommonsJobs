@@ -11,6 +11,21 @@ import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';
 posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
   person_profiles: 'always',
+  capture_pageview: false, // Manual SPA pageview tracking in App.tsx
+  session_recording: {
+    maskAllInputs: true,
+    maskTextSelector: '[data-ph-mask]',
+  },
+});
+
+// Register super properties on every event
+const params = new URLSearchParams(window.location.search);
+posthog.register({
+  platform: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+  referrer: document.referrer || 'direct',
+  utm_source: params.get('utm_source') || undefined,
+  utm_medium: params.get('utm_medium') || undefined,
+  utm_campaign: params.get('utm_campaign') || undefined,
 });
 
 class AppErrorBoundary extends React.Component<

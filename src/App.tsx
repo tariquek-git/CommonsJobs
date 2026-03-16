@@ -1,4 +1,6 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { usePostHog } from '@posthog/react';
 import HomePage from './pages/HomePage';
 import SubmitPage from './pages/SubmitPage';
 import AdminPage from './pages/AdminPage';
@@ -20,6 +22,13 @@ function NotFound() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog?.capture('$pageview');
+  }, [location.pathname, posthog]);
+
   return (
     <>
       <Routes>
