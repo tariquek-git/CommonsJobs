@@ -181,7 +181,7 @@ export default function JobPage() {
           {/* Summary */}
           {job.summary && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 mb-2">Summary</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-2">The Real Talk</h2>
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                 {job.summary}
               </p>
@@ -226,7 +226,7 @@ export default function JobPage() {
               )}
               {job.apply_url && (
                 <button onClick={handleApply} className="btn-primary">
-                  Apply Now
+                  Apply Directly
                   <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                   </svg>

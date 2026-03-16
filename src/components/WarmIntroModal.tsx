@@ -87,7 +87,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Request received</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
-            I'll personally reach out to the hiring contact at <span className="font-medium text-gray-800">{job.company}</span> about you.
+            I'll connect you if there's a fit — I reach out to the hiring contact at <span className="font-medium text-gray-800">{job.company}</span> on your behalf.
             If there's a connection, you'll hear from me via email.
           </p>
 
@@ -159,7 +159,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
               </div>
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-brand-700">
-                  I'll personally put your name in front of the right person.
+                  I'll take a careful look and put your name in front of the right person.
                 </p>
                 <p className="text-xs text-brand-500/80 leading-relaxed">
                   Not automated — I review each request and reach out to the job poster on your behalf. The poster opted in, so they're expecting it. Just be genuine — real interest, real profile.
@@ -254,7 +254,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200/60 bg-gray-50/50">
-          <p className="text-[11px] text-gray-500 sm:text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-500 sm:text-gray-600">
             I'll get this in front of the right person.
           </p>
           <div className="flex items-center gap-3 ml-auto">
@@ -278,7 +278,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                   <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
-                  Send My Info
+                  Request Intro
                 </>
               )}
             </button>

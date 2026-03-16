@@ -105,7 +105,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                 </svg>
               </div>
               <p className={`text-sm font-bold ${textHeading}`}>Humanize</p>
-              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>AI rewrites the fluff</p>
+              <p className={`text-xs ${textMuted} mt-0.5 hidden sm:block`}>AI cuts through corporate speak</p>
             </div>
 
             {/* Connector 2→3 */}

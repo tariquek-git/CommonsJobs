@@ -111,7 +111,7 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
                 if (days !== null && days <= 7 && days > 0) {
                   return (
                     <span className="block text-xs text-amber-600 mt-0.5">
-                      Expires in {days}d
+                      Expires in {days} days
                     </span>
                   );
                 }

@@ -384,7 +384,7 @@ export default function SubmitForm() {
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">You're in the queue</h2>
         <p className="text-gray-600 text-sm mb-1">{result.message}</p>
-        <p className="text-gray-600 text-xs mb-4">I'll personally review this and get it live as soon as I can. No bots here.</p>
+        <p className="text-gray-600 text-xs mb-4">I'll review this carefully and get it live as soon as I can. No bots here.</p>
         <div className="surface-tinted p-4 inline-block rounded-xl">
           <p className="text-xs text-gray-600 mb-1">Reference ID</p>
           <p className="text-lg font-mono font-bold text-brand-500">{result.ref}</p>
@@ -536,7 +536,7 @@ export default function SubmitForm() {
             </button>
           </div>
           {scrapeFailed && (
-            <p className="text-xs text-amber-600 mt-1" role="alert">Could not scrape — fill in manually below.</p>
+            <p className="text-xs text-amber-600 mt-1" role="alert">Couldn't auto-fill — enter details manually.</p>
           )}
           <p className="text-xs text-gray-400 mt-1">Paste URL and click Auto-fill — we'll scrape and humanize in one step.</p>
         </div>
@@ -607,7 +607,7 @@ export default function SubmitForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                 </svg>
                 <p className="text-xs text-amber-700">
-                  <span className="font-semibold">Needs your input:</span> {aiMissingFields.join(', ')}
+                  <span className="font-semibold">Consider adding:</span> {aiMissingFields.join(', ')}
                 </p>
               </div>
             )}
