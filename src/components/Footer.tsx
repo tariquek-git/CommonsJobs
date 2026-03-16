@@ -11,6 +11,8 @@ export default function Footer() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAiDisclosure, setShowAiDisclosure] = useState(false);
   const [formText, setFormText] = useState('');
+  const [formName, setFormName] = useState('');
+  const [formEmail, setFormEmail] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   const handleFormSubmit = (type: 'bug_report' | 'user_feedback') => {
@@ -18,9 +20,13 @@ export default function Footer() {
     posthog?.capture(type, {
       page: window.location.pathname,
       [type === 'bug_report' ? 'description' : 'feedback']: formText.trim(),
+      name: formName.trim() || undefined,
+      email: formEmail.trim() || undefined,
       ...(type === 'bug_report' ? { userAgent: navigator.userAgent } : {}),
     });
     setFormText('');
+    setFormName('');
+    setFormEmail('');
     setFormSubmitted(true);
     setTimeout(() => {
       setFormSubmitted(false);
@@ -263,7 +269,7 @@ export default function Footer() {
       {/* Bug Report Modal */}
       {showBugReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowBugReport(false); setFormText(''); setFormSubmitted(false); }} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowBugReport(false); setFormText(''); setFormName(''); setFormEmail(''); setFormSubmitted(false); }} />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -274,7 +280,7 @@ export default function Footer() {
                 </svg>
                 Report a Bug
               </h2>
-              <button onClick={() => { setShowBugReport(false); setFormText(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={() => { setShowBugReport(false); setFormText(''); setFormName(''); setFormEmail(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -286,13 +292,29 @@ export default function Footer() {
               </div>
             ) : (
               <>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="Name"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                    autoFocus
+                  />
+                  <input
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    placeholder="Email"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                  />
+                </div>
                 <textarea
                   value={formText}
                   onChange={(e) => setFormText(e.target.value)}
                   placeholder="Describe the issue you encountered..."
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 resize-none"
                   rows={4}
-                  autoFocus
                 />
                 <button
                   onClick={() => handleFormSubmit('bug_report')}
@@ -310,7 +332,7 @@ export default function Footer() {
       {/* Feedback Modal */}
       {showFeedback && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowFeedback(false); setFormText(''); setFormSubmitted(false); }} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowFeedback(false); setFormText(''); setFormName(''); setFormEmail(''); setFormSubmitted(false); }} />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -319,7 +341,7 @@ export default function Footer() {
                 </svg>
                 Feedback
               </h2>
-              <button onClick={() => { setShowFeedback(false); setFormText(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={() => { setShowFeedback(false); setFormText(''); setFormName(''); setFormEmail(''); setFormSubmitted(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -331,13 +353,29 @@ export default function Footer() {
               </div>
             ) : (
               <>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="Name"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                    autoFocus
+                  />
+                  <input
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    placeholder="Email"
+                    className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                  />
+                </div>
                 <textarea
                   value={formText}
                   onChange={(e) => setFormText(e.target.value)}
                   placeholder="How can we improve? Share your thoughts..."
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 resize-none"
                   rows={4}
-                  autoFocus
                 />
                 <button
                   onClick={() => handleFormSubmit('user_feedback')}
