@@ -128,7 +128,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             <div className="mb-4">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Recognition</p>
               <div className="flex flex-wrap gap-2">
-                {['Deloitte Fast 50 Canada', 'Deloitte Fast 500 NA', 'Payments Canada Member', 'Mastercard Partner'].map((award) => (
+                {['Deloitte Fast 50 Canada', 'Deloitte Fast 500 NA', 'Startup of the Year', 'Banking Tech Award', 'PayTech Award'].map((award) => (
                   <span key={award} className="inline-flex items-center rounded-md bg-white/80 border border-brand-100/60 px-2 py-1 text-[10px] font-medium text-gray-600">
                     {award}
                   </span>
