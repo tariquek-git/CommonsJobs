@@ -45,12 +45,11 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-8">
           <h1 className="text-hero text-white mb-2">
-            Fintech Commons Jobs<span className="gradient-text">:</span>
+            Fintech Commons Jobs
           </h1>
           <p className="text-lg text-white/75 max-w-xl mb-6">
-            Community-reviewed roles in fintech & banking. Real talk, warm intros.
+            Fintech roles with a human behind them. Every listing is reviewed. Every intro is personal.
           </p>
-          <FounderSection dark />
         </div>
       </div>
 
@@ -58,6 +57,7 @@ export default function HomePage() {
       <main className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-8 space-y-5">
         <CircuitLines />
         <SortStrip sort={sort} onSortChange={setSort} meta={meta} onRefresh={refresh} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
+        <p className="text-sm text-gray-500">Every role below has a real person behind it. Request a warm intro and skip the black hole.</p>
 
         <div className="flex gap-8">
           <FilterRail sort={sort} onSortChange={setSort} meta={meta} tags={tags} onTagsChange={setTags} category={category} onCategoryChange={setCategory} />
@@ -67,6 +67,18 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      <div className="bg-navy-900 relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,91,255,0.3), transparent), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(255,59,139,0.2), transparent), radial-gradient(ellipse 50% 30% at 20% 80%, rgba(255,107,0,0.15), transparent)'
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <FounderSection dark />
+        </div>
+      </div>
 
       <BottomNav />
       <JobDetailModal job={selectedJob} onClose={() => setSelectedJob(null)} />

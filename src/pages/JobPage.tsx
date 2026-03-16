@@ -7,7 +7,7 @@ import CompanyLogo from '../components/CompanyLogo';
 import WarmIntroModal from '../components/WarmIntroModal';
 
 function JsonLd({ job }: { job: Job }) {
-  const schema = {
+  const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
     title: job.title,
@@ -31,8 +31,28 @@ function JsonLd({ job }: { job: Job }) {
           },
         }
       : {}),
-    ...(job.apply_url ? { url: job.apply_url } : {}),
+    ...(job.apply_url ? { url: job.apply_url, directApply: true } : {}),
   };
+
+  if (job.employment_type) {
+    const typeMap: Record<string, string> = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', 'Contract': 'CONTRACTOR', 'Internship': 'INTERN' };
+    schema.employmentType = typeMap[job.employment_type] || job.employment_type;
+  }
+
+  if (job.work_arrangement?.toLowerCase().includes('remote')) {
+    schema.jobLocationType = 'TELECOMMUTE';
+  }
+
+  if (job.salary_range) {
+    const match = job.salary_range.match(/\$?([\d,]+)/);
+    if (match) {
+      schema.baseSalary = {
+        '@type': 'MonetaryAmount',
+        currency: 'USD',
+        value: { '@type': 'QuantitativeValue', value: parseInt(match[1].replace(/,/g, ''), 10), unitText: 'YEAR' },
+      };
+    }
+  }
 
   return (
     <script

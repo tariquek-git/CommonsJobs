@@ -2,8 +2,7 @@ import { useState, memo } from 'react';
 import { usePostHog } from '@posthog/react';
 import type { Job } from '../lib/types';
 import { getRelativeTimeLabel } from '../lib/date';
-import { trackClick } from '../lib/api';
-import { shareJob, getUtmParams } from '../lib/utils';
+import { shareJob } from '../lib/utils';
 import CompanyLogo from './CompanyLogo';
 
 interface JobCardProps {
@@ -28,18 +27,6 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
       job_source: 'job_grid',
     });
     onSelect(job);
-  };
-
-  const handleApply = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (job.apply_url) {
-      posthog?.capture('apply_clicked', {
-        job_id: job.id,
-        job_title: job.title,
-      });
-      trackClick(job.id, getUtmParams());
-      window.open(job.apply_url, '_blank', 'noopener,noreferrer');
-    }
   };
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -186,10 +173,8 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
                 Reviewed
               </span>
               {job.warm_intro_ok && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-brand-50 to-purple-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 border border-brand-200/60">
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-50 to-purple-50 px-2 py-0.5 text-xs font-semibold text-brand-700 border border-brand-200/60">
+                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
                   Warm intro available
                 </span>
               )}
@@ -210,17 +195,6 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
                   </span>
                 )}
               </button>
-              {job.apply_url && (
-                <button
-                  onClick={handleApply}
-                  className="btn-primary py-1.5 px-3.5 text-xs"
-                >
-                  Apply
-                  <svg className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                  </svg>
-                </button>
-              )}
             </div>
           </div>
         </div>

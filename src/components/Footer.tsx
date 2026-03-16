@@ -34,9 +34,9 @@ export default function Footer() {
       <footer className="bg-navy-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Top section — multi-column */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 py-12 border-b border-white/10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 py-12 border-b border-white/10">
             {/* Brand */}
-            <div className="col-span-2 sm:col-span-1">
+            <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-pink flex items-center justify-center text-xs font-bold text-white">
                   FC
@@ -48,9 +48,9 @@ export default function Footer() {
               </p>
             </div>
 
-            {/* Product */}
+            {/* Navigate */}
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Product</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Navigate</h4>
               <ul className="space-y-2.5 text-sm">
                 <li><Link to="/" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
@@ -60,13 +60,6 @@ export default function Footer() {
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                   Submit a Role
                 </Link></li>
-              </ul>
-            </div>
-
-            {/* About */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">About</h4>
-              <ul className="space-y-2.5 text-sm">
                 <li>
                   <a href="https://www.linkedin.com/in/tariquekhan1/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
                     <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
@@ -79,33 +72,12 @@ export default function Footer() {
                     Contact
                   </button>
                 </li>
-                <li>
-                  <button onClick={() => setShowBugReport(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
-                    Report a Bug
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0112 12.75zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 01-1.152-6.135 23.846 23.846 0 01.497-5.14c.04-.2-.022-.404-.144-.558a.682.682 0 00-.496-.247c-.59-.045-1.184-.068-1.782-.068-5.032 0-9.36 3.064-11.21 7.42A23.856 23.856 0 0112 12.75z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 9.75h-3m3 3h-3m14.25-3h3m-3 3h3M12 15.75v6" />
-                    </svg>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setShowFeedback(true)}
-                    className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
-                  >
-                    Feedback
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                    </svg>
-                  </button>
-                </li>
               </ul>
             </div>
 
-            {/* Legal & Open Source */}
+            {/* Legal & More */}
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Legal & Open Source</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Legal & More</h4>
               <ul className="space-y-2.5 text-sm">
                 <li>
                   <button onClick={() => setShowTerms(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
@@ -120,11 +92,21 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <button onClick={() => setShowAiDisclosure(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+                  <button onClick={() => setShowAiDisclosure(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
                     AI & Tools Disclosure
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                    </svg>
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setShowBugReport(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0112 12.75z" /></svg>
+                    Report a Bug
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setShowFeedback(true)} className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                    Feedback
                   </button>
                 </li>
               </ul>

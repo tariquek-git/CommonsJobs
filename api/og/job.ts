@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = getSupabase();
     const { data: job } = await supabase
       .from('jobs')
-      .select('id, title, company, location, country, summary, company_logo_url, warm_intro_ok')
+      .select('id, title, company, location, country, summary, company_logo_url, company_url, warm_intro_ok, apply_url, employment_type, work_arrangement, salary_range, posted_date, description')
       .eq('id', id)
       .eq('status', 'active')
       .single();
@@ -48,9 +48,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<meta name="description" content="${esc(description)}" />`,
     ].filter(Boolean).join('\n    ');
 
-    // Read the built SPA index.html and inject OG tags
+    // Build JSON-LD for crawlers
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'JobPosting',
+      title: job.title,
+      description: job.description || job.summary || `${job.title} at ${job.company}`,
+      datePosted: job.posted_date,
+      hiringOrganization: { '@type': 'Organization', name: job.company, ...(job.company_url ? { sameAs: job.company_url } : {}), ...(job.company_logo_url ? { logo: job.company_logo_url } : {}) },
+      ...(job.location ? { jobLocation: { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: job.location, ...(job.country ? { addressCountry: job.country } : {}) } } } : {}),
+      ...(job.apply_url ? { url: job.apply_url, directApply: true } : {}),
+    };
+    if (job.employment_type) {
+      const typeMap: Record<string, string> = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', 'Contract': 'CONTRACTOR', 'Internship': 'INTERN' };
+      jsonLd.employmentType = typeMap[job.employment_type] || job.employment_type;
+    }
+    if (job.work_arrangement?.toLowerCase().includes('remote')) jsonLd.jobLocationType = 'TELECOMMUTE';
+
+    const jsonLdTag = `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+
+    // Read the built SPA index.html and inject OG tags + JSON-LD
     let html = getSpaHtml();
-    html = html.replace('</head>', `    ${ogTags}\n  </head>`);
+    html = html.replace('</head>', `    ${ogTags}\n    ${jsonLdTag}\n  </head>`);
     // Update the title too
     html = html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
 

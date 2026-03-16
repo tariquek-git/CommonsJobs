@@ -253,7 +253,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
                   <div>
-                    <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-1.5">The real talk</p>
+                    <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-1.5">The Real Talk</p>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {job.summary}
                     </p>
@@ -385,6 +385,14 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
               </button>
             </div>
             <div className="flex items-center gap-3">
+            {job.apply_url && (
+              <button onClick={handleApply} className="btn-secondary">
+                Apply Directly
+                <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={handleWarmIntroOpen}
               className="btn-primary bg-gradient-to-r from-brand-500 to-accent-purple hover:from-brand-600 hover:to-accent-purple/90 shadow-md shadow-brand-500/20"
@@ -394,14 +402,6 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
               </svg>
               Request Warm Intro
             </button>
-            {job.apply_url && (
-              <button onClick={handleApply} className="btn-primary">
-                Apply Directly
-                <svg className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
-              </button>
-            )}
             </div>
           </div>
         </div>

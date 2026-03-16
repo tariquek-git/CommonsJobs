@@ -41,7 +41,7 @@ export default function Header({ dark = false }: HeaderProps) {
               <span className={`text-sm leading-tight hidden sm:block ${
                 onDark ? 'text-white/75' : 'text-gray-600'
               }`}>
-                Jobs — Fintech & Banking
+                Real roles. Warm intros.
               </span>
             </div>
           </Link>

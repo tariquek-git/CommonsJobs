@@ -20,6 +20,9 @@ export default function SubmitPage() {
           <p className="text-gray-500 text-sm mt-1 max-w-lg mx-auto">
             Post a fintech role — whether you're the hiring manager, recruiter, or someone who knows them.
           </p>
+          <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">
+            Your listing gets AI-humanized, reviewed by a real person, and shared with a community that cares about fintech. Candidates can request warm intros — you decide who to talk to.
+          </p>
         </div>
 
         <SubmitForm />
