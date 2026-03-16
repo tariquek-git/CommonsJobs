@@ -83,7 +83,7 @@ export default function Header({ dark = false }: HeaderProps) {
               }`}>
                 TK
               </div>
-              <span className="hidden sm:inline text-sm">About</span>
+              <span className="hidden sm:inline text-sm">About Me</span>
             </button>
             <Link
               to="/submit"
