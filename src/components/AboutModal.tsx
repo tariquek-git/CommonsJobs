@@ -62,7 +62,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             </div>
 
             <p className="text-sm text-gray-700 leading-relaxed mt-3 mb-3">
-              Brim is one of Canada's fastest-growing fintech platforms. We build the infrastructure that powers modern credit, prepaid, and loyalty card programs &mdash; helping financial institutions, fintechs, and non-financial brands launch and scale their own payment products across the US and Canada.
+              Brim is the only fintech in North America licensed to issue credit cards. We&rsquo;re a platform-as-a-service &mdash; banks, fintechs, and brands use our infrastructure to launch and scale their own credit, prepaid, and loyalty card programs across the US and Canada.
             </p>
 
             {/* Client logos */}
@@ -72,7 +72,9 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                 {[
                   { name: 'Manulife', url: 'manulife.com' },
                   { name: 'Air France KLM', url: 'airfranceklm.com' },
+                  { name: 'Laurentian Bank', url: 'laurentianbank.ca' },
                   { name: 'Affinity', url: 'affinitycu.ca' },
+                  { name: 'CWB', url: 'cwbank.com' },
                   { name: 'Zolve', url: 'zolve.com' },
                 ].map((client) => (
                   <div key={client.name} className="flex items-center gap-1.5 rounded-lg bg-white/80 border border-white px-2.5 py-1.5 shadow-sm">
@@ -99,7 +101,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                     </svg>
                     <p className="text-xs font-semibold text-gray-800">FIs</p>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">Banks & credit unions launching or modernizing card programs</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">Banks & credit unions issuing credit, prepaid, and loyalty cards</p>
                 </div>
                 <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -108,7 +110,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                     </svg>
                     <p className="text-xs font-semibold text-gray-800">Fintechs</p>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">Fintechs & vertical SaaS embedding payments into their platforms</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">Fintechs & vertical SaaS embedding card issuance into their platforms</p>
                 </div>
                 <div className="rounded-lg bg-white/80 border border-brand-100/60 p-3 col-span-2">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -119,6 +121,18 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                   </div>
                   <p className="text-[10px] text-gray-500 leading-relaxed">Consumer brands, SMBs, and large corporates using card programs to drive loyalty, rewards, and embedded finance</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Recognition */}
+            <div className="mb-4">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Recognition</p>
+              <div className="flex flex-wrap gap-2">
+                {['Deloitte Fast 50 Canada', 'Deloitte Fast 500 NA', 'Payments Canada Member', 'Mastercard Partner'].map((award) => (
+                  <span key={award} className="inline-flex items-center rounded-md bg-white/80 border border-brand-100/60 px-2 py-1 text-[10px] font-medium text-gray-600">
+                    {award}
+                  </span>
+                ))}
               </div>
             </div>
 
