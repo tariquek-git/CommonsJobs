@@ -18,6 +18,13 @@ export function useInView(options?: IntersectionObserverInit) {
       { threshold: 0.1, rootMargin: '50px', ...options }
     );
 
+    // Check if already in view before observer fires (handles above-the-fold elements)
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setInView(true);
+      return;
+    }
+
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
