@@ -1,8 +1,7 @@
 import type { SortOption } from '../lib/types';
 import type { SearchMeta } from '../lib/types';
 import { useCountUp } from '../hooks/useCountUp';
-
-const CATEGORIES = ['Engineering', 'Product', 'Operations', 'Sales/BD', 'Remote'];
+import { CATEGORIES } from '../lib/constants';
 
 interface FilterRailProps {
   sort: SortOption;

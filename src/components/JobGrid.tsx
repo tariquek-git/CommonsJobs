@@ -28,7 +28,7 @@ function SkeletonCard() {
 export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonCard key={i} />
         ))}
@@ -70,7 +70,7 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
       {jobs.map((job, i) => (
         <div
           key={job.id}

@@ -85,7 +85,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">You're on my radar</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Request received</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
             I'll personally reach out to the hiring contact at <span className="font-medium text-gray-800">{job.company}</span> about you.
             If there's a connection, you'll hear from me via email.
@@ -236,7 +236,7 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                 className="input-field resize-y"
                 rows={3}
                 maxLength={500}
-                placeholder="Who you are, why this role caught your eye, anything you'd want the hiring person to know..."
+                placeholder="Tell us about yourself and why this role caught your eye"
               />
               <p className="text-[11px] text-gray-600 mt-1">This goes directly to the job poster along with your intro.</p>
             </div>
@@ -254,8 +254,8 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200/60 bg-gray-50/50">
-          <p className="text-[11px] text-gray-600 hidden sm:block">
-            Scout's honor — I'll get this in front of the right person.
+          <p className="text-[11px] text-gray-500 sm:text-gray-600">
+            I'll get this in front of the right person.
           </p>
           <div className="flex items-center gap-3 ml-auto">
             <button onClick={onClose} className="btn-secondary text-sm">Cancel</button>

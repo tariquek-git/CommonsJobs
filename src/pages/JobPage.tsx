@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getJob, trackClick } from '../lib/api';
 import type { Job } from '../lib/types';
 import { usePostHog } from '@posthog/react';
+import CompanyLogo from '../components/CompanyLogo';
 
 function JsonLd({ job }: { job: Job }) {
   const schema = {
@@ -112,27 +113,17 @@ export default function JobPage() {
         <article className="surface-elevated p-6 sm:p-8 space-y-6">
           {/* Header */}
           <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-50 text-lg font-bold text-brand-500 shrink-0">
-              {(() => {
-                const logoUrl = job.company_logo_url || (job.company_url ? (() => { try { return `https://logo.clearbit.com/${new URL(job.company_url).hostname}`; } catch { return null; } })() : null);
-                return logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt={job.company}
-                    className="h-14 w-14 rounded-xl object-contain bg-gray-100 p-2"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  job.company.charAt(0).toUpperCase()
-                );
-              })()}
+            <div className="shrink-0">
+              <CompanyLogo
+                companyName={job.company}
+                companyUrl={job.company_url}
+                companyLogoUrl={job.company_logo_url}
+              />
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">{job.title}</h1>
               <p className="text-gray-500 mt-1">{job.company}</p>
-              <div className="flex items-center gap-3 mt-2 text-sm text-gray-400">
+              <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
                 {job.location && (
                   <span className="inline-flex items-center gap-1">
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -173,7 +164,7 @@ export default function JobPage() {
                 {job.standout_perks.map((perk) => (
                   <span
                     key={perk}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 border border-sky-200"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 border border-brand-200"
                   >
                     <svg className="h-3.5 w-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -207,7 +198,7 @@ export default function JobPage() {
 
           {/* Meta + CTA */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-500">
               {job.company_url && (
                 <a
                   href={job.company_url}

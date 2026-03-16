@@ -25,7 +25,7 @@ export default function Footer() {
       <footer className="bg-navy-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Top section — multi-column */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 py-12 border-b border-white/10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 py-12 border-b border-white/10">
             {/* Brand */}
             <div className="col-span-2 sm:col-span-1">
               <div className="flex items-center gap-2 mb-4">

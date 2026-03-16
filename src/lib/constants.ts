@@ -1,6 +1,8 @@
 export const APP_NAME = 'Fintech Commons';
 export const APP_DESCRIPTION = 'Fintech & Banking Job Board';
 
+export const CATEGORIES = ['Engineering', 'Product', 'Operations', 'Sales/BD', 'Remote'] as const;
+
 export const FEEDS = {
   community: {
     label: 'Curated Board',

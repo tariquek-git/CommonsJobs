@@ -1,7 +1,6 @@
 import type { SortOption, SearchMeta } from '../lib/types';
 import { usePostHog } from '@posthog/react';
-
-const CATEGORIES = ['Engineering', 'Product', 'Operations', 'Sales/BD', 'Remote'];
+import { CATEGORIES } from '../lib/constants';
 
 interface SortStripProps {
   sort: SortOption;
