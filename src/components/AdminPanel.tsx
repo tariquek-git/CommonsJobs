@@ -95,6 +95,7 @@ const EDITABLE_FIELDS: { key: keyof Job; label: string; type: 'text' | 'textarea
   { key: 'summary', label: 'Summary', type: 'textarea' },
   { key: 'description', label: 'Description', type: 'textarea' },
   { key: 'featured', label: 'Featured', type: 'boolean' },
+  { key: 'pinned', label: 'Pinned to top', type: 'boolean' },
   { key: 'warm_intro_ok', label: 'Warm intro OK', type: 'boolean' },
   { key: 'standout_perks', label: 'Standout perks (comma-separated)', type: 'tags' },
   { key: 'tags', label: 'Tags (comma-separated)', type: 'tags' },
@@ -115,6 +116,15 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
   const toggleFeatured = async () => {
     try {
       await updateJob(token, job.id, { featured: !job.featured } as Partial<Job>);
+      onJobUpdated();
+    } catch {
+      // silently fail — user can retry
+    }
+  };
+
+  const togglePinned = async () => {
+    try {
+      await updateJob(token, job.id, { pinned: !job.pinned } as Partial<Job>);
       onJobUpdated();
     } catch {
       // silently fail — user can retry
@@ -179,6 +189,14 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-medium text-gray-900 truncate">{job.title}</h3>
             <StatusBadge status={job.status} />
+            {job.pinned && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200">
+                <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                </svg>
+                Pinned
+              </span>
+            )}
             {job.featured && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200">
                 <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
@@ -199,6 +217,17 @@ function JobRow({ job, token, onStatusChange, onJobUpdated }: {
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={togglePinned}
+            className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+              job.pinned
+                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+            }`}
+            title={job.pinned ? 'Unpin from top' : 'Pin to top'}
+          >
+            {job.pinned ? 'Unpin' : 'Pin'}
+          </button>
           <button
             onClick={toggleFeatured}
             className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${

@@ -20,7 +20,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const allowedFields = [
       'title', 'company', 'location', 'country', 'description',
       'summary', 'apply_url', 'company_url', 'company_logo_url',
-      'source_type', 'source_name', 'tags',
+      'source_type', 'source_name', 'tags', 'salary_range',
+      'employment_type', 'work_arrangement', 'warm_intro_ok', 'category',
+      'standout_perks', 'status', 'pinned',
     ];
 
     const updates: Record<string, unknown> = {};

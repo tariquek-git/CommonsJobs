@@ -39,12 +39,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       query = query.eq('category', body.category);
     }
 
-    // Featured jobs always appear first, then sort by date
+    // Pinned jobs first, then featured, then sort by date
+    query = query.order('pinned', { ascending: false, nullsFirst: false });
     query = query.order('featured', { ascending: false, nullsFirst: false });
     query = query.order('posted_date', { ascending: sort === 'oldest' });
     query = query.range(offset, offset + limit - 1);
 
-    const { data, count, error } = await query;
+    let { data, count, error } = await query;
+
+    // Graceful fallback: if 'pinned' column doesn't exist yet, retry without it
+    if (error?.code === '42703') {
+      let retryQuery = supabase
+        .from(table)
+        .select('*', { count: 'exact' })
+        .eq('status', 'active');
+      if (body.location) retryQuery = retryQuery.ilike('location', `%${body.location}%`);
+      if (body.tags && body.tags.length > 0) retryQuery = retryQuery.overlaps('tags', body.tags);
+      if (body.category) retryQuery = retryQuery.eq('category', body.category);
+      retryQuery = retryQuery.order('featured', { ascending: false, nullsFirst: false });
+      retryQuery = retryQuery.order('posted_date', { ascending: sort === 'oldest' });
+      retryQuery = retryQuery.range(offset, offset + limit - 1);
+      ({ data, count, error } = await retryQuery);
+    }
 
     if (error) {
       return res.status(500).json({ error: 'Search failed', code: 'SEARCH_ERROR' });

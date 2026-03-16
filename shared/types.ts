@@ -31,6 +31,7 @@ export interface Job {
   employment_type: string | null;
   work_arrangement: string | null;
   featured: boolean;
+  pinned: boolean;
   view_count: number;
   category: string | null;
 }

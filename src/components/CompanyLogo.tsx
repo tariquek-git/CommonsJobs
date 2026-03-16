@@ -29,12 +29,11 @@ export default function CompanyLogo({ companyName, companyUrl, companyLogoUrl, s
   }
 
   return (
-    <>
+    <div className={`relative ${sizeClasses}`}>
       <img
         src={currentUrl}
         alt={`${companyName} logo`}
-        loading="lazy"
-        className={`${sizeClasses} rounded-xl object-contain bg-gray-100 p-1.5 ${loaded ? '' : 'hidden'}`}
+        className={`${sizeClasses} rounded-xl object-contain bg-gray-100 p-1.5 transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
         onError={() => {
           setLoaded(false);
           setCandidateIndex((i) => i + 1);
@@ -50,6 +49,6 @@ export default function CompanyLogo({ companyName, companyUrl, companyLogoUrl, s
         }}
       />
       {!loaded && letterFallback}
-    </>
+    </div>
   );
 }

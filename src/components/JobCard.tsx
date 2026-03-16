@@ -71,6 +71,14 @@ export default memo(function JobCard({ job, onSelect }: JobCardProps) {
               <p className="text-sm font-medium text-gray-600 mt-1">{job.company}</p>
             </div>
             <div className="shrink-0 text-right flex flex-wrap items-center gap-1.5">
+              {job.pinned && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200/60">
+                  <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                  </svg>
+                  Pinned
+                </span>
+              )}
               {job.featured && (
                 <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200/60">
                   <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
