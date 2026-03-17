@@ -128,6 +128,18 @@ export default {
           '50%': { transform: 'rotate(10deg)' },
           '60%, 100%': { transform: 'rotate(0deg)' },
         },
+        'travel-down': {
+          '0%': { top: '0%', opacity: '0' },
+          '10%': { opacity: '1' },
+          '90%': { opacity: '1' },
+          '100%': { top: '100%', opacity: '0' },
+        },
+        'travel-right': {
+          '0%': { left: '0%', opacity: '0' },
+          '10%': { opacity: '1' },
+          '90%': { opacity: '1' },
+          '100%': { left: '100%', opacity: '0' },
+        },
       },
     },
   },

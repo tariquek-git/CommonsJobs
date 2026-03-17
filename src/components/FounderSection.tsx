@@ -266,25 +266,34 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                       </div>
                     </button>
 
-                    {/* Connector arrow */}
+                    {/* Connector line with fill */}
                     {i < STEPS.length - 1 && (
-                      <svg
-                        className={`h-4 w-4 flex-shrink-0 transition-all duration-500 ${
-                          activeStep > i
-                            ? dark
-                              ? 'text-white/30'
-                              : 'text-brand-500/40'
-                            : dark
-                              ? 'text-white/10'
-                              : 'text-gray-200'
-                        }`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
+                      <div className="flex items-center px-1 flex-shrink-0">
+                        <div
+                          className={`relative w-8 h-0.5 rounded-full overflow-hidden ${
+                            dark ? 'bg-white/[0.06]' : 'bg-gray-200'
+                          }`}
+                        >
+                          <div
+                            className="absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                              width: activeStep > i ? '100%' : activeStep === i ? '60%' : '0%',
+                              background: dark
+                                ? 'linear-gradient(to right, rgba(99,91,255,0.5), rgba(255,59,139,0.3))'
+                                : 'linear-gradient(to right, #635BFF, #FF3B8B)',
+                              opacity: activeStep >= i ? 1 : 0,
+                            }}
+                          />
+                          {activeStep === i && (
+                            <div
+                              className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
+                              style={{
+                                animation: `travel-right ${CYCLE_MS}ms ease-in-out infinite`,
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
                 );
@@ -383,19 +392,34 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                         {step.icon}
                       </svg>
                     </div>
-                    {/* Connector line */}
+                    {/* Connector line with fill effect */}
                     {i < STEPS.length - 1 && (
                       <div
-                        className={`w-0.5 flex-1 my-1.5 rounded-full transition-colors duration-500 ${
-                          activeStep > i
-                            ? dark
-                              ? 'bg-white/20'
-                              : 'bg-brand-500/30'
-                            : dark
-                              ? 'bg-white/[0.06]'
-                              : 'bg-gray-200'
+                        className={`relative w-0.5 flex-1 my-1.5 rounded-full overflow-hidden ${
+                          dark ? 'bg-white/[0.06]' : 'bg-gray-200'
                         }`}
-                      />
+                      >
+                        {/* Fill bar — grows from top */}
+                        <div
+                          className="absolute top-0 left-0 w-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            height: activeStep > i ? '100%' : activeStep === i ? '50%' : '0%',
+                            background: dark
+                              ? 'linear-gradient(to bottom, rgba(99,91,255,0.5), rgba(255,59,139,0.3))'
+                              : 'linear-gradient(to bottom, #635BFF, #FF3B8B)',
+                            opacity: activeStep >= i ? 1 : 0,
+                          }}
+                        />
+                        {/* Traveling dot */}
+                        {activeStep === i && (
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
+                            style={{
+                              animation: `travel-down ${CYCLE_MS}ms ease-in-out infinite`,
+                            }}
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
 
