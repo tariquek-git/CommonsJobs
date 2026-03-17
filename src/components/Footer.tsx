@@ -745,10 +745,10 @@ export default function Footer() {
                 >
                   Brim Financial
                 </button>
-                . We build card issuing and payments infrastructure for banks, credit unions, and
-                fintechs. I helped bring on partners like Manulife, Affinity CU, and Zolve &mdash;
-                if you&rsquo;re looking to launch a card program for the first time or replace a
-                legacy processor, hit me up. Happy to walk you through how we got them live.
+                . At Brim we build card issuing and payments infrastructure for banks, credit
+                unions, and fintechs. We helped Manulife, Affinity CU, and Zolve launch and scale
+                their card programs &mdash; if you&rsquo;re looking to launch for the first time or
+                move off a legacy provider, hit me up. Glad to walk you through it.
               </p>
 
               {/* Community — prominent position */}

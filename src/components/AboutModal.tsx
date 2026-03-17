@@ -111,7 +111,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           <p className="text-sm text-gray-700 leading-relaxed mb-3">
             Most card programs take 12&ndash;18 months to launch. We get partners live in 8&ndash;10
             weeks. Whether you&rsquo;re launching a card program for the first time or replacing a
-            legacy processor, we can help.
+            legacy provider, we can help.
           </p>
 
           {/* Results highlight */}
@@ -307,8 +307,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           {/* CTA */}
           <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
             <p className="text-sm text-gray-700 leading-relaxed mb-3">
-              Looking to launch a new card program or replace a legacy processor? Reach out &mdash;
-              happy to show you how we helped Manulife, Affinity CU, and others get live fast.
+              Looking to launch a new card program or move off a legacy provider? Reach out &mdash;
+              glad to show you how we helped Manulife, Affinity CU, and others get live fast.
             </p>
             <div className="flex flex-wrap gap-2">
               <a
