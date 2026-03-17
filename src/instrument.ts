@@ -1,9 +1,15 @@
 import * as Sentry from '@sentry/react';
+import {
+  useLocation,
+  useNavigationType,
+  createRoutesFromChildren,
+  matchRoutes,
+} from 'react-router-dom';
+import { useEffect } from 'react';
 
-export function initSentry() {
-  const dsn = import.meta.env.VITE_SENTRY_DSN;
-  if (!dsn) return;
+const dsn = import.meta.env.VITE_SENTRY_DSN;
 
+if (dsn) {
   Sentry.init({
     dsn,
     environment: import.meta.env.MODE, // 'development' | 'production'
@@ -17,7 +23,14 @@ export function initSentry() {
     replaysOnErrorSampleRate: 1.0,
 
     integrations: [
-      Sentry.browserTracingIntegration(),
+      // React Router v6 integration for automatic route-based tracing
+      Sentry.reactRouterV6BrowserTracingIntegration({
+        useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes,
+      }),
       Sentry.replayIntegration({
         maskAllText: false,
         maskAllInputs: true,
@@ -37,5 +50,3 @@ export function initSentry() {
     sendDefaultPii: false,
   });
 }
-
-export { Sentry };
