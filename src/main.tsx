@@ -28,6 +28,21 @@ checkClientEnv();
   f.parentNode!.insertBefore(j, f);
 })();
 
+// Load Google Analytics (GA4) dynamically
+(function () {
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-21QFE1XMX2';
+  document.head.appendChild(s);
+  const w = window as unknown as Record<string, unknown>;
+  (w.dataLayer as unknown[]) = (w.dataLayer as unknown[]) || [];
+  function gtag(...args: unknown[]) {
+    (w.dataLayer as unknown[]).push(args);
+  }
+  gtag('js', new Date());
+  gtag('config', 'G-21QFE1XMX2');
+})();
+
 import posthog from 'posthog-js';
 import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';
 
