@@ -41,6 +41,40 @@ export async function shareJob(job: Job): Promise<'native' | 'clipboard' | null>
 }
 
 /**
+ * Get the shareable URL for a job.
+ */
+export function getJobShareUrl(job: Job): string {
+  return `${window.location.origin}/job/${job.id}?utm_source=share`;
+}
+
+/**
+ * Get share text for a job.
+ */
+export function getJobShareText(job: Job): string {
+  return `${job.title} at ${job.company} — Check it out on Fintech Commons`;
+}
+
+/**
+ * Copy text to clipboard with fallback for older browsers.
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return true;
+  }
+}
+
+/**
  * Get UTM params from the current URL.
  */
 export function getUtmParams(): {

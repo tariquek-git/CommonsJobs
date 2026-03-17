@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME } from '../lib/constants';
 import { useScrolled } from '../hooks/useScrolled';
@@ -12,6 +12,13 @@ interface HeaderProps {
 export default function Header({ dark = false }: HeaderProps) {
   const location = useLocation();
   const [showAbout, setShowAbout] = useState(false);
+
+  // Listen for custom event to open About modal from other components
+  useEffect(() => {
+    const handleOpenAbout = () => setShowAbout(true);
+    window.addEventListener('open-about', handleOpenAbout);
+    return () => window.removeEventListener('open-about', handleOpenAbout);
+  }, []);
   const [bannerVisible, setBannerVisible] = useState(
     () => localStorage.getItem('feedback_banner_dismissed') !== '1',
   );
