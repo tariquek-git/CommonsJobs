@@ -58,13 +58,6 @@ const colors: Record<string, { r: number; g: number; b: number }> = {
   platform: { r: 212, g: 168, b: 67 },
 };
 
-const legend = [
-  { label: 'Auth', c: colors.auth },
-  { label: 'Response', c: colors.response },
-  { label: 'Clearing', c: colors.clearing },
-  { label: 'Settle', c: colors.settlement },
-];
-
 interface Particle {
   conn: number;
   t: number;
@@ -351,21 +344,6 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       ctx.arc(rcx, rcy, 1.5, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(255,255,255,0.06)';
       ctx.fill();
-
-      // Legend
-      const legY = S - 16;
-      const startX = S / 2 - (legend.length * 65) / 2;
-      legend.forEach((l, i) => {
-        const lx = startX + i * 65;
-        ctx.beginPath();
-        ctx.arc(lx, legY, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${l.c.r},${l.c.g},${l.c.b},0.4)`;
-        ctx.fill();
-        ctx.font = '400 7px "JetBrains Mono", monospace';
-        ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.fillText(l.label, lx + 6, legY + 2.5);
-      });
 
       animRef.current = requestAnimationFrame(draw);
     }

@@ -81,7 +81,7 @@ export default function HomePage() {
         />
 
         {/* Animated globe */}
-        <div className="absolute right-8 lg:right-16 top-1/2 -translate-y-1/2 w-[350px] h-[350px] lg:w-[440px] lg:h-[440px] opacity-40 lg:opacity-70 pointer-events-none">
+        <div className="absolute right-4 lg:right-12 top-[30%] -translate-y-1/2 w-[350px] h-[350px] lg:w-[440px] lg:h-[440px] opacity-40 lg:opacity-70 pointer-events-none">
           <Suspense fallback={null}>
             <TransactionFlowGlobe />
           </Suspense>
