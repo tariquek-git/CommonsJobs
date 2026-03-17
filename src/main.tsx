@@ -7,7 +7,11 @@ import { BrowserRouter } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import App from './App';
 import { ToastProvider } from './components/Toast';
+import { checkClientEnv } from './lib/env-check';
 import './index.css';
+
+// Warn about missing env vars in development
+checkClientEnv();
 
 import posthog from 'posthog-js';
 import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';

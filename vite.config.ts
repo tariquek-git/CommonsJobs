@@ -6,6 +6,15 @@ import path from 'path';
 export default defineConfig({
   build: {
     sourcemap: true, // Required for Sentry source maps
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          analytics: ['posthog-js', '@posthog/react'],
+          sentry: ['@sentry/react'],
+        },
+      },
+    },
   },
   plugins: [
     react(),
