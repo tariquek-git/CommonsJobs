@@ -66,20 +66,6 @@ export default function Header({ dark = false }: HeaderProps) {
             </Link>
 
             <nav className="flex items-center gap-1">
-              <Link
-                to="/"
-                className={`btn-ghost px-4 ${
-                  onDark
-                    ? location.pathname === '/'
-                      ? 'text-white bg-white/10'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                    : location.pathname === '/'
-                      ? 'text-gray-900 bg-gray-100/80'
-                      : ''
-                }`}
-              >
-                Jobs
-              </Link>
               <button
                 onClick={() => setShowAbout(true)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ${
@@ -98,6 +84,20 @@ export default function Header({ dark = false }: HeaderProps) {
                 </div>
                 <span className="hidden sm:inline">About Brim</span>
               </button>
+              <Link
+                to="/"
+                className={`btn-ghost px-4 ${
+                  onDark
+                    ? location.pathname === '/'
+                      ? 'text-white bg-white/10'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : location.pathname === '/'
+                      ? 'text-gray-900 bg-gray-100/80'
+                      : ''
+                }`}
+              >
+                Jobs
+              </Link>
               <Link to="/submit" className="btn-primary text-sm hidden lg:inline-flex">
                 <svg
                   className="h-4 w-4 mr-1.5 -ml-0.5"
