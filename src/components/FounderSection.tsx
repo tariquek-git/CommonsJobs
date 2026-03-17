@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useInView } from '../hooks/useInView';
-import { FOUNDER_TEXT } from '../lib/constants';
+import { founder, steps as stepsConfig } from '../lib/copy';
 import { Link } from 'react-router-dom';
 
 interface FounderSectionProps {
@@ -10,10 +10,9 @@ interface FounderSectionProps {
 
 const STEPS = [
   {
-    label: 'Submit',
-    sub: 'Post a role in seconds',
-    detail:
-      'Drop a job URL or paste the description. It takes 30 seconds — no account needed, no forms to fill.',
+    label: stepsConfig.items[0].label,
+    sub: stepsConfig.items[0].sub,
+    detail: stepsConfig.items[0].detail,
     icon: (
       <path
         strokeLinecap="round"
@@ -23,13 +22,12 @@ const STEPS = [
     ),
     gradient: 'from-brand-500 to-brand-600',
     shadow: 'shadow-brand-500/20',
-    color: 'brand',
+    accentBorder: 'border-l-brand-500',
   },
   {
-    label: 'Humanize',
-    sub: 'AI clears the jargon',
-    detail:
-      'AI rewrites the corporate fluff into real talk — the actual day-to-day, team context, and what matters for someone considering the role.',
+    label: stepsConfig.items[1].label,
+    sub: stepsConfig.items[1].sub,
+    detail: stepsConfig.items[1].detail,
     icon: (
       <path
         strokeLinecap="round"
@@ -39,13 +37,12 @@ const STEPS = [
     ),
     gradient: 'from-accent-pink to-accent-orange',
     shadow: 'shadow-[#FF3B8B]/20',
-    color: 'pink',
+    accentBorder: 'border-l-[#FF3B8B]',
   },
   {
-    label: 'Review',
-    sub: 'Vetted by a human',
-    detail:
-      "Every listing is personally reviewed before going live. If it's vague, misleading, or just a recruiter blast — it gets rejected.",
+    label: stepsConfig.items[2].label,
+    sub: stepsConfig.items[2].sub,
+    detail: stepsConfig.items[2].detail,
     icon: (
       <path
         strokeLinecap="round"
@@ -55,13 +52,12 @@ const STEPS = [
     ),
     gradient: 'from-emerald-500 to-emerald-600',
     shadow: 'shadow-emerald-500/20',
-    color: 'emerald',
+    accentBorder: 'border-l-emerald-500',
   },
   {
-    label: 'Connect',
-    sub: 'Skip the black hole',
-    detail:
-      'Apply directly or request a warm intro. Your info goes straight to the person who posted — no recruiters, no black holes, no ghosting.',
+    label: stepsConfig.items[3].label,
+    sub: stepsConfig.items[3].sub,
+    detail: stepsConfig.items[3].detail,
     icon: (
       <path
         strokeLinecap="round"
@@ -71,7 +67,7 @@ const STEPS = [
     ),
     gradient: 'from-accent-purple to-brand-400',
     shadow: 'shadow-[#7B61FF]/20',
-    color: 'purple',
+    accentBorder: 'border-l-[#7B61FF]',
   },
 ];
 
@@ -94,34 +90,39 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
   }, [stepsVisible, paused]);
 
   const cardBg = dark
-    ? 'bg-white/[0.06] border-white/10 backdrop-blur-sm'
+    ? 'bg-white/[0.05] border-white/[0.08] backdrop-blur-md'
     : 'bg-white border-gray-200/50 shadow-card';
   const textHeading = dark ? 'text-white' : 'text-gray-900';
-  const textBody = dark ? 'text-white/80' : 'text-gray-600';
-  const textMuted = dark ? 'text-white/70' : 'text-gray-500';
-  const textChevron = dark ? 'text-white/50' : 'text-gray-400';
-  const hoverBg = dark ? 'hover:bg-white/5' : 'hover:bg-gray-50';
-  const borderColor = dark ? 'border-white/10' : 'border-gray-100';
+  const textBody = dark ? 'text-white/75' : 'text-gray-600';
+  const textMuted = dark ? 'text-white/60' : 'text-gray-500';
+  const textChevron = dark ? 'text-white/40' : 'text-gray-400';
+  const hoverBg = dark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50';
+  const borderColor = dark ? 'border-white/[0.08]' : 'border-gray-100';
 
   return (
-    <div className="space-y-4">
-      {/* Collapsible founder message */}
-      <div className={`rounded-2xl border overflow-hidden ${cardBg}`}>
+    <div className="space-y-3">
+      {/* Why I built Fintech Commons — with personal intro */}
+      <div className={`rounded-2xl border overflow-hidden transition-all duration-300 ${cardBg}`}>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`w-full flex items-center justify-between px-5 py-4 text-left ${hoverBg} transition-colors`}
+          className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${hoverBg} transition-colors`}
           aria-expanded={!collapsed}
         >
-          <div>
-            <span className={`text-sm font-semibold ${dark ? 'text-white/80' : 'text-gray-700'}`}>
-              Why I built Fintech Commons
-            </span>
-            <p className={`text-xs mt-0.5 ${dark ? 'text-white/40' : 'text-gray-400'}`}>
-              Job search is broken. Here's what I'm doing about it.
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-500 to-accent-pink flex items-center justify-center text-sm shadow-lg shadow-brand-500/20 flex-shrink-0">
+              &#x1F44B;
+            </div>
+            <div>
+              <span className={`text-sm font-semibold ${dark ? 'text-white/85' : 'text-gray-700'}`}>
+                {founder.cardTitle}
+              </span>
+              <p className={`text-xs mt-0.5 ${dark ? 'text-white/35' : 'text-gray-400'}`}>
+                {founder.cardSub}
+              </p>
+            </div>
           </div>
           <svg
-            className={`h-4 w-4 ${textChevron} transition-transform duration-300 ${
+            className={`h-4 w-4 ${textChevron} transition-transform duration-300 flex-shrink-0 ${
               collapsed ? '' : 'rotate-180'
             }`}
             fill="none"
@@ -134,13 +135,40 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
         </button>
         <div
           ref={contentRef}
-          className={`overflow-hidden transition-all duration-300 ease-out ${
-            collapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+          className={`overflow-hidden transition-all duration-500 ease-out ${
+            collapsed ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
           }`}
         >
           <div className={`px-5 pb-5 border-t ${borderColor}`}>
-            <p className={`text-sm ${textBody} leading-relaxed whitespace-pre-line mt-4`}>
-              {FOUNDER_TEXT}
+            {/* Personal intro */}
+            <p
+              className={`text-sm ${dark ? 'text-white/70' : 'text-gray-600'} leading-relaxed mt-4 mb-3`}
+            >
+              <span>I'm </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new Event('open-bio'));
+                }}
+                className={`font-semibold ${dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'} transition-colors cursor-pointer`}
+              >
+                Tarique
+              </button>
+              <span>. By day I do biz dev at </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new Event('open-about'));
+                }}
+                className={`font-semibold ${dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'} transition-colors cursor-pointer`}
+              >
+                Brim Financial
+              </button>
+              <span>. By night I built this.</span>
+            </p>
+            {/* Founder story */}
+            <p className={`text-sm ${textBody} leading-relaxed whitespace-pre-line`}>
+              {founder.story}
             </p>
           </div>
         </div>
@@ -153,7 +181,14 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="px-5 sm:px-8 py-6 sm:py-8">
+        <div className="px-5 sm:px-8 py-5 sm:py-6">
+          {/* Section header */}
+          <p
+            className={`text-[10px] font-semibold tracking-[0.15em] uppercase mb-5 ${dark ? 'text-white/30' : 'text-gray-400'}`}
+          >
+            How it works
+          </p>
+
           {/* Step icons row */}
           <div className="flex items-start justify-between sm:justify-center sm:gap-0">
             {STEPS.map((step, i) => {
@@ -168,28 +203,28 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                       setActiveStep(i);
                       setPaused(true);
                     }}
-                    className={`flex flex-col items-center text-center flex-1 transition-all duration-500 cursor-pointer ${
+                    className={`flex flex-col items-center text-center flex-1 transition-all duration-500 cursor-pointer will-change-transform ${
                       stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
-                    style={{ transitionDelay: `${i * 150}ms` }}
+                    style={{ transitionDelay: `${i * 120}ms` }}
                   >
                     <div
-                      className={`relative h-11 w-11 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-lg ${step.shadow} mb-2 sm:mb-3 transition-all duration-500 ${
+                      className={`relative h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-2 sm:mb-3 transition-all duration-500 will-change-transform ${
                         isActive
-                          ? 'scale-110 ring-2 ring-white/30 ring-offset-2 ring-offset-transparent'
+                          ? 'scale-110 shadow-xl ' + step.shadow
                           : isPast
-                            ? 'opacity-60 scale-95'
-                            : 'opacity-40 scale-90'
+                            ? 'opacity-60 scale-95 shadow-md'
+                            : 'opacity-35 scale-90 shadow-sm'
                       }`}
                     >
-                      {/* Pulse ring on active */}
+                      {/* Soft glow on active — replaces ping */}
                       {isActive && (
                         <div
-                          className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${step.gradient} animate-ping opacity-20`}
+                          className={`absolute -inset-1 rounded-2xl bg-gradient-to-br ${step.gradient} opacity-25 blur-md animate-pulse`}
                         />
                       )}
                       <svg
-                        className="h-7 w-7 sm:h-8 sm:w-8 text-white relative z-10"
+                        className="h-6 w-6 sm:h-7 sm:w-7 text-white relative z-10"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -200,7 +235,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                     </div>
                     <p
                       className={`text-xs sm:text-sm font-bold transition-all duration-300 ${
-                        isActive ? textHeading : dark ? 'text-white/40' : 'text-gray-400'
+                        isActive ? textHeading : dark ? 'text-white/35' : 'text-gray-400'
                       }`}
                     >
                       {step.label}
@@ -217,31 +252,31 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                   {/* Connector */}
                   {i < STEPS.length - 1 && (
                     <div
-                      className={`flex items-center pt-5 sm:pt-8 px-0.5 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`}
-                      style={{ transitionDelay: `${i * 150 + 75}ms` }}
+                      className={`flex items-center pt-5 sm:pt-7 px-0.5 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`}
+                      style={{ transitionDelay: `${i * 120 + 60}ms` }}
                     >
                       <div className="relative w-5 sm:w-14 h-1 flex items-center">
                         {/* Background track */}
                         <div
-                          className={`absolute inset-0 h-0.5 top-1/2 -translate-y-1/2 rounded-full ${
-                            dark ? 'bg-white/10' : 'bg-gray-200'
+                          className={`absolute inset-0 h-[2px] top-1/2 -translate-y-1/2 rounded-full ${
+                            dark ? 'bg-white/[0.08]' : 'bg-gray-200'
                           }`}
                         />
-                        {/* Fill bar — animates when this connector is the active transition */}
+                        {/* Fill bar */}
                         <div
-                          className="absolute left-0 h-0.5 top-1/2 -translate-y-1/2 rounded-full transition-all duration-[2000ms] ease-out"
+                          className="absolute left-0 h-[2px] top-1/2 -translate-y-1/2 rounded-full transition-all duration-[2000ms] ease-out"
                           style={{
                             width: activeStep > i ? '100%' : activeStep === i ? '100%' : '0%',
                             background: dark
-                              ? 'linear-gradient(to right, rgba(255,255,255,0.5), rgba(255,255,255,0.3))'
-                              : `linear-gradient(to right, var(--tw-gradient-from, #635BFF), var(--tw-gradient-to, #FF3B8B))`,
+                              ? 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,0.2))'
+                              : `linear-gradient(to right, #635BFF, #FF3B8B)`,
                             opacity: activeStep >= i ? 1 : 0,
                           }}
                         />
                         {/* Traveling dot */}
                         {activeStep === i && (
                           <div
-                            className="absolute h-2 w-2 rounded-full bg-white shadow-lg shadow-white/50 animate-travel-dot"
+                            className="absolute h-1.5 w-1.5 rounded-full bg-white shadow-lg shadow-white/40"
                             style={{
                               animation: `travel-dot ${CYCLE_MS}ms ease-in-out infinite`,
                             }}
@@ -256,33 +291,33 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
           </div>
 
           {/* Active step description — slides in */}
-          <div className="mt-6 sm:mt-8 relative overflow-hidden" style={{ minHeight: '60px' }}>
+          <div className="mt-5 sm:mt-6 relative overflow-hidden" style={{ minHeight: '56px' }}>
             {STEPS.map((step, i) => (
               <div
                 key={step.label}
-                className={`transition-all duration-500 ${
+                className={`transition-all duration-500 ease-out ${
                   activeStep === i
                     ? 'opacity-100 translate-y-0 relative'
                     : 'opacity-0 translate-y-2 absolute inset-x-0 top-0 pointer-events-none'
                 }`}
               >
                 <div
-                  className={`rounded-xl p-4 ${
+                  className={`rounded-xl p-3.5 border-l-2 ${step.accentBorder} ${
                     dark
-                      ? 'bg-white/[0.06] border border-white/10'
-                      : 'bg-gray-50 border border-gray-200/60'
+                      ? 'bg-white/[0.04] border border-l-2 border-white/[0.06]'
+                      : 'bg-gray-50 border border-l-2 border-gray-200/60'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 mb-1">
                     <div
                       className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${step.gradient}`}
                     />
                     <p
-                      className={`text-xs font-semibold ${
-                        dark ? 'text-white/70' : 'text-gray-600'
+                      className={`text-[11px] font-semibold tracking-wide uppercase ${
+                        dark ? 'text-white/50' : 'text-gray-500'
                       }`}
                     >
-                      Step {i + 1}: {step.label}
+                      Step {i + 1} &middot; {step.label}
                     </p>
                   </div>
                   <p className={`text-sm ${textBody} leading-relaxed`}>{step.detail}</p>
@@ -292,7 +327,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
           </div>
 
           {/* Progress dots */}
-          <div className="flex justify-center gap-1.5 mt-4">
+          <div className="flex justify-center gap-2 mt-4">
             {STEPS.map((_, i) => (
               <button
                 key={i}
@@ -302,8 +337,8 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   activeStep === i
-                    ? `h-1.5 w-6 ${dark ? 'bg-white/60' : 'bg-brand-500'}`
-                    : `h-1.5 w-1.5 ${dark ? 'bg-white/20' : 'bg-gray-300'} hover:${dark ? 'bg-white/40' : 'bg-gray-400'}`
+                    ? `h-2 w-7 ${dark ? 'bg-white/50' : 'bg-brand-500'}`
+                    : `h-2 w-2 ${dark ? 'bg-white/15 hover:bg-white/30' : 'bg-gray-300 hover:bg-gray-400'}`
                 }`}
                 aria-label={`Go to step ${i + 1}`}
               />
@@ -313,14 +348,18 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
 
         {/* Bottom strip */}
         <div
-          className={`border-t ${borderColor} px-5 sm:px-8 py-3 flex items-center justify-between ${dark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}
+          className={`border-t ${borderColor} px-5 sm:px-8 py-2.5 flex items-center justify-between ${dark ? 'bg-white/[0.02]' : 'bg-gray-50'}`}
         >
-          <p className={`text-xs ${textMuted}`}>
-            Automation does the heavy lifting. The trust stays human.
+          <p className={`text-xs ${dark ? 'text-white/35' : 'text-gray-400'}`}>
+            {founder.bottomStrip}
           </p>
           <Link
             to="/submit"
-            className="text-xs font-semibold text-brand-500 hover:text-brand-400 transition-colors flex items-center gap-1"
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-200 ${
+              dark
+                ? 'bg-white/[0.08] text-white/80 hover:bg-white/[0.14] hover:text-white'
+                : 'bg-brand-500 text-white hover:bg-brand-600'
+            }`}
           >
             Submit a role
             <svg

@@ -64,6 +64,7 @@ export default {
         'spin-slow': 'spin 6s linear infinite',
         'circuit-draw': 'circuitDraw 3s ease-out forwards',
         'circuit-pulse': 'circuitPulse 4s ease-in-out infinite',
+        'wave': 'wave 1.8s ease-in-out infinite',
       },
       keyframes: {
         shimmer: {
@@ -117,6 +118,15 @@ export default {
         circuitPulse: {
           '0%, 100%': { opacity: '0.3' },
           '50%': { opacity: '0.7' },
+        },
+        wave: {
+          '0%': { transform: 'rotate(0deg)' },
+          '10%': { transform: 'rotate(14deg)' },
+          '20%': { transform: 'rotate(-8deg)' },
+          '30%': { transform: 'rotate(14deg)' },
+          '40%': { transform: 'rotate(-4deg)' },
+          '50%': { transform: 'rotate(10deg)' },
+          '60%, 100%': { transform: 'rotate(0deg)' },
         },
       },
     },

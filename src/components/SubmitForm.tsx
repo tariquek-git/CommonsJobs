@@ -60,9 +60,9 @@ export default function SubmitForm() {
         setAiFallback(true);
         const errorType = res.error_type;
         if (errorType === 'timeout') {
-          toast('AI took too long — try again or fill in manually.', 'info');
+          toast('AI took too long. Try again or fill in manually.', 'info');
         } else {
-          toast('AI temporarily unavailable — you can still edit and submit manually.', 'info');
+          toast('AI temporarily unavailable. You can still edit and submit manually.', 'info');
         }
         posthog?.capture('ai_humanize_failed', {
           latency_ms: latencyMs,
@@ -151,7 +151,7 @@ export default function SubmitForm() {
         if (missing.length > 0) {
           toast(`Humanized! Please fill in: ${missing.join(', ')}`, 'info');
         } else {
-          toast('Job post humanized — all fields filled!', 'success');
+          toast('Job post humanized. All fields filled!', 'success');
         }
       }
     } catch (err) {
@@ -166,9 +166,9 @@ export default function SubmitForm() {
 
       // Differentiate error types
       if (err instanceof ApiError && err.status === 429) {
-        toast('Too many requests — try again in a few seconds.', 'error');
+        toast('Too many requests. Try again in a few seconds.', 'error');
       } else {
-        toast('AI is temporarily down — you can still submit manually.', 'error');
+        toast('AI is temporarily down. You can still submit manually.', 'error');
       }
     } finally {
       setHumanizing(false);
@@ -243,9 +243,9 @@ export default function SubmitForm() {
         setAiFallback(true);
         const errorType = res.error_type;
         if (errorType === 'timeout') {
-          toast('AI took too long — try again or fill in manually.', 'info');
+          toast('AI took too long. Try again or fill in manually.', 'info');
         } else {
-          toast('AI unavailable — fill in details manually.', 'info');
+          toast('AI unavailable. Fill in details manually.', 'info');
         }
         posthog?.capture('ai_humanize_failed', {
           latency_ms: latencyMs,
@@ -334,7 +334,7 @@ export default function SubmitForm() {
         if (missing.length > 0) {
           toast(`Humanized! Please fill in: ${missing.join(', ')}`, 'info');
         } else {
-          toast('Scraped & humanized — all fields filled!', 'success');
+          toast('Scraped & humanized. All fields filled!', 'success');
         }
       }
     } catch (err) {
@@ -348,9 +348,9 @@ export default function SubmitForm() {
       posthog?.captureException(err instanceof Error ? err : new Error(String(err)));
       setAiFallback(true);
       if (err instanceof ApiError && err.status === 429) {
-        toast('Too many requests — try again in a few seconds.', 'error');
+        toast('Too many requests. Try again in a few seconds.', 'error');
       } else {
-        toast('AI is temporarily down — you can still submit manually.', 'error');
+        toast('AI is temporarily down. You can still submit manually.', 'error');
       }
     } finally {
       setHumanizing(false);
@@ -640,8 +640,8 @@ export default function SubmitForm() {
           </svg>
           <p className="text-sm text-gray-700">
             <span className="font-semibold text-brand-800">Warm intros:</span> Candidates can ask me
-            to connect them to you. They won't know if you respond — zero pressure. Just give it a
-            real look if you see fit.
+            to connect them to you. They won't know if you respond. Zero pressure. Just give it a
+            look if you see fit.
           </p>
         </div>
       </section>
@@ -737,11 +737,11 @@ export default function SubmitForm() {
           </div>
           {scrapeFailed && (
             <p className="text-xs text-amber-600 mt-1" role="alert">
-              Couldn't auto-fill — enter details manually.
+              Couldn't auto-fill. Enter details manually.
             </p>
           )}
           <p className="text-xs text-gray-400 mt-1">
-            Paste URL and click Auto-fill — we'll scrape and humanize in one step.
+            Paste URL and click Auto-fill. We'll scrape and humanize in one step.
           </p>
         </div>
 
@@ -759,7 +759,7 @@ export default function SubmitForm() {
             onChange={(e) => updateField('description', e.target.value)}
             rows={10}
             className="input-field resize-y"
-            placeholder="Paste the full job description here — corporate speak is welcome, that's what the AI is for..."
+            placeholder="Paste the full job description here. Corporate speak is welcome, that's what the AI is for..."
           />
         </div>
       </section>
@@ -823,8 +823,8 @@ export default function SubmitForm() {
         </div>
 
         <p className="text-xs text-gray-500 -mt-4">
-          Powered by <span className="font-medium text-gray-600">Claude</span> (Anthropic) — AI
-          auto-fills what it can. Review & edit everything below.
+          Powered by <span className="font-medium text-gray-600">Claude</span> (Anthropic). AI
+          auto-fills what it can. Review and edit everything below.
         </p>
 
         {/* AI status banner */}
@@ -870,7 +870,7 @@ export default function SubmitForm() {
               </div>
             )}
             <p className="text-xs text-gray-500 pl-6">
-              You can update any field — AI is just a starting point.
+              You can update any field. AI is just a starting point.
             </p>
           </div>
         )}
@@ -1174,7 +1174,7 @@ export default function SubmitForm() {
           </button>
           <p className="text-sm text-gray-700">
             <span className="font-medium">Allow warm intros</span>
-            <span className="text-gray-500 ml-1">— I'll notify you when candidates reach out</span>
+            <span className="text-gray-500 ml-1">. I'll notify you when candidates reach out</span>
           </p>
         </div>
 
@@ -1196,7 +1196,7 @@ export default function SubmitForm() {
       {(form.title || form.company || form.summary) && (
         <section className="space-y-2">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Preview — how candidates will see it
+            Preview. How candidates will see it
           </p>
           <div className="surface-elevated p-5 relative overflow-hidden">
             <h4 className="font-semibold text-gray-900">{form.title || 'Untitled'}</h4>

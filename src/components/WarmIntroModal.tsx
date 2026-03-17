@@ -101,16 +101,16 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Request received</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
-            I'll connect you if there's a fit — I reach out to the hiring contact at{' '}
+            I'll reach out to the hiring contact at{' '}
             <span className="font-medium text-gray-800">{job.company}</span> on your behalf. If
             there's a connection, you'll hear from me via email.
           </p>
 
           <div className="mt-4 rounded-xl bg-amber-50/40 border border-amber-200/60 p-3">
             <p className="text-xs text-amber-700 leading-relaxed">
-              <span className="font-semibold">Real talk:</span> Not every intro leads to a reply.
-              Hiring timelines shift, roles get filled, people get busy. That's not on you. I'll do
-              my part — the rest is out of my hands.
+              <span className="font-semibold">Honest expectation:</span> Not every intro leads to a
+              reply. Hiring timelines shift, roles get filled, people get busy. That's not on you.
+              I'll do my part.
             </p>
           </div>
 
@@ -215,12 +215,11 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
                   I'll take a careful look and put your name in front of the right person.
                 </p>
                 <p className="text-xs text-brand-500/80 leading-relaxed">
-                  Not automated — I review each request and reach out to the job poster on your
-                  behalf. The poster opted in, so they're expecting it. Just be genuine — real
-                  interest, real profile.
+                  Not automated. I review each request and reach out to the job poster on your
+                  behalf. The poster opted in, so they're expecting it. Just be genuine.
                 </p>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  No guarantees — hiring is messy and timelines shift. But it beats a cold apply.
+                  No guarantees. Hiring is messy and timelines shift. But it beats a cold apply.
                 </p>
               </div>
             </div>

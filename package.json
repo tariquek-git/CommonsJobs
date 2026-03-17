@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@keystatic/core": "^0.5.48",
     "@posthog/react": "^1.8.2",
     "@sentry/react": "^10.43.0",
     "@sentry/vite-plugin": "^5.1.1",

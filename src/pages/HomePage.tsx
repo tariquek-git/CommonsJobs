@@ -93,49 +93,8 @@ export default function HomePage() {
             <span className="text-accent-pink">Jobs</span>
           </h1>
           <p className="text-base sm:text-lg text-white/70 max-w-xl mb-4">
-            Every role is reviewed by a real person. Request a warm intro and skip the black hole.
+            Community-reviewed fintech &amp; banking roles. Real talk, not corporate jargon.
           </p>
-
-          {/* Search bar — in hero */}
-          <div className="relative max-w-2xl mb-4">
-            <svg
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-              />
-            </svg>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title, company, location, or keyword…"
-              className="w-full rounded-xl border border-white/15 bg-white/[0.07] backdrop-blur-sm pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-white/30 transition-all"
-            />
-            {query && (
-              <button
-                onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
-                aria-label="Clear search"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
 
           {/* Trust strip */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/50">
@@ -193,6 +152,13 @@ export default function HomePage() {
               </span>
             )}
           </div>
+
+          {/* Founder section — in hero */}
+          <div className="mt-6 pb-2">
+            <Suspense fallback={null}>
+              <FounderSection dark />
+            </Suspense>
+          </div>
         </div>
       </div>
 
@@ -209,6 +175,47 @@ export default function HomePage() {
           category={category}
           onCategoryChange={setCategory}
         />
+
+        {/* Search bar */}
+        <div className="relative">
+          <svg
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title, company, location, or keyword…"
+            className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all shadow-sm"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Clear search"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
 
         <div className="flex gap-8">
           <FilterRail
@@ -230,11 +237,6 @@ export default function HomePage() {
             />
           </div>
         </div>
-
-        {/* How it works — discovery section below jobs */}
-        <Suspense fallback={null}>
-          <FounderSection />
-        </Suspense>
       </main>
 
       <BottomNav />

@@ -93,7 +93,7 @@ export default function FilterRail({
         )}
 
         <div className="text-sm text-gray-600 leading-relaxed">
-          Real roles, reviewed by a real person. Warm intros available.
+          Every role is reviewed. Warm intros available.
         </div>
       </div>
     </aside>
