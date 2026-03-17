@@ -223,6 +223,43 @@ export async function getAnalytics(token: string): Promise<AnalyticsData> {
   });
 }
 
+// ── External Analytics API ──
+
+export interface ExternalAnalytics {
+  posthog: {
+    pageviews7d: number;
+    uniqueUsers7d: number;
+    topPages: { path: string; views: number }[];
+    sessionCount7d: number;
+  } | null;
+  sentry: {
+    unresolvedIssues: number;
+    errorsToday: number;
+    errors7d: number;
+  } | null;
+  vercel: {
+    lastDeployment: {
+      state: string;
+      createdAt: number;
+      url: string;
+      commitMessage?: string;
+    } | null;
+    domains: string[];
+  } | null;
+  configured: {
+    posthog: boolean;
+    sentry: boolean;
+    vercel: boolean;
+    ga4: boolean;
+  };
+}
+
+export async function getExternalAnalytics(token: string): Promise<ExternalAnalytics> {
+  return request('/admin/analytics/external', {
+    headers: authHeaders(token),
+  });
+}
+
 // ── Warm Intros Admin API ──
 
 export interface WarmIntroRecord {
