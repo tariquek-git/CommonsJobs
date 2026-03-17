@@ -55,7 +55,7 @@ export default function HomePage() {
   }, [jobs, query]);
 
   useEffect(() => {
-    document.title = 'Fintech Commons — Real roles. Warm intros.';
+    document.title = 'Fintech Commons | Vetted Fintech Jobs & Warm Intros';
     return () => {
       document.title = 'Fintech Commons';
     };
