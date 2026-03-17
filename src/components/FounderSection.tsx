@@ -22,7 +22,7 @@ const STEPS = [
     ),
     gradient: 'from-brand-500 to-brand-600',
     shadow: 'shadow-brand-500/20',
-    accentBorder: 'border-l-brand-500',
+    accentColor: 'bg-brand-500',
   },
   {
     label: stepsConfig.items[1].label,
@@ -37,7 +37,7 @@ const STEPS = [
     ),
     gradient: 'from-accent-pink to-accent-orange',
     shadow: 'shadow-[#FF3B8B]/20',
-    accentBorder: 'border-l-[#FF3B8B]',
+    accentColor: 'bg-[#FF3B8B]',
   },
   {
     label: stepsConfig.items[2].label,
@@ -52,7 +52,7 @@ const STEPS = [
     ),
     gradient: 'from-emerald-500 to-emerald-600',
     shadow: 'shadow-emerald-500/20',
-    accentBorder: 'border-l-emerald-500',
+    accentColor: 'bg-emerald-500',
   },
   {
     label: stepsConfig.items[3].label,
@@ -67,7 +67,7 @@ const STEPS = [
     ),
     gradient: 'from-accent-purple to-brand-400',
     shadow: 'shadow-[#7B61FF]/20',
-    accentBorder: 'border-l-[#7B61FF]',
+    accentColor: 'bg-[#7B61FF]',
   },
 ];
 
@@ -89,29 +89,28 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
     return () => clearInterval(timer);
   }, [stepsVisible, paused]);
 
-  const cardBg = dark
-    ? 'bg-white/[0.05] border-white/[0.08] backdrop-blur-md'
-    : 'bg-white border-gray-200/50 shadow-card';
   const textHeading = dark ? 'text-white' : 'text-gray-900';
   const textBody = dark ? 'text-white/75' : 'text-gray-600';
   const textMuted = dark ? 'text-white/60' : 'text-gray-500';
-  const textChevron = dark ? 'text-white/40' : 'text-gray-400';
-  const hoverBg = dark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50';
   const borderColor = dark ? 'border-white/[0.08]' : 'border-gray-100';
 
   return (
-    <div className="space-y-3">
-      {/* Why I built Fintech Commons — with personal intro */}
-      <div className={`rounded-2xl border overflow-hidden transition-all duration-300 ${cardBg}`}>
+    <div className="space-y-4">
+      {/* ── Why I built Fintech Commons — collapsible ── */}
+      <div
+        className={`rounded-2xl border overflow-hidden transition-colors duration-200 ${
+          dark ? 'bg-white/[0.04] border-white/[0.08]' : 'bg-white border-gray-200/50 shadow-card'
+        }`}
+      >
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${hoverBg} transition-colors`}
+          className="w-full flex items-center justify-between px-5 py-3.5 text-left group"
           aria-expanded={!collapsed}
         >
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-500 to-accent-pink flex items-center justify-center text-sm shadow-lg shadow-brand-500/20 flex-shrink-0">
+            <span className="text-lg flex-shrink-0" role="img" aria-label="wave">
               &#x1F44B;
-            </div>
+            </span>
             <div>
               <span className={`text-sm font-semibold ${dark ? 'text-white/85' : 'text-gray-700'}`}>
                 {founder.cardTitle}
@@ -122,9 +121,9 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
             </div>
           </div>
           <svg
-            className={`h-4 w-4 ${textChevron} transition-transform duration-300 flex-shrink-0 ${
-              collapsed ? '' : 'rotate-180'
-            }`}
+            className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${
+              dark ? 'text-white/30' : 'text-gray-400'
+            } ${collapsed ? '' : 'rotate-180'} group-hover:${dark ? 'text-white/50' : 'text-gray-500'}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -133,98 +132,249 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+
         <div
           ref={contentRef}
-          className={`overflow-hidden transition-all duration-500 ease-out ${
-            collapsed ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
+          className={`grid transition-all duration-500 ease-out ${
+            collapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'
           }`}
         >
-          <div className={`px-5 pb-5 border-t ${borderColor}`}>
-            {/* Personal intro */}
-            <p
-              className={`text-sm ${dark ? 'text-white/70' : 'text-gray-600'} leading-relaxed mt-4 mb-3`}
-            >
-              <span>I'm </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.dispatchEvent(new Event('open-bio'));
-                }}
-                className={`font-semibold ${dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'} transition-colors cursor-pointer`}
+          <div className="overflow-hidden">
+            <div className={`px-5 pb-5 border-t ${borderColor}`}>
+              {/* Personal intro */}
+              <p
+                className={`text-sm leading-relaxed mt-4 mb-3 ${
+                  dark ? 'text-white/70' : 'text-gray-600'
+                }`}
               >
-                Tarique
-              </button>
-              <span>. By day I do biz dev at </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.dispatchEvent(new Event('open-about'));
-                }}
-                className={`font-semibold ${dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'} transition-colors cursor-pointer`}
-              >
-                Brim Financial
-              </button>
-              <span>. By night I built this.</span>
-            </p>
-            {/* Founder story */}
-            <p className={`text-sm ${textBody} leading-relaxed whitespace-pre-line`}>
-              {founder.story}
-            </p>
+                <span>I'm </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new Event('open-bio'));
+                  }}
+                  className={`font-semibold transition-colors cursor-pointer ${
+                    dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'
+                  }`}
+                >
+                  Tarique
+                </button>
+                <span>. By day I do biz dev at </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new Event('open-about'));
+                  }}
+                  className={`font-semibold transition-colors cursor-pointer ${
+                    dark ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-brand-500'
+                  }`}
+                >
+                  Brim Financial
+                </button>
+                <span>. By night I built this.</span>
+              </p>
+              {/* Founder story */}
+              <p className={`text-sm ${textBody} leading-relaxed whitespace-pre-line`}>
+                {founder.story}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* How It Works — animated pipeline */}
+      {/* ── How It Works ── */}
       <div
         ref={stepsRef}
-        className={`rounded-2xl border overflow-hidden ${cardBg}`}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
+        className={`rounded-2xl border overflow-hidden ${
+          dark ? 'bg-white/[0.04] border-white/[0.08]' : 'bg-white border-gray-200/50 shadow-card'
+        }`}
       >
         <div className="px-5 sm:px-8 py-5 sm:py-6">
-          {/* Section header */}
+          {/* Section label */}
           <p
-            className={`text-[10px] font-semibold tracking-[0.15em] uppercase mb-5 ${dark ? 'text-white/30' : 'text-gray-400'}`}
+            className={`text-[10px] font-semibold tracking-[0.15em] uppercase mb-5 ${
+              dark ? 'text-white/30' : 'text-gray-400'
+            }`}
           >
             How it works
           </p>
 
-          {/* Step icons row */}
-          <div className="flex items-start justify-between sm:justify-center sm:gap-0">
-            {STEPS.map((step, i) => {
-              const isActive = activeStep === i;
-              const isPast = activeStep > i;
+          {/* ─── Desktop: horizontal stepper + detail panel ─── */}
+          <div className="hidden md:block">
+            {/* Horizontal step bar */}
+            <div className="flex items-center justify-between mb-6">
+              {STEPS.map((step, i) => {
+                const isActive = activeStep === i;
+                const isPast = activeStep > i;
+                return (
+                  <div key={step.label} className="contents">
+                    <button
+                      onClick={() => {
+                        setActiveStep(i);
+                        setPaused(true);
+                      }}
+                      onMouseEnter={() => {
+                        setActiveStep(i);
+                        setPaused(true);
+                      }}
+                      onMouseLeave={() => setPaused(false)}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 cursor-pointer ${
+                        isActive ? (dark ? 'bg-white/[0.07]' : 'bg-gray-50') : ''
+                      } ${stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+                      style={{ transitionDelay: `${i * 80}ms` }}
+                    >
+                      {/* Numbered icon */}
+                      <div
+                        className={`relative h-10 w-10 rounded-xl bg-gradient-to-br ${step.gradient} flex items-center justify-center flex-shrink-0 transition-all duration-400 ${
+                          isActive
+                            ? 'scale-110 shadow-lg ' + step.shadow
+                            : isPast
+                              ? 'opacity-50'
+                              : 'opacity-25'
+                        }`}
+                      >
+                        {isActive && (
+                          <div
+                            className={`absolute -inset-1 rounded-xl bg-gradient-to-br ${step.gradient} opacity-20 blur-md animate-pulse`}
+                          />
+                        )}
+                        <svg
+                          className="h-5 w-5 text-white relative z-10"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          {step.icon}
+                        </svg>
+                      </div>
+                      <div className="text-left">
+                        <p
+                          className={`text-sm font-semibold transition-colors duration-300 ${
+                            isActive ? textHeading : dark ? 'text-white/35' : 'text-gray-400'
+                          }`}
+                        >
+                          {step.label}
+                        </p>
+                        <p
+                          className={`text-[11px] transition-colors duration-300 ${
+                            isActive ? textMuted : dark ? 'text-white/20' : 'text-gray-300'
+                          }`}
+                        >
+                          {step.sub}
+                        </p>
+                      </div>
+                    </button>
 
-              return (
-                <div key={step.label} className="contents">
-                  {/* Step */}
-                  <button
-                    onClick={() => {
-                      setActiveStep(i);
-                      setPaused(true);
-                    }}
-                    className={`flex flex-col items-center text-center flex-1 transition-all duration-500 cursor-pointer will-change-transform ${
-                      stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    {/* Connector arrow */}
+                    {i < STEPS.length - 1 && (
+                      <svg
+                        className={`h-4 w-4 flex-shrink-0 transition-all duration-500 ${
+                          activeStep > i
+                            ? dark
+                              ? 'text-white/30'
+                              : 'text-brand-500/40'
+                            : dark
+                              ? 'text-white/10'
+                              : 'text-gray-200'
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Detail panel */}
+            <div className="relative overflow-hidden" style={{ minHeight: '60px' }}>
+              {STEPS.map((step, i) => (
+                <div
+                  key={step.label}
+                  className={`transition-all duration-400 ease-out ${
+                    activeStep === i
+                      ? 'opacity-100 translate-y-0 relative'
+                      : 'opacity-0 translate-y-2 absolute inset-x-0 top-0 pointer-events-none'
+                  }`}
+                >
+                  <div
+                    className={`flex items-start gap-3 rounded-xl px-4 py-3 ${
+                      dark ? 'bg-white/[0.03]' : 'bg-gray-50/80'
                     }`}
-                    style={{ transitionDelay: `${i * 120}ms` }}
                   >
                     <div
-                      className={`relative h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-2 sm:mb-3 transition-all duration-500 will-change-transform ${
-                        isActive
-                          ? 'scale-110 shadow-xl ' + step.shadow
-                          : isPast
-                            ? 'opacity-60 scale-95 shadow-md'
-                            : 'opacity-35 scale-90 shadow-sm'
+                      className={`h-5 w-1 rounded-full flex-shrink-0 mt-0.5 bg-gradient-to-b ${step.gradient}`}
+                    />
+                    <div>
+                      <p
+                        className={`text-[11px] font-semibold tracking-wide uppercase mb-1 ${
+                          dark ? 'text-white/40' : 'text-gray-400'
+                        }`}
+                      >
+                        Step {i + 1}
+                      </p>
+                      <p className={`text-sm ${textBody} leading-relaxed`}>{step.detail}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Progress dots */}
+            <div className="flex justify-center gap-1.5 mt-4">
+              {STEPS.map((step, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setActiveStep(i);
+                    setPaused(true);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-400 ${
+                    activeStep === i
+                      ? `w-8 ${step.accentColor}`
+                      : `w-1.5 ${dark ? 'bg-white/15' : 'bg-gray-200'}`
+                  }`}
+                  aria-label={`Step ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* ─── Mobile: vertical timeline ─── */}
+          <div className="md:hidden space-y-0">
+            {STEPS.map((step, i) => {
+              const isActive = activeStep === i;
+              return (
+                <button
+                  key={step.label}
+                  onClick={() => {
+                    setActiveStep(i);
+                    setPaused(true);
+                  }}
+                  className={`w-full text-left flex gap-3.5 transition-all duration-400 ${
+                    stepsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-3'
+                  }`}
+                  style={{ transitionDelay: `${i * 100}ms` }}
+                >
+                  {/* Left: icon + connector line */}
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div
+                      className={`relative h-10 w-10 rounded-xl bg-gradient-to-br ${step.gradient} flex items-center justify-center transition-all duration-400 ${
+                        isActive ? 'scale-110 shadow-lg ' + step.shadow : 'opacity-35 scale-95'
                       }`}
                     >
-                      {/* Soft glow on active — replaces ping */}
                       {isActive && (
                         <div
-                          className={`absolute -inset-1 rounded-2xl bg-gradient-to-br ${step.gradient} opacity-25 blur-md animate-pulse`}
+                          className={`absolute -inset-1 rounded-xl bg-gradient-to-br ${step.gradient} opacity-20 blur-md animate-pulse`}
                         />
                       )}
                       <svg
-                        className="h-6 w-6 sm:h-7 sm:w-7 text-white relative z-10"
+                        className="h-5 w-5 text-white relative z-10"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -233,122 +383,62 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                         {step.icon}
                       </svg>
                     </div>
+                    {/* Connector line */}
+                    {i < STEPS.length - 1 && (
+                      <div
+                        className={`w-0.5 flex-1 my-1.5 rounded-full transition-colors duration-500 ${
+                          activeStep > i
+                            ? dark
+                              ? 'bg-white/20'
+                              : 'bg-brand-500/30'
+                            : dark
+                              ? 'bg-white/[0.06]'
+                              : 'bg-gray-200'
+                        }`}
+                      />
+                    )}
+                  </div>
+
+                  {/* Right: text content */}
+                  <div className={`pb-5 ${i === STEPS.length - 1 ? '' : ''}`}>
                     <p
-                      className={`text-xs sm:text-sm font-bold transition-all duration-300 ${
+                      className={`text-sm font-semibold transition-colors duration-300 ${
                         isActive ? textHeading : dark ? 'text-white/35' : 'text-gray-400'
                       }`}
                     >
                       {step.label}
+                      <span
+                        className={`ml-2 text-[11px] font-normal ${
+                          isActive ? textMuted : dark ? 'text-white/20' : 'text-gray-300'
+                        }`}
+                      >
+                        {step.sub}
+                      </span>
                     </p>
-                    <p
-                      className={`text-[10px] sm:text-xs mt-0.5 transition-all duration-300 leading-tight ${
-                        isActive ? textMuted : dark ? 'text-white/20' : 'text-gray-300'
+                    {/* Detail — only show for active step */}
+                    <div
+                      className={`grid transition-all duration-400 ease-out ${
+                        isActive
+                          ? 'grid-rows-[1fr] opacity-100 mt-1.5'
+                          : 'grid-rows-[0fr] opacity-0'
                       }`}
                     >
-                      {step.sub}
-                    </p>
-                  </button>
-
-                  {/* Connector */}
-                  {i < STEPS.length - 1 && (
-                    <div
-                      className={`flex items-center pt-5 sm:pt-7 px-0.5 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`}
-                      style={{ transitionDelay: `${i * 120 + 60}ms` }}
-                    >
-                      <div className="relative w-5 sm:w-14 h-1 flex items-center">
-                        {/* Background track */}
-                        <div
-                          className={`absolute inset-0 h-[2px] top-1/2 -translate-y-1/2 rounded-full ${
-                            dark ? 'bg-white/[0.08]' : 'bg-gray-200'
-                          }`}
-                        />
-                        {/* Fill bar */}
-                        <div
-                          className="absolute left-0 h-[2px] top-1/2 -translate-y-1/2 rounded-full transition-all duration-[2000ms] ease-out"
-                          style={{
-                            width: activeStep > i ? '100%' : activeStep === i ? '100%' : '0%',
-                            background: dark
-                              ? 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,0.2))'
-                              : `linear-gradient(to right, #635BFF, #FF3B8B)`,
-                            opacity: activeStep >= i ? 1 : 0,
-                          }}
-                        />
-                        {/* Traveling dot */}
-                        {activeStep === i && (
-                          <div
-                            className="absolute h-1.5 w-1.5 rounded-full bg-white shadow-lg shadow-white/40"
-                            style={{
-                              animation: `travel-dot ${CYCLE_MS}ms ease-in-out infinite`,
-                            }}
-                          />
-                        )}
+                      <div className="overflow-hidden">
+                        <p className={`text-[13px] leading-relaxed ${textBody}`}>{step.detail}</p>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                </button>
               );
             })}
-          </div>
-
-          {/* Active step description — slides in */}
-          <div className="mt-5 sm:mt-6 relative overflow-hidden" style={{ minHeight: '56px' }}>
-            {STEPS.map((step, i) => (
-              <div
-                key={step.label}
-                className={`transition-all duration-500 ease-out ${
-                  activeStep === i
-                    ? 'opacity-100 translate-y-0 relative'
-                    : 'opacity-0 translate-y-2 absolute inset-x-0 top-0 pointer-events-none'
-                }`}
-              >
-                <div
-                  className={`rounded-xl p-3.5 border-l-2 ${step.accentBorder} ${
-                    dark
-                      ? 'bg-white/[0.04] border border-l-2 border-white/[0.06]'
-                      : 'bg-gray-50 border border-l-2 border-gray-200/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div
-                      className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${step.gradient}`}
-                    />
-                    <p
-                      className={`text-[11px] font-semibold tracking-wide uppercase ${
-                        dark ? 'text-white/50' : 'text-gray-500'
-                      }`}
-                    >
-                      Step {i + 1} &middot; {step.label}
-                    </p>
-                  </div>
-                  <p className={`text-sm ${textBody} leading-relaxed`}>{step.detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress dots */}
-          <div className="flex justify-center gap-2 mt-4">
-            {STEPS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setActiveStep(i);
-                  setPaused(true);
-                }}
-                className={`rounded-full transition-all duration-300 ${
-                  activeStep === i
-                    ? `h-2 w-7 ${dark ? 'bg-white/50' : 'bg-brand-500'}`
-                    : `h-2 w-2 ${dark ? 'bg-white/15 hover:bg-white/30' : 'bg-gray-300 hover:bg-gray-400'}`
-                }`}
-                aria-label={`Go to step ${i + 1}`}
-              />
-            ))}
           </div>
         </div>
 
         {/* Bottom strip */}
         <div
-          className={`border-t ${borderColor} px-5 sm:px-8 py-2.5 flex items-center justify-between ${dark ? 'bg-white/[0.02]' : 'bg-gray-50'}`}
+          className={`border-t ${borderColor} px-5 sm:px-8 py-2.5 flex items-center justify-between ${
+            dark ? 'bg-white/[0.02]' : 'bg-gray-50'
+          }`}
         >
           <p className={`text-xs ${dark ? 'text-white/35' : 'text-gray-400'}`}>
             {founder.bottomStrip}
