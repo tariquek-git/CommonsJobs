@@ -46,7 +46,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
         {/* Header */}
         <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between">
           <h3 id="terms-modal-title" className="text-lg font-bold text-gray-900">
-            Terms & Conditions
+            The Fine Print
           </h3>
           <button
             onClick={onClose}
@@ -141,6 +141,23 @@ export default function TermsModal({ onClose }: TermsModalProps) {
               disappear entirely. There are no SLAs, no uptime guarantees, and no warranties of any
               kind. Use it as-is. If it helps you land a job or hire someone great, that's the whole
               point.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Open source</h4>
+            <p>
+              Fintech Commons is open source under the{' '}
+              <a
+                href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-500 hover:text-brand-600 font-medium underline underline-offset-2"
+              >
+                MIT License
+              </a>
+              . You're free to use, modify, and distribute the code. If you build something cool
+              with it, let me know.
             </p>
           </div>
 

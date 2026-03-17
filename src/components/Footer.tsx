@@ -10,6 +10,7 @@ export default function Footer() {
   const [showBugReport, setShowBugReport] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAiDisclosure, setShowAiDisclosure] = useState(false);
+  const [showBio, setShowBio] = useState(false);
   const [formText, setFormText] = useState('');
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
@@ -39,8 +40,37 @@ export default function Footer() {
     <>
       <footer className="bg-navy-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Top section — multi-column */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 py-12 border-b border-white/10">
+          {/* Built by Tarique — clickable card */}
+          <div className="py-10 border-b border-white/10">
+            <button
+              onClick={() => setShowBio(true)}
+              className="w-full max-w-lg flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 group cursor-pointer text-left"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/20 text-sm font-bold text-brand-400 shrink-0 group-hover:bg-brand-500/30 transition-colors">
+                TK
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-semibold text-white group-hover:text-brand-300 transition-colors">
+                  Built by Tarique Khan
+                </p>
+                <p className="text-xs text-white/50 mt-0.5">
+                  Business Development at Brim Financial &middot; Tap to read more
+                </p>
+              </div>
+              <svg
+                className="h-5 w-5 text-white/30 group-hover:text-white/60 transition-colors shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Multi-column links */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 py-10 border-b border-white/10">
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -103,19 +133,6 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <a
-                    href="https://www.linkedin.com/in/tariquekhan1/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5"
-                  >
-                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
-                    Built by Tarique
-                  </a>
-                </li>
-                <li>
                   <button
                     onClick={() => setShowContact(true)}
                     className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5"
@@ -163,31 +180,8 @@ export default function Footer() {
                         d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
                       />
                     </svg>
-                    Terms & Conditions
+                    The Fine Print
                   </button>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5"
-                  >
-                    <svg
-                      className="h-3.5 w-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"
-                      />
-                    </svg>
-                    MIT License
-                  </a>
                 </li>
                 <li>
                   <button
@@ -671,6 +665,184 @@ export default function Footer() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Bio Modal — same glass-panel design */}
+      {showBio && (
+        <div
+          className="fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBio(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg glass-panel p-0 overflow-hidden animate-scale-in max-h-[85vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-lg font-bold text-gray-900">About the Builder</h3>
+              <button
+                onClick={() => setShowBio(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+                aria-label="Close"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+              {/* Profile */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-sm font-bold text-brand-600 shrink-0">
+                  TK
+                </div>
+                <div>
+                  <a
+                    href="https://www.linkedin.com/in/tariquekhan1/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-base font-semibold text-gray-900 hover:text-brand-500 transition-colors"
+                  >
+                    Tarique Khan
+                  </a>
+                  <p className="text-xs text-gray-500">
+                    Business Development &middot; Brim Financial
+                  </p>
+                </div>
+              </div>
+
+              {/* Why I built this */}
+              <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
+                <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-2">
+                  Why I built Fintech Commons
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Job search in fintech is broken. Listings are vague, recruiters ghost, and warm
+                  intros only happen if you know the right people. I got tired of watching good
+                  people apply into black holes &mdash; so I built something about it.
+                </p>
+              </div>
+
+              {/* What this is */}
+              <div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Fintech Commons is a community-powered job board where every listing is reviewed
+                  by a real person. AI helps cut through the corporate speak, but a human vets every
+                  role before it goes live. If you see a job here, someone stood behind it.
+                </p>
+              </div>
+
+              {/* Background */}
+              <div className="rounded-xl bg-gray-50 border border-gray-200/60 p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Background
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  I work in business development at{' '}
+                  <a
+                    href="https://www.brimfinancial.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-500 hover:text-brand-600 font-medium"
+                  >
+                    Brim Financial
+                  </a>
+                  , helping banks and brands figure out their card and payments strategy. I&rsquo;ve
+                  spent years in fintech &mdash; across issuing, acquiring, payments infrastructure,
+                  and program management.
+                </p>
+              </div>
+
+              {/* Community */}
+              <div className="rounded-xl bg-emerald-50/50 border border-emerald-200/40 p-4">
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">
+                  Join the community
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                  The board only works if people participate. Post roles, share with your network,
+                  or just connect with others in the space.
+                </p>
+                <a
+                  href="https://chat.whatsapp.com/F2uXa3KjZ3UAzKnrsfx1pG"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                  Join WhatsApp Group
+                </a>
+              </div>
+
+              {/* Contact links */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Get in touch
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="https://www.linkedin.com/in/tariquekhan1/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A66C2]/10 px-3 py-2 text-xs font-medium text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    LinkedIn
+                  </a>
+                  <a
+                    href="mailto:Tarique.khan@brimfinancial.com"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"
+                      />
+                    </svg>
+                    Work Email
+                  </a>
+                  <a
+                    href="mailto:Tariquek@gmail.com"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                      />
+                    </svg>
+                    Personal Email
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

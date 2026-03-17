@@ -178,47 +178,6 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Built by Tarique card */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-28 lg:pb-8">
-        <button
-          onClick={() => window.dispatchEvent(new Event('open-about'))}
-          className="w-full max-w-md mx-auto flex items-center gap-3 rounded-2xl border border-gray-200/60 bg-white p-4 shadow-sm hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-sm font-bold text-brand-600 shrink-0 group-hover:bg-brand-200 transition-colors">
-            TK
-          </div>
-          <div className="text-left min-w-0">
-            <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-500 transition-colors">
-              Built by Tarique Khan
-            </p>
-            <p className="text-xs text-gray-500">Business Development at Brim Financial</p>
-          </div>
-          <div className="ml-auto shrink-0 flex items-center gap-2">
-            <a
-              href="https://www.linkedin.com/in/tariquekhan1/"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-full p-1.5 text-[#0A66C2] hover:bg-[#0A66C2]/10 transition-colors"
-              aria-label="Tarique's LinkedIn"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-            </a>
-            <svg
-              className="h-4 w-4 text-gray-400 group-hover:text-brand-500 transition-colors"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </div>
-        </button>
-      </div>
-
       <BottomNav />
       <JobDetailModal job={selectedJob} onClose={() => setSelectedJob(null)} />
     </div>

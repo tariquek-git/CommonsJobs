@@ -11,8 +11,9 @@ interface FounderSectionProps {
 const STEPS = [
   {
     label: 'Submit',
-    sub: 'You post the role',
-    detail: "Paste a job URL or description. That's it — takes 30 seconds.",
+    sub: 'Post a role in seconds',
+    detail:
+      'Drop a job URL or paste the description. It takes 30 seconds — no account needed, no forms to fill.',
     icon: (
       <path
         strokeLinecap="round"
@@ -26,9 +27,9 @@ const STEPS = [
   },
   {
     label: 'Humanize',
-    sub: 'AI rewrites the fluff',
+    sub: 'AI clears the jargon',
     detail:
-      'AI cuts through the corporate speak and rewrites it as real talk — what someone in the role would actually care about.',
+      'AI rewrites the corporate fluff into real talk — the actual day-to-day, team context, and what matters for someone considering the role.',
     icon: (
       <path
         strokeLinecap="round"
@@ -42,9 +43,9 @@ const STEPS = [
   },
   {
     label: 'Review',
-    sub: 'A human vets it',
+    sub: 'Vetted by a human',
     detail:
-      "I personally review every listing. If it's vague, misleading, or just a recruiter blast — it doesn't go live.",
+      "Every listing is personally reviewed before going live. If it's vague, misleading, or just a recruiter blast — it gets rejected.",
     icon: (
       <path
         strokeLinecap="round"
@@ -58,9 +59,9 @@ const STEPS = [
   },
   {
     label: 'Connect',
-    sub: 'Apply or warm intro',
+    sub: 'Skip the black hole',
     detail:
-      "Apply directly, or request a warm intro — I'll pass your info to the poster. No pressure on either side.",
+      'Apply directly or request a warm intro. Your info goes straight to the person who posted — no recruiters, no black holes, no ghosting.',
     icon: (
       <path
         strokeLinecap="round"
@@ -173,7 +174,7 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                     style={{ transitionDelay: `${i * 150}ms` }}
                   >
                     <div
-                      className={`relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-lg ${step.shadow} mb-3 transition-all duration-500 ${
+                      className={`relative h-11 w-11 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-lg ${step.shadow} mb-2 sm:mb-3 transition-all duration-500 ${
                         isActive
                           ? 'scale-110 ring-2 ring-white/30 ring-offset-2 ring-offset-transparent'
                           : isPast
@@ -198,14 +199,14 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                       </svg>
                     </div>
                     <p
-                      className={`text-sm font-bold transition-all duration-300 ${
+                      className={`text-xs sm:text-sm font-bold transition-all duration-300 ${
                         isActive ? textHeading : dark ? 'text-white/40' : 'text-gray-400'
                       }`}
                     >
                       {step.label}
                     </p>
                     <p
-                      className={`text-xs mt-0.5 hidden sm:block transition-all duration-300 ${
+                      className={`text-[10px] sm:text-xs mt-0.5 transition-all duration-300 leading-tight ${
                         isActive ? textMuted : dark ? 'text-white/20' : 'text-gray-300'
                       }`}
                     >
@@ -216,10 +217,10 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                   {/* Connector */}
                   {i < STEPS.length - 1 && (
                     <div
-                      className={`flex items-center pt-7 sm:pt-8 px-1 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`}
+                      className={`flex items-center pt-5 sm:pt-8 px-0.5 sm:px-3 transition-all duration-500 ${stepsVisible ? 'opacity-100' : 'opacity-0'}`}
                       style={{ transitionDelay: `${i * 150 + 75}ms` }}
                     >
-                      <div className="relative w-8 sm:w-14 h-1 flex items-center">
+                      <div className="relative w-5 sm:w-14 h-1 flex items-center">
                         {/* Background track */}
                         <div
                           className={`absolute inset-0 h-0.5 top-1/2 -translate-y-1/2 rounded-full ${
