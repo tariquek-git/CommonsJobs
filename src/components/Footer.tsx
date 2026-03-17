@@ -735,7 +735,7 @@ export default function Footer() {
             <div className="px-6 py-5 space-y-5">
               {/* Intro */}
               <p className="text-sm text-gray-700 leading-relaxed">
-                By day, I do biz dev at{' '}
+                I do biz dev at{' '}
                 <button
                   onClick={() => {
                     setShowBio(false);
@@ -745,8 +745,10 @@ export default function Footer() {
                 >
                   Brim Financial
                 </button>
-                &mdash; helping banks and fintechs figure out cards, spend, and payments. By night,
-                I build this.
+                . We build card issuing and payments infrastructure for banks, credit unions, and
+                fintechs. I helped bring on partners like Manulife, Affinity CU, and Zolve &mdash;
+                if you&rsquo;re looking to launch a card program for the first time or replace a
+                legacy processor, hit me up. Happy to walk you through how we got them live.
               </p>
 
               {/* Community — prominent position */}
@@ -777,8 +779,8 @@ export default function Footer() {
                 </p>
                 <p className="text-sm text-gray-700 leading-relaxed">
                   Job search in fintech is broken. Listings are vague, recruiters ghost, and warm
-                  intros only happen if you know the right people. I got tired of watching good
-                  people send resumes into the void &mdash; so I built something about it.
+                  intros only happen if you know the right people. I built Fintech Commons to fix
+                  that.
                 </p>
               </div>
 

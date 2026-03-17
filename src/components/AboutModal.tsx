@@ -102,17 +102,16 @@ export default function AboutModal({ onClose }: AboutModalProps) {
 
         <div className="px-6 py-5 space-y-5">
           <p className="text-sm text-gray-700 leading-relaxed mb-2">
-            This is where I work. Brim builds the infrastructure that powers card programs for
-            banks, credit unions, fintechs, and non-bank lenders. We handle everything &mdash;
-            credit, debit, prepaid, secured cards, cross-border payments, ACH, and Real-Time
-            Payments &mdash; so our partners can launch fast and focus on their customers.
+            Brim is a modern card issuing and payments platform. We power credit, debit, prepaid,
+            and secured card programs for banks, credit unions, fintechs, and non-bank lenders. We
+            handle the full stack &mdash; processing, program management, cross-border payments,
+            ACH, and Real-Time Payments.
           </p>
 
           <p className="text-sm text-gray-700 leading-relaxed mb-3">
-            The industry norm for launching a card program is 12&ndash;18 months. We do it in
-            8&ndash;10 weeks. That&rsquo;s the pitch, but honestly &mdash; it&rsquo;s also why
-            I&rsquo;m here. Watching how Brim changes the game for our partners is what got me into
-            fintech in the first place.
+            Most card programs take 12&ndash;18 months to launch. We get partners live in 8&ndash;10
+            weeks. Whether you&rsquo;re launching a card program for the first time or replacing a
+            legacy processor, we can help.
           </p>
 
           {/* Results highlight */}
@@ -305,18 +304,33 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <a
-              href="https://www.linkedin.com/company/baborim/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition-colors shadow-sm"
-            >
-              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-              Brim on LinkedIn
-            </a>
+          {/* CTA */}
+          <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
+            <p className="text-sm text-gray-700 leading-relaxed mb-3">
+              Looking to launch a new card program or replace a legacy processor? Reach out &mdash;
+              happy to show you how we helped Manulife, Affinity CU, and others get live fast.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="https://www.linkedin.com/in/tariquekhan1/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition-colors shadow-sm"
+              >
+                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+                Message me on LinkedIn
+              </a>
+              <a
+                href="https://www.linkedin.com/company/baborim/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                Brim on LinkedIn
+              </a>
+            </div>
           </div>
         </div>
       </div>
