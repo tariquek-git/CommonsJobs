@@ -1,12 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import App from './App';
 import { ToastProvider } from './components/Toast';
+import { initSentry } from './lib/sentry';
 import './index.css';
 
 import posthog from 'posthog-js';
 import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';
+
+// Initialize Sentry before anything else
+initSentry();
 
 posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
@@ -28,79 +33,61 @@ posthog.register({
   utm_campaign: params.get('utm_campaign') || undefined,
 });
 
-class AppErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    posthog.capture('$exception', {
-      $exception_message: error.message,
-      $exception_stack: error.stack,
-      component_stack: info.componentStack,
-    });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'system-ui, sans-serif',
-            padding: '2rem',
-          }}
-        >
-          <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>Something went wrong</div>
-            <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
-              We hit an unexpected error. Try refreshing the page.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '9999px',
-                background: '#635BFF',
-                color: 'white',
-                border: 'none',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Refresh Page
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
+const SentryFallback = () => (
+  <div
+    style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'system-ui, sans-serif',
+      padding: '2rem',
+    }}
+  >
+    <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>Something went wrong</div>
+      <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
+        We hit an unexpected error. Try refreshing the page.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        style={{
+          padding: '0.75rem 1.5rem',
+          borderRadius: '9999px',
+          background: '#635BFF',
+          color: 'white',
+          border: 'none',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Refresh Page
+      </button>
+    </div>
+  </div>
+);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <PostHogProvider client={posthog}>
-      <PostHogErrorBoundary>
-        <AppErrorBoundary>
+    <Sentry.ErrorBoundary
+      fallback={SentryFallback}
+      onError={(error: unknown) => {
+        const err = error instanceof Error ? error : new Error(String(error));
+        posthog.capture('$exception', {
+          $exception_message: err.message,
+          $exception_stack: err.stack,
+        });
+      }}
+    >
+      <PostHogProvider client={posthog}>
+        <PostHogErrorBoundary>
           <BrowserRouter>
             <ToastProvider>
               <App />
             </ToastProvider>
           </BrowserRouter>
-        </AppErrorBoundary>
-      </PostHogErrorBoundary>
-    </PostHogProvider>
+        </PostHogErrorBoundary>
+      </PostHogProvider>
+    </Sentry.ErrorBoundary>
   </React.StrictMode>,
 );
