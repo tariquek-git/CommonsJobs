@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { usePostHog } from '@posthog/react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
-import FounderSection from '../components/FounderSection';
 import FilterRail from '../components/FilterRail';
 import JobGrid from '../components/JobGrid';
 import JobDetailModal from '../components/JobDetailModal';
@@ -13,6 +12,7 @@ import { useJobs } from '../hooks/useJobs';
 import type { Job } from '../lib/types';
 
 const TransactionFlowGlobe = lazy(() => import('../components/TransactionFlowGlobe'));
+const FounderSection = lazy(() => import('../components/FounderSection'));
 
 export default function HomePage() {
   const posthog = usePostHog();
@@ -88,12 +88,13 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-8">
-          <h1 className="text-hero text-white mb-2">Fintech Commons Jobs</h1>
+          <h1 className="text-hero text-white mb-2">Job search is broken.</h1>
           <p className="text-lg text-white/75 max-w-xl mb-6">
-            Fintech roles with a human behind them. Every listing is reviewed. Every intro is
-            personal.
+            Fintech jobs vetted by real humans. Warm intros, no recruiters, no ghost jobs.
           </p>
-          <FounderSection dark />
+          <Suspense fallback={null}>
+            <FounderSection dark />
+          </Suspense>
         </div>
       </div>
 
@@ -110,11 +111,6 @@ export default function HomePage() {
           category={category}
           onCategoryChange={setCategory}
         />
-        <p className="text-sm text-gray-500">
-          Every role below has a real person behind it. Request a warm intro and skip the black
-          hole.
-        </p>
-
         {/* Search bar */}
         <div className="relative">
           <svg

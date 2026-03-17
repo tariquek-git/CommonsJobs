@@ -101,22 +101,18 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         </div>
 
         <div className="px-6 py-5 space-y-5">
-          <p className="text-[11px] font-medium text-brand-600 mb-3">
-            Built for banks, credit unions, fintechs, and non-bank lenders
-          </p>
-
           <p className="text-sm text-gray-700 leading-relaxed mb-2">
-            Brim is one of the fastest growing enterprise fintech companies, powering modern payment
-            experiences for financial institutions, fintechs, and non-FI lenders. Our end-to-end,
-            turnkey platform delivers a full suite of credit, debit, prepaid, and secured card
-            programs &mdash; along with cross-border payments, ACH, and Real-Time Payments.
+            This is where I work. Brim builds the infrastructure that powers card programs for
+            banks, credit unions, fintechs, and non-bank lenders. We handle everything &mdash;
+            credit, debit, prepaid, secured cards, cross-border payments, ACH, and Real-Time
+            Payments &mdash; so our partners can launch fast and focus on their customers.
           </p>
 
           <p className="text-sm text-gray-700 leading-relaxed mb-3">
-            The platform solves one of the industry&rsquo;s biggest challenges: reducing the
-            complexity and timelines of payments and card program launches. Brim&rsquo;s modular
-            stack enables rapid deployment of consumer, SMB, and corporate card programs in as
-            little as 8&ndash;10 weeks, compared to the industry norm of 12&ndash;18 months.
+            The industry norm for launching a card program is 12&ndash;18 months. We do it in
+            8&ndash;10 weeks. That&rsquo;s the pitch, but honestly &mdash; it&rsquo;s also why
+            I&rsquo;m here. Watching how Brim changes the game for our partners is what got me into
+            fintech in the first place.
           </p>
 
           {/* Results highlight */}

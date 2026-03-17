@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePostHog } from '@posthog/react';
 import TermsModal from './TermsModal';
+import AboutModal from './AboutModal';
 
 export default function Footer() {
   const posthog = usePostHog();
@@ -11,6 +12,15 @@ export default function Footer() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAiDisclosure, setShowAiDisclosure] = useState(false);
   const [showBio, setShowBio] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+
+  // Listen for custom event to open About modal from other components
+  useEffect(() => {
+    const handleOpenAbout = () => setShowAbout(true);
+    window.addEventListener('open-about', handleOpenAbout);
+    return () => window.removeEventListener('open-about', handleOpenAbout);
+  }, []);
+
   const [formText, setFormText] = useState('');
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
@@ -143,6 +153,27 @@ export default function Footer() {
                       />
                     </svg>
                     Contact
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setShowAbout(true)}
+                    className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"
+                      />
+                    </svg>
+                    Where I work
                   </button>
                 </li>
               </ul>
@@ -697,97 +728,73 @@ export default function Footer() {
           aria-modal="true"
         >
           <div className="w-full max-w-lg glass-panel p-0 overflow-hidden animate-scale-in max-h-[85vh] overflow-y-auto">
-            {/* Header */}
-            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between z-10">
-              <h3 className="text-lg font-bold text-gray-900">About Me</h3>
-              <button
-                onClick={() => setShowBio(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
-                aria-label="Close"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            {/* Profile header */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-500 via-brand-600 to-purple-600" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+              <div className="relative px-6 pt-5 pb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm text-xl font-bold text-white shrink-0 border border-white/20">
+                      TK
+                    </div>
+                    <div>
+                      <a
+                        href="https://www.linkedin.com/in/tariquekhan1/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-lg font-bold text-white hover:text-white/90 transition-colors"
+                      >
+                        Tarique Khan
+                      </a>
+                      <p className="text-xs text-white/70">
+                        Business Development &middot; Brim Financial
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowBio(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/80 transition-colors"
+                    aria-label="Close"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="px-6 py-5 space-y-5">
-              {/* Profile */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-sm font-bold text-brand-600 shrink-0">
-                  TK
-                </div>
-                <div>
-                  <a
-                    href="https://www.linkedin.com/in/tariquekhan1/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-base font-semibold text-gray-900 hover:text-brand-500 transition-colors"
-                  >
-                    Tarique Khan
-                  </a>
-                  <p className="text-xs text-gray-500">
-                    Business Development &middot; Brim Financial
-                  </p>
-                </div>
-              </div>
+              {/* Intro */}
+              <p className="text-sm text-gray-700 leading-relaxed">
+                By day, I do biz dev at{' '}
+                <button
+                  onClick={() => {
+                    setShowBio(false);
+                    setTimeout(() => setShowAbout(true), 200);
+                  }}
+                  className="text-brand-500 hover:text-brand-600 font-medium"
+                >
+                  Brim Financial
+                </button>
+                &mdash; helping banks and fintechs figure out cards, spend, and payments. By night,
+                I build this.
+              </p>
 
-              {/* Why I built this */}
-              <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
-                <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-2">
-                  Why I built Fintech Commons
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Job search in fintech is broken. Listings are vague, recruiters ghost, and warm
-                  intros only happen if you know the right people. I got tired of watching good
-                  people apply into black holes &mdash; so I built something about it.
-                </p>
-              </div>
-
-              {/* What this is */}
-              <div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Fintech Commons is a community-powered job board where every listing is reviewed
-                  by a real person. AI helps cut through the corporate speak, but a human vets every
-                  role before it goes live. If you see a job here, someone stood behind it.
-                </p>
-              </div>
-
-              {/* Background */}
-              <div className="rounded-xl bg-gray-50 border border-gray-200/60 p-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Background
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  I work in business development at{' '}
-                  <a
-                    href="https://www.brimfinancial.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-500 hover:text-brand-600 font-medium"
-                  >
-                    Brim Financial
-                  </a>
-                  , helping banks and brands figure out their card and payments strategy. I&rsquo;ve
-                  spent years in fintech &mdash; across issuing, acquiring, payments infrastructure,
-                  and program management.
-                </p>
-              </div>
-
-              {/* Community */}
+              {/* Community — prominent position */}
               <div className="rounded-xl bg-emerald-50/50 border border-emerald-200/40 p-4">
                 <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">
                   Join the community
                 </p>
                 <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                  The board only works if people participate. Post roles, share with your network,
-                  or just connect with others in the space.
+                  Post roles, share with your network, or just connect with others in fintech.
                 </p>
                 <a
                   href="https://chat.whatsapp.com/F2uXa3KjZ3UAzKnrsfx1pG"
@@ -800,6 +807,18 @@ export default function Footer() {
                   </svg>
                   Join WhatsApp Group
                 </a>
+              </div>
+
+              {/* Why I built this */}
+              <div className="rounded-xl bg-brand-50/50 border border-brand-200/40 p-4">
+                <p className="text-xs font-semibold text-brand-700 uppercase tracking-wider mb-2">
+                  Why I built this
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Job search in fintech is broken. Listings are vague, recruiters ghost, and warm
+                  intros only happen if you know the right people. I got tired of watching good
+                  people send resumes into the void &mdash; so I built something about it.
+                </p>
               </div>
 
               {/* Contact links */}
@@ -863,6 +882,8 @@ export default function Footer() {
           </div>
         </div>
       )}
+
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
 
       {showContact && (
         <div

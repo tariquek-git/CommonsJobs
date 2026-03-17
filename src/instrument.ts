@@ -46,7 +46,7 @@ if (dsn) {
       'Failed to fetch',
     ],
 
-    // Don't send PII
-    sendDefaultPii: false,
+    // Send default PII (IP, user agent) for richer error context
+    sendDefaultPii: true,
   });
 }

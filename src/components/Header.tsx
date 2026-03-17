@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME } from '../lib/constants';
 import { useScrolled } from '../hooks/useScrolled';
-import AboutModal from './AboutModal';
 import FeedbackBanner from './FeedbackBanner';
 
 interface HeaderProps {
@@ -11,14 +10,6 @@ interface HeaderProps {
 
 export default function Header({ dark = false }: HeaderProps) {
   const location = useLocation();
-  const [showAbout, setShowAbout] = useState(false);
-
-  // Listen for custom event to open About modal from other components
-  useEffect(() => {
-    const handleOpenAbout = () => setShowAbout(true);
-    window.addEventListener('open-about', handleOpenAbout);
-    return () => window.removeEventListener('open-about', handleOpenAbout);
-  }, []);
   const [bannerVisible, setBannerVisible] = useState(
     () => localStorage.getItem('feedback_banner_dismissed') !== '1',
   );
@@ -66,24 +57,6 @@ export default function Header({ dark = false }: HeaderProps) {
             </Link>
 
             <nav className="flex items-center gap-1">
-              <button
-                onClick={() => setShowAbout(true)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ${
-                  onDark
-                    ? 'bg-gradient-to-r from-brand-500/20 to-purple-500/20 text-white border border-white/15 hover:border-white/30 hover:from-brand-500/30 hover:to-purple-500/30'
-                    : 'bg-gradient-to-r from-brand-50 to-purple-50 text-brand-600 border border-brand-200/60 hover:border-brand-300 hover:shadow-sm'
-                }`}
-                title="About Brim Financial"
-              >
-                <div
-                  className={`flex h-5 w-5 items-center justify-center rounded-md text-[9px] font-bold ${
-                    onDark ? 'bg-white/20 text-white' : 'bg-brand-500 text-white'
-                  }`}
-                >
-                  B
-                </div>
-                <span className="hidden sm:inline">About Brim</span>
-              </button>
               <Link
                 to="/"
                 className={`btn-ghost px-4 ${
@@ -114,8 +87,6 @@ export default function Header({ dark = false }: HeaderProps) {
           </div>
         </header>
       </div>
-
-      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
     </>
   );
 }
