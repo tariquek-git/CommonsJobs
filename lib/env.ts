@@ -1,8 +1,4 @@
-const REQUIRED_VARS = [
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'ADMIN_TOKEN_SECRET',
-] as const;
+const REQUIRED_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ADMIN_TOKEN_SECRET'] as const;
 
 const OPTIONAL_VARS = {
   STORAGE_PROVIDER: 'supabase',
@@ -10,7 +6,6 @@ const OPTIONAL_VARS = {
   SUPABASE_CLICKS_TABLE: 'clicks',
   CLIENT_ORIGIN: 'http://localhost:5173',
   TRUST_PROXY: '1',
-  GEMINI_API_KEY: '',
   AI_TIMEOUT_MS: '8000',
 } as const;
 

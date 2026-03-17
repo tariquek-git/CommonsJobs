@@ -40,6 +40,7 @@ export default function CompanyLogo({
       <img
         src={currentUrl}
         alt={`${companyName} logo`}
+        loading="lazy"
         className={`${sizeClasses} rounded-xl object-contain bg-gray-100 p-1.5 transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
         onError={() => {
           setLoaded(false);

@@ -674,7 +674,7 @@ export default function Footer() {
           <div className="w-full max-w-lg glass-panel p-0 overflow-hidden animate-scale-in max-h-[85vh] overflow-y-auto">
             {/* Header */}
             <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between z-10">
-              <h3 className="text-lg font-bold text-gray-900">About the Builder</h3>
+              <h3 className="text-lg font-bold text-gray-900">About Me</h3>
               <button
                 onClick={() => setShowBio(false)}
                 className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"

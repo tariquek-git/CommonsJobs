@@ -66,7 +66,9 @@ function JsonLd({ job }: { job: Job }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(schema).replace(/<\/script/gi, '<\\/script'),
+      }}
     />
   );
 }
