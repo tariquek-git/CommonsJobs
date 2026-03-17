@@ -13,6 +13,21 @@ import './index.css';
 // Warn about missing env vars in development
 checkClientEnv();
 
+// Load Google Tag Manager dynamically (avoids Vite inline-script parse errors)
+(function () {
+  const w = window as unknown as Record<string, unknown>;
+  const d = document;
+  const l = 'dataLayer';
+  const i = 'GTM-5D8P73GF';
+  (w[l] as unknown[]) = (w[l] as unknown[]) || [];
+  (w[l] as unknown[]).push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+  const f = d.getElementsByTagName('script')[0];
+  const j = d.createElement('script');
+  j.async = true;
+  j.src = `https://www.googletagmanager.com/gtm.js?id=${i}`;
+  f.parentNode!.insertBefore(j, f);
+})();
+
 import posthog from 'posthog-js';
 import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';
 
