@@ -109,7 +109,7 @@ export default function Header({ dark = false }: HeaderProps) {
                 className={`btn-ghost px-4 flex items-center gap-1.5 ${
                   onDark ? 'text-white/70 hover:text-white hover:bg-white/10' : ''
                 }`}
-                title="About Brim & Me"
+                title="About Brim"
               >
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
@@ -118,7 +118,7 @@ export default function Header({ dark = false }: HeaderProps) {
                 >
                   TK
                 </div>
-                <span className="hidden sm:inline text-sm">About Brim & Me</span>
+                <span className="hidden sm:inline text-sm">About Brim</span>
               </button>
               <Link to="/submit" className="btn-primary text-sm hidden lg:inline-flex">
                 <svg
