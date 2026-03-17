@@ -55,7 +55,7 @@ export default function HomePage() {
   }, [jobs, query]);
 
   useEffect(() => {
-    document.title = 'Fintech Commons — Fintech & Banking Jobs';
+    document.title = 'Fintech Commons — Real roles. Warm intros.';
     return () => {
       document.title = 'Fintech Commons';
     };
@@ -93,7 +93,7 @@ export default function HomePage() {
             <span className="text-accent-pink">Jobs</span>
           </h1>
           <p className="text-lg text-white/75 max-w-xl mb-6">
-            Fintech jobs vetted by real humans. Warm intros, no recruiters, no ghost jobs.
+            Every role is reviewed by a real person. Request a warm intro and skip the black hole.
           </p>
           <Suspense fallback={null}>
             <FounderSection dark />
