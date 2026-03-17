@@ -57,6 +57,22 @@ export default function Header({ dark = false }: HeaderProps) {
             </Link>
 
             <nav className="flex items-center gap-1">
+              <button
+                onClick={() => window.dispatchEvent(new Event('open-bio'))}
+                className={`btn-ghost px-3 text-sm hidden sm:inline-flex ${
+                  onDark ? 'text-white/70 hover:text-white hover:bg-white/10' : ''
+                }`}
+              >
+                Built by Tarique
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new Event('open-about'))}
+                className={`btn-ghost px-3 text-sm hidden sm:inline-flex ${
+                  onDark ? 'text-white/70 hover:text-white hover:bg-white/10' : ''
+                }`}
+              >
+                Where I work
+              </button>
               <Link
                 to="/"
                 className={`btn-ghost px-4 ${

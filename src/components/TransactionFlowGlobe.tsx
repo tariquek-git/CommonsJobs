@@ -19,7 +19,7 @@ const nodes = [
   { label: 'Merchant', angle: 30, isBrim: false },
   { label: 'Acquirer', angle: 90, isBrim: false },
   { label: 'Network', angle: 150, isBrim: false },
-  { label: 'Issuer', angle: 210, isBrim: false },
+  { label: 'Brim', angle: 210, isBrim: true },
   { label: 'Settlement', angle: 270, isBrim: false },
 ];
 
@@ -107,10 +107,13 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       });
     }
 
+    // Round to half-pixel for crisp lines
+    const r2 = (v: number) => Math.round(v * 2) / 2;
+
     function nodePos(idx: number, rotOff: number, cx: number, cy: number) {
       const n = nodes[idx];
       const a = ((n.angle + rotOff) * Math.PI) / 180;
-      return { x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R };
+      return { x: r2(cx + Math.cos(a) * R), y: r2(cy + Math.sin(a) * R) };
     }
 
     function pathPt(fi: number, ti: number, t: number, rotOff: number, cx: number, cy: number) {
@@ -165,23 +168,26 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
       const ctx = g!;
 
-      // Orbital rings
+      // Orbital rings — rounded center for crisp rendering
+      const rcx = r2(cx);
+      const rcy = r2(cy);
+
       ctx.beginPath();
-      ctx.arc(cx, cy, R + 30, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 0.5;
+      ctx.arc(rcx, rcy, R + 30, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 0.5;
+      ctx.arc(rcx, rcy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, R * 0.5, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-      ctx.lineWidth = 0.5;
+      ctx.arc(rcx, rcy, R * 0.5, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       // Connection paths
@@ -204,8 +210,8 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
         ctx.beginPath();
         ctx.moveTo(p1.x, p1.y);
         ctx.quadraticCurveTo(mx, my, p2.x, p2.y);
-        ctx.strokeStyle = `rgba(${cl.r},${cl.g},${cl.b},0.18)`;
-        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = `rgba(${cl.r},${cl.g},${cl.b},0.14)`;
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
 
@@ -265,48 +271,51 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
         const pos = nodePos(idx, rotOff, cx, cy);
         const br = 15 + Math.sin(time * 0.001 + idx * 1.1) * 2;
 
+        const px = r2(pos.x);
+        const py = r2(pos.y);
+
         if (n.isBrim) {
           // Breathing ring
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, br, 0, Math.PI * 2);
+          ctx.arc(px, py, br, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(212,168,67,0.12)';
-          ctx.lineWidth = 0.5;
+          ctx.lineWidth = 1;
           ctx.stroke();
 
           // Node circle
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+          ctx.arc(px, py, 10, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(255,255,255,0.12)';
           ctx.fill();
           ctx.strokeStyle = 'rgba(212,168,67,0.4)';
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = 1;
           ctx.stroke();
 
           // Center dot
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+          ctx.arc(px, py, 3, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(212,168,67,0.7)';
           ctx.fill();
         } else {
           // Breathing ring
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, br, 0, Math.PI * 2);
+          ctx.arc(px, py, br, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-          ctx.lineWidth = 0.5;
+          ctx.lineWidth = 1;
           ctx.stroke();
 
           // Node circle
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 9, 0, Math.PI * 2);
+          ctx.arc(px, py, 9, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(255,255,255,0.12)';
           ctx.fill();
           ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-          ctx.lineWidth = 0.7;
+          ctx.lineWidth = 1;
           ctx.stroke();
 
           // Center dot
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 2.5, 0, Math.PI * 2);
+          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(212,168,67,0.7)';
           ctx.fill();
         }
@@ -339,7 +348,7 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
       // Center hub
       ctx.beginPath();
-      ctx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+      ctx.arc(rcx, rcy, 1.5, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(255,255,255,0.06)';
       ctx.fill();
 
