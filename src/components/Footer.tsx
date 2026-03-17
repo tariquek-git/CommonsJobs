@@ -40,35 +40,6 @@ export default function Footer() {
     <>
       <footer className="bg-navy-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Built by Tarique — clickable card */}
-          <div className="py-10 border-b border-white/10">
-            <button
-              onClick={() => setShowBio(true)}
-              className="w-full max-w-lg flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 group cursor-pointer text-left"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/20 text-sm font-bold text-brand-400 shrink-0 group-hover:bg-brand-500/30 transition-colors">
-                TK
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-base font-semibold text-white group-hover:text-brand-300 transition-colors">
-                  Built by Tarique Khan
-                </p>
-                <p className="text-xs text-white/50 mt-0.5">
-                  Business Development at Brim Financial &middot; Tap to read more
-                </p>
-              </div>
-              <svg
-                className="h-5 w-5 text-white/30 group-hover:text-white/60 transition-colors shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-          </div>
-
           {/* Multi-column links */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 py-10 border-b border-white/10">
             {/* Brand */}
@@ -131,6 +102,27 @@ export default function Footer() {
                     </svg>
                     Submit a Role
                   </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setShowBio(true)}
+                    className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                      />
+                    </svg>
+                    Built by Tarique
+                  </button>
                 </li>
                 <li>
                   <button

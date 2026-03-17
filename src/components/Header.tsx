@@ -106,19 +106,21 @@ export default function Header({ dark = false }: HeaderProps) {
               </a>
               <button
                 onClick={() => setShowAbout(true)}
-                className={`btn-ghost px-4 flex items-center gap-1.5 ${
-                  onDark ? 'text-white/70 hover:text-white hover:bg-white/10' : ''
+                className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ${
+                  onDark
+                    ? 'bg-gradient-to-r from-brand-500/20 to-purple-500/20 text-white border border-white/15 hover:border-white/30 hover:from-brand-500/30 hover:to-purple-500/30'
+                    : 'bg-gradient-to-r from-brand-50 to-purple-50 text-brand-600 border border-brand-200/60 hover:border-brand-300 hover:shadow-sm'
                 }`}
-                title="About Brim"
+                title="About Brim Financial"
               >
                 <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
-                    onDark ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-500'
+                  className={`flex h-5 w-5 items-center justify-center rounded-md text-[9px] font-bold ${
+                    onDark ? 'bg-white/20 text-white' : 'bg-brand-500 text-white'
                   }`}
                 >
-                  TK
+                  B
                 </div>
-                <span className="hidden sm:inline text-sm">About Brim</span>
+                <span className="hidden sm:inline">About Brim</span>
               </button>
               <Link to="/submit" className="btn-primary text-sm hidden lg:inline-flex">
                 <svg
