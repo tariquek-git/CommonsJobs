@@ -12,7 +12,7 @@ import CircuitLines from '../components/CircuitLines';
 import { useJobs } from '../hooks/useJobs';
 import type { Job } from '../lib/types';
 
-const FintechGlobe = lazy(() => import('../components/FintechGlobe'));
+const TransactionFlowGlobe = lazy(() => import('../components/TransactionFlowGlobe'));
 
 export default function HomePage() {
   const posthog = usePostHog();
@@ -70,7 +70,7 @@ export default function HomePage() {
       <Header dark />
 
       {/* Dark hero zone */}
-      <div className="relative overflow-hidden bg-navy-900">
+      <div className="relative bg-navy-900">
         {/* Warm gradient overlays */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -81,9 +81,9 @@ export default function HomePage() {
         />
 
         {/* Animated globe */}
-        <div className="absolute right-[-10%] top-[-5%] w-[600px] h-[600px] opacity-30 lg:opacity-50 pointer-events-none">
+        <div className="absolute right-8 lg:right-16 top-1/2 -translate-y-1/2 w-[350px] h-[350px] lg:w-[440px] lg:h-[440px] opacity-40 lg:opacity-70 pointer-events-none">
           <Suspense fallback={null}>
-            <FintechGlobe />
+            <TransactionFlowGlobe />
           </Suspense>
         </div>
 
