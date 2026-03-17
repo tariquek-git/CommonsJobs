@@ -295,13 +295,16 @@ export default function Footer() {
       {/* Contact modal */}
       {/* AI & Tools Disclosure Modal */}
       {showAiDisclosure && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowAiDisclosure(false)}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between">
+        <div
+          className="fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAiDisclosure(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg glass-panel p-0 overflow-hidden animate-scale-in max-h-[85vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between z-10">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <svg
                   className="h-5 w-5 text-brand-500"
@@ -418,12 +421,28 @@ export default function Footer() {
                     <p className="text-xs text-gray-500">Transactional email</p>
                   </div>
                   <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Sentry</p>
+                    <p className="text-xs text-gray-500">Error tracking & monitoring</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Google Tag Manager</p>
+                    <p className="text-xs text-gray-500">Tag management & GA</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
                     <p className="text-xs font-semibold text-gray-900">GitHub</p>
                     <p className="text-xs text-gray-500">Version control & CI</p>
                   </div>
                   <div className="rounded-lg bg-gray-50 px-3 py-2">
                     <p className="text-xs font-semibold text-gray-900">React + Vite</p>
                     <p className="text-xs text-gray-500">Frontend framework</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Tailwind CSS</p>
+                    <p className="text-xs text-gray-500">Styling & design system</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-gray-900">Claude Code</p>
+                    <p className="text-xs text-gray-500">AI-powered development</p>
                   </div>
                 </div>
               </div>
@@ -461,18 +480,21 @@ export default function Footer() {
 
       {/* Bug Report Modal */}
       {showBugReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => {
+        <div
+          className="fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
               setShowBugReport(false);
               setFormText('');
               setFormName('');
               setFormEmail('');
               setFormSubmitted(false);
-            }}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm glass-panel p-6 overflow-hidden animate-scale-in space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <svg
@@ -568,18 +590,21 @@ export default function Footer() {
 
       {/* Feedback Modal */}
       {showFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => {
+        <div
+          className="fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
               setShowFeedback(false);
               setFormText('');
               setFormName('');
               setFormEmail('');
               setFormSubmitted(false);
-            }}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm glass-panel p-6 overflow-hidden animate-scale-in space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <svg
@@ -840,12 +865,15 @@ export default function Footer() {
       )}
 
       {showContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowContact(false)}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+        <div
+          className="fixed inset-0 z-[60] flex bg-black/40 backdrop-blur-sm px-4 animate-fade-in items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowContact(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm glass-panel p-6 overflow-hidden animate-scale-in space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Get in touch</h2>
               <button

@@ -39,9 +39,9 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
   if (error) {
     return (
       <div className="surface-elevated p-8 text-center">
-        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mb-3">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 mb-3">
           <svg
-            className="h-6 w-6 text-red-500"
+            className="h-6 w-6 text-amber-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -54,8 +54,26 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
             />
           </svg>
         </div>
-        <p className="text-red-600 font-semibold">Something went wrong</p>
-        <p className="text-gray-500 text-sm mt-1">{error}</p>
+        <p className="text-gray-900 font-semibold">Having trouble loading roles</p>
+        <p className="text-gray-500 text-sm mt-1">
+          This usually resolves in a few seconds. Give it another shot.
+        </p>
+        <button onClick={() => window.location.reload()} className="btn-primary mt-4 text-sm">
+          <svg
+            className="h-4 w-4 mr-1.5 -ml-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
+            />
+          </svg>
+          Try Again
+        </button>
       </div>
     );
   }

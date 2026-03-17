@@ -169,6 +169,9 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                   <img
                     src={`https://logo.clearbit.com/${client.url}`}
                     alt={client.name}
+                    width={16}
+                    height={16}
+                    loading="lazy"
                     className="h-4 w-4 rounded-sm object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
