@@ -270,37 +270,68 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           </div>
 
           {/* Recognition */}
-          <div className="mb-4">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
-              Recognition
-            </p>
-            <div className="flex flex-wrap gap-2">
+          {/* Recognition */}
+          <div className="rounded-xl bg-gradient-to-br from-amber-50/80 to-white border border-amber-200/40 p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-widest">
+                Recognition
+              </p>
+              <a
+                href="https://www.brimfinancial.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-medium text-brand-500 hover:text-brand-600 transition-colors flex items-center gap-1"
+              >
+                Learn more
+                <svg
+                  className="h-2.5 w-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+                  />
+                </svg>
+              </a>
+            </div>
+            <div className="space-y-1.5">
               {[
                 { award: 'Best Card Issuing Platform', event: 'Big Bank Theory 2025' },
                 { award: 'Best Card for SMBs', event: 'SMB Finance 2025' },
                 { award: 'PayTech Start-up of the Year', event: 'Banking Tech Awards 2025' },
                 { award: 'Best Business Payments System', event: 'PayTech Awards 2025' },
                 { award: 'Best as-a-Service Solution', event: 'Banking Tech Awards USA 2025' },
-                { award: 'Deloitte Fast 50 Canada', event: '' },
-                { award: 'Deloitte Fast 500 NA', event: '' },
               ].map((item) => (
-                <span
-                  key={item.award}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-white/80 border border-brand-100/60 px-2.5 py-1.5 text-[10px] font-medium text-gray-600"
-                >
+                <div key={item.award} className="flex items-center gap-2 text-[11px]">
                   <svg
-                    className="h-3 w-3 text-amber-500 shrink-0"
+                    className="h-3.5 w-3.5 text-amber-500 shrink-0"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
                     <path d="M10 1l2.928 6.472L20 8.347l-5.072 4.629L16.18 20 10 16.472 3.82 20l1.252-7.024L0 8.347l7.072-.875L10 1z" />
                   </svg>
-                  <span>
-                    {item.award}
-                    {item.event && <span className="text-gray-400"> &middot; {item.event}</span>}
-                  </span>
-                </span>
+                  <span className="font-medium text-gray-700">{item.award}</span>
+                  <span className="text-gray-400">&middot; {item.event}</span>
+                </div>
               ))}
+            </div>
+            <div className="flex gap-2 mt-3 pt-3 border-t border-amber-200/40">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-white/80 border border-amber-200/50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                <svg className="h-3 w-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" />
+                </svg>
+                Deloitte Fast 50 Canada
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-white/80 border border-amber-200/50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                <svg className="h-3 w-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" />
+                </svg>
+                Deloitte Fast 500 NA
+              </span>
             </div>
           </div>
 
