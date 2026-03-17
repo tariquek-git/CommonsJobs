@@ -45,8 +45,11 @@ export default function AboutModal({ onClose }: AboutModalProps) {
 
         {/* Header */}
         <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-6 py-4 flex items-center justify-between z-10">
-          <h3 id="about-modal-title" className="text-lg font-bold text-gray-900">
-            About Brim & Me
+          <h3
+            id="about-modal-title"
+            className="text-lg font-bold bg-gradient-to-r from-brand-500 to-purple-600 bg-clip-text text-transparent"
+          >
+            About Brim
           </h3>
           <button
             onClick={onClose}
