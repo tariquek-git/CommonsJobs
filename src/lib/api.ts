@@ -193,6 +193,12 @@ export async function updateJobStatus(token: string, jobId: string, status: stri
   });
 }
 
+export async function getAdminJob(token: string, jobId: string): Promise<Job> {
+  return request(`/admin/jobs/${jobId}`, {
+    headers: authHeaders(token),
+  });
+}
+
 export async function updateJob(token: string, jobId: string, updates: Partial<Job>): Promise<Job> {
   return request(`/admin/jobs/${jobId}`, {
     method: 'PATCH',

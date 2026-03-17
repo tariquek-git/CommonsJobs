@@ -10,6 +10,15 @@ const CompanyPage = lazy(() => import('./pages/CompanyPage'));
 const SubmitPage = lazy(() => import('./pages/SubmitPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
+// Lazy-load admin sub-pages
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const JobsPage = lazy(() => import('./pages/admin/JobsPage'));
+const JobEditorPage = lazy(() => import('./pages/admin/JobEditorPage'));
+const IntrosPage = lazy(() => import('./pages/admin/IntrosPage'));
+const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'));
+const EmailPage = lazy(() => import('./pages/admin/EmailPage'));
+const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+
 function NotFound() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -30,6 +39,7 @@ function NotFound() {
 export default function App() {
   const location = useLocation();
   const posthog = usePostHog();
+  const isAdmin = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     posthog?.capture('$pageview');
@@ -49,11 +59,24 @@ export default function App() {
           <Route path="/job/:id" element={<JobPage />} />
           <Route path="/company/:slug" element={<CompanyPage />} />
           <Route path="/submit" element={<SubmitPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+
+          {/* Admin routes — nested under AdminPage (handles auth + layout) */}
+          <Route path="/admin" element={<AdminPage />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="jobs" element={<JobsPage />} />
+            <Route path="jobs/new" element={<JobEditorPage />} />
+            <Route path="jobs/:id" element={<JobEditorPage />} />
+            <Route path="intros" element={<IntrosPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="email" element={<EmailPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-      <Footer />
+      {/* Hide footer on admin pages */}
+      {!isAdmin && <Footer />}
     </>
   );
 }
