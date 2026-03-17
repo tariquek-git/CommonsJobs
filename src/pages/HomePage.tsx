@@ -88,7 +88,10 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-8">
-          <h1 className="text-hero text-white mb-2">Job search is broken.</h1>
+          <h1 className="text-hero text-white mb-2">
+            Fintech Commons <span className="text-white/40">/</span>{' '}
+            <span className="text-accent-pink">Jobs</span>
+          </h1>
           <p className="text-lg text-white/75 max-w-xl mb-6">
             Fintech jobs vetted by real humans. Warm intros, no recruiters, no ghost jobs.
           </p>
