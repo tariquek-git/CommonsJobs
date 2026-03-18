@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabase } from '../../lib/supabase.js';
+import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabase = getSupabase();
     const { data: job } = await supabase
-      .from('jobs')
+      .from(getJobsTable())
       .select(
         'id, title, company, location, country, summary, company_logo_url, company_url, warm_intro_ok, apply_url, employment_type, work_arrangement, salary_range, posted_date, description',
       )
@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const description = job.summary
       ? job.summary.slice(0, 200) + (job.summary.length > 200 ? '...' : '')
       : `${job.title} role at ${job.company}${job.location ? ` in ${job.location}` : ''}. Community-reviewed on Fintech Commons.`;
-    const url = `https://fintechcommons.com/job/${job.id}`;
+    const url = `https://www.fintechcommons.com/job/${job.id}`;
 
     const ogTags = [
       `<meta property="og:type" content="website" />`,
