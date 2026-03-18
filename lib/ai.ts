@@ -15,56 +15,73 @@ function getAI(): Anthropic | null {
 }
 
 // ── Prompt Versioning ──
-export const PROMPT_VERSION = 'v6';
+export const PROMPT_VERSION = 'v8-two-step';
 
-// ── Humanize Job Post ──
+// ── Step 1: Extraction (Haiku — fast, cheap, structured) ──
 
-const HUMANIZE_SYSTEM = `You are a career insider who rewrites corporate job postings into plain, authentic language that resonates with the specific role type.
+const EXTRACT_SYSTEM = `You are a structured data extractor for a fintech job board. Given a job title and description, extract ALL factual fields. Be precise — never guess salary or location if not stated.
 
-CRITICAL STYLE RULE: Every description you write MUST feel unique. Vary your:
-- Opening style: sometimes start with the team, sometimes the problem, sometimes the day-to-day, sometimes a question, sometimes a bold statement about the company
-- Sentence structure: mix short punchy sentences with longer ones. Use fragments occasionally. Ask a rhetorical question now and then.
-- Vocabulary: never reuse the same phrasing across posts. Instead of always saying "you'll be working on", try "the gig is", "day one you're diving into", "think of it as", "your plate looks like", "the core of this is", "what you'd actually do here is"
-- Tone color: some posts can be slightly witty, some more direct, some enthusiastic, some calm and matter-of-fact. Match the energy of the role — a scrappy startup role reads different from a senior bank role.
-- NEVER start two descriptions the same way. NEVER use the same sentence template twice.
+CONTENT CHECK: If the input is NOT a real job posting (spam, offensive, random text, marketing copy, personal ads), set "rejection" to a brief reason and leave all other fields null/empty.
 
-CONTENT CHECK: If the input does NOT look like a legitimate job posting (e.g., spam, offensive content, random text, marketing copy, personal ads), set "rejection" to a brief reason and leave all other fields empty/null.
-
-If pre-extracted metadata is provided, use it as a starting point. Correct any errors you find, but prefer these values over guessing. Focus your effort on the humanized_description and standout_perks.
-
-Your task: Given a job title (may be empty) and corporate job description, return a JSON object with ALL of the following fields:
-
-1. "rejection" — null if this is a real job posting. A brief reason string if it's not (e.g., "Not a job posting", "Spam content").
-2. "title" — The job title. Extract from description if not provided. null if rejected.
-3. "company" — The company name. null if not found or rejected.
-4. "location" — Where the company is headquartered, city/region format (e.g. "Toronto, ON"). If the role is hybrid, use the HQ/office location. If fully remote with no HQ mentioned, use "Remote". null if not found.
-5. "country" — Country name (e.g. "Canada", "United States"). null if not found.
-6. "company_url" — The company's main website URL if mentioned or inferable. null if not found.
-7. "salary_range" — Salary or compensation range if mentioned (e.g. "CAD $120K–$150K", "USD $80K–$100K + equity"). null if not mentioned. Do NOT guess — only extract if explicitly stated.
-8. "employment_type" — One of: "Full-time", "Part-time", "Contract", "Internship", "Freelance". null if not clear.
-9. "work_arrangement" — One of: "Remote", "Hybrid", "On-site". If hybrid, make sure "location" is set to the office/HQ city. null if not mentioned.
-10. "humanized_description" — Rewrite the description in 4-8 sentences. Write like you're telling a friend about this role over coffee. Be specific to what makes THIS role different from every other job with the same title. Pull out the interesting details — the tech stack, the team size, the stage of the product, the real problems they're solving. Every description should feel like it was written by a different person. Empty string if rejected.
-11. "standout_perks" — Short punchy tags (1-3 words each) for genuinely interesting things about this role. Examples: "Equity", "Series A", "Small team", "Open source", "Learning budget", "Founder-led", "Profitable", "4-day week".
-   - DO NOT include: salary, employment type, work arrangement, or standard benefits (health/dental/PTO).
-   - Empty array is fine if nothing stands out. Do NOT pad with generic items.
-12. "category" — Classify this role into ONE broad department. Use your best judgment but keep it high-level. Common examples: "Engineering", "Product", "Design", "Data", "Operations", "Sales/BD", "Marketing", "Finance", "Compliance/Risk", "Leadership". Don't over-split — group similar things (e.g. "DevOps" → "Engineering", "Growth" → "Marketing", "Legal" → "Compliance/Risk", "People/HR" → "Operations"). null if rejected.
-13. "tags" — 3-6 specific keyword tags for this role. These help candidates find jobs via filters. Use lowercase, concise terms. Examples: "python", "react", "payments", "blockchain", "lending", "aws", "senior", "startup", "series-b", "crypto", "regtech", "banking", "api", "mobile", "defi", "fraud", "underwriting". Pick tags specific enough to be useful but common enough to match similar roles. Empty array if rejected.
-
-Return ONLY a valid JSON object, nothing else:
+Return ONLY a valid JSON object:
 {
-  "rejection": null,
-  "title": "...",
-  "company": "..." or null,
-  "location": "..." or null,
-  "country": "..." or null,
-  "company_url": "..." or null,
-  "salary_range": "..." or null,
-  "employment_type": "..." or null,
-  "work_arrangement": "..." or null,
-  "humanized_description": "...",
-  "standout_perks": ["...", "..."],
-  "category": "..." or null,
-  "tags": ["...", "..."]
+  "rejection": null or "reason string",
+  "title": "exact job title" or null,
+  "company": "company name" or null,
+  "location": "city, state/province" or null,
+  "country": "country name" or null,
+  "company_url": "company main website URL" or null,
+  "salary_range": "e.g. CAD $120K–$150K" or null (ONLY if explicitly stated),
+  "employment_type": "Full-time"|"Part-time"|"Contract"|"Internship"|"Freelance" or null,
+  "work_arrangement": "Remote"|"Hybrid"|"On-site" or null,
+  "category": "Engineering"|"Product"|"Design"|"Data"|"Operations"|"Sales/BD"|"Marketing"|"Finance"|"Compliance/Risk"|"Leadership" or null,
+  "tags": ["3-6 lowercase keyword tags for filtering, e.g. python, react, payments, blockchain, senior, startup"],
+  "standout_perks": ["1-3 word tags for genuinely interesting things, e.g. Equity, Series A, Small team, 4-day week"],
+  "key_details": {
+    "tech_stack": ["specific technologies, tools, frameworks mentioned"],
+    "team_info": "team size, structure, or reporting line if mentioned" or null,
+    "company_stage": "funding stage, revenue, headcount, or traction if mentioned" or null,
+    "key_problems": ["the actual projects or problems this role tackles"],
+    "differentiators": ["what makes this role different from the same title elsewhere"],
+    "role_specific_hooks": ["details that would matter specifically to someone in this category"]
+  }
+}
+
+RULES:
+- For standout_perks: DO NOT include salary, employment type, work arrangement, or standard benefits (health/dental/PTO). Empty array is fine.
+- For tags: use lowercase, 3-6 tags. Examples: python, react, payments, blockchain, lending, aws, senior, startup, series-b, crypto, regtech, banking, api, mobile, defi, fraud, underwriting.
+- For category: don't over-split (DevOps → Engineering, Growth → Marketing, Legal → Compliance/Risk).
+- For work_arrangement: if a role has both in-office and remote days, ALWAYS set this to "Hybrid".
+- For location: ALWAYS use the company HQ or office city. For Hybrid roles, use the office location where in-person days happen. If the office city IS the company HQ, just use the city (e.g. "Toronto, ON"). If the office is different from HQ, use the office city. If fully remote with no office, use "Remote".
+- key_details: extract EVERYTHING factual that would help write a compelling description. Be thorough.`;
+
+// ── Step 2: Humanize (Sonnet — creative, role-aware voice) ──
+
+const HUMANIZE_SYSTEM = `You write job descriptions for a fintech job board. You'll receive structured data about a role — your ONLY job is to write a killer humanized_description.
+
+VOICE: Write for the SPECIFIC person who'd want this role:
+- Engineering: stack, architecture, scale, what they'd build and own
+- Data: infrastructure, pipeline complexity, what decisions the data drives
+- Product: product stage, ownership, how decisions get made
+- Design: design maturity, research access, eng collaboration
+- Marketing/Growth: channels, budget, what's working and what isn't
+- Finance/Accounting: operational complexity, tech stack, audit stage
+- Compliance/Risk: regulatory landscape, jurisdictions, risk surface
+- Sales/BD: ICP, deal size, quota, territory
+- Ops/Support: volume, tooling, what's broken
+
+STYLE — every description MUST feel unique:
+- Opening: vary it. The team, the problem, a question, what's broken, the company stage, a bold claim.
+- Structure: mix short punchy sentences with longer ones. Fragments OK. Max one rhetorical question.
+- Vocabulary: NEVER reuse phrasing across descriptions. Rotate: "the gig is", "day one you're diving into", "your plate looks like", "the real job here is", "picture this", "here's the deal"
+- Energy: match the company. Scrappy startup = casual. Bank = confident. Scale-up = ambitious.
+- NEVER start two descriptions the same way.
+
+INCLUDE the most interesting 3-4 things from the extracted details. Skip boilerplate, generic qualifications, standard benefits, and corporate mission statements.
+
+Return ONLY a valid JSON object:
+{
+  "humanized_description": "8-14 sentences. Go deep — paint the full picture of what this role actually looks like. Specific, authentic, role-aware. Empty string if rejected."
 }`;
 
 export interface HumanizeResult {
@@ -86,6 +103,165 @@ export interface HumanizeResult {
 
 const EMPTY_RESULT: HumanizeResult = { humanized_description: '', standout_perks: [] };
 
+// ── Step 1: Extract structured fields (Haiku) ──
+
+interface ExtractedFields {
+  rejection?: string;
+  title?: string;
+  company?: string;
+  location?: string;
+  country?: string;
+  company_url?: string;
+  salary_range?: string;
+  employment_type?: string;
+  work_arrangement?: string;
+  category?: string;
+  tags: string[];
+  standout_perks: string[];
+  key_details: {
+    tech_stack: string[];
+    team_info?: string;
+    company_stage?: string;
+    key_problems: string[];
+    differentiators: string[];
+    role_specific_hooks: string[];
+  };
+}
+
+async function extractJobFields(
+  ai: Anthropic,
+  description: string,
+  title: string,
+  preExtracted?: Record<string, string | undefined>,
+  timeout = 15000,
+): Promise<ExtractedFields | null> {
+  let userMessage = `Job Title: ${title || 'Unknown'}\n\nJob Description:\n${description.slice(0, 15000)}`;
+
+  if (preExtracted) {
+    const known = Object.entries(preExtracted)
+      .filter(([, v]) => v)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join('\n');
+    if (known) {
+      userMessage += `\n\nPre-extracted metadata (confirm or correct):\n${known}`;
+    }
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  const response = await ai.messages.create(
+    {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      system: EXTRACT_SYSTEM,
+      messages: [{ role: 'user', content: userMessage }],
+    },
+    { signal: controller.signal },
+  );
+
+  clearTimeout(timer);
+
+  const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
+  if (!text) return null;
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+
+  const parsed = JSON.parse(jsonMatch[0]);
+  return {
+    rejection: parsed.rejection || undefined,
+    title: parsed.title || undefined,
+    company: parsed.company || undefined,
+    location: parsed.location || undefined,
+    country: parsed.country || undefined,
+    company_url: parsed.company_url || undefined,
+    salary_range: parsed.salary_range || undefined,
+    employment_type: parsed.employment_type || undefined,
+    work_arrangement: parsed.work_arrangement || undefined,
+    category: parsed.category || undefined,
+    tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+    standout_perks: Array.isArray(parsed.standout_perks) ? parsed.standout_perks : [],
+    key_details: {
+      tech_stack: Array.isArray(parsed.key_details?.tech_stack)
+        ? parsed.key_details.tech_stack
+        : [],
+      team_info: parsed.key_details?.team_info || undefined,
+      company_stage: parsed.key_details?.company_stage || undefined,
+      key_problems: Array.isArray(parsed.key_details?.key_problems)
+        ? parsed.key_details.key_problems
+        : [],
+      differentiators: Array.isArray(parsed.key_details?.differentiators)
+        ? parsed.key_details.differentiators
+        : [],
+      role_specific_hooks: Array.isArray(parsed.key_details?.role_specific_hooks)
+        ? parsed.key_details.role_specific_hooks
+        : [],
+    },
+  };
+}
+
+// ── Step 2: Humanize description (Sonnet) ──
+
+async function humanizeDescription(
+  ai: Anthropic,
+  fields: ExtractedFields,
+  timeout = 15000,
+): Promise<string> {
+  // Build a rich context message from extracted fields
+  const parts: string[] = [];
+  parts.push(`Role: ${fields.title || 'Unknown'}`);
+  if (fields.company) parts.push(`Company: ${fields.company}`);
+  if (fields.category) parts.push(`Category: ${fields.category}`);
+  if (fields.location) parts.push(`Location: ${fields.location}`);
+  if (fields.work_arrangement) parts.push(`Arrangement: ${fields.work_arrangement}`);
+  if (fields.company_url) parts.push(`Company URL: ${fields.company_url}`);
+
+  const kd = fields.key_details;
+  if (kd.tech_stack.length > 0) parts.push(`Tech stack: ${kd.tech_stack.join(', ')}`);
+  if (kd.team_info) parts.push(`Team: ${kd.team_info}`);
+  if (kd.company_stage) parts.push(`Company stage: ${kd.company_stage}`);
+  if (kd.key_problems.length > 0)
+    parts.push(`Key problems/projects:\n- ${kd.key_problems.join('\n- ')}`);
+  if (kd.differentiators.length > 0)
+    parts.push(`What makes this different:\n- ${kd.differentiators.join('\n- ')}`);
+  if (kd.role_specific_hooks.length > 0)
+    parts.push(`Role-specific hooks:\n- ${kd.role_specific_hooks.join('\n- ')}`);
+  if (fields.standout_perks.length > 0)
+    parts.push(`Standout perks: ${fields.standout_perks.join(', ')}`);
+
+  const userMessage = parts.join('\n');
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  const response = await ai.messages.create(
+    {
+      model: process.env.AI_HUMANIZE_MODEL || 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      system: HUMANIZE_SYSTEM,
+      messages: [{ role: 'user', content: userMessage }],
+    },
+    { signal: controller.signal },
+  );
+
+  clearTimeout(timer);
+
+  const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
+  if (!text) return '';
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed.humanized_description || '';
+  }
+
+  // If Sonnet returned plain text instead of JSON, use it directly
+  return text;
+}
+
+// ── Orchestrator: Two-step humanize ──
+
 export async function humanizeJobPost(
   description: string,
   title: string,
@@ -99,59 +275,44 @@ export async function humanizeJobPost(
   const timeout = getEnvInt('AI_TIMEOUT_MS', 15000);
 
   try {
-    let userMessage = `Job Title: ${title || 'Unknown'}\n\nJob Description:\n${description.slice(0, 15000)}`;
+    // Step 1: Extract structured fields with Haiku (fast, cheap)
+    const fields = await extractJobFields(ai, description, title, preExtracted, timeout);
 
-    if (preExtracted) {
-      const known = Object.entries(preExtracted)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join('\n');
-      if (known) {
-        userMessage += `\n\nPre-extracted metadata (confirm or correct):\n${known}`;
-      }
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    const response = await ai.messages.create(
-      {
-        model: process.env.AI_HUMANIZE_MODEL || 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        system: HUMANIZE_SYSTEM,
-        messages: [{ role: 'user', content: userMessage }],
-      },
-      { signal: controller.signal },
-    );
-
-    clearTimeout(timer);
-
-    const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
-    if (!text) {
+    if (!fields) {
       return { result: EMPTY_RESULT, fallback: true };
     }
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return { result: EMPTY_RESULT, fallback: true };
+    // If rejected, return early — no need for Step 2
+    if (fields.rejection) {
+      return {
+        result: {
+          rejection: fields.rejection,
+          humanized_description: '',
+          standout_perks: [],
+          prompt_version: PROMPT_VERSION,
+        },
+        fallback: false,
+      };
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    // Step 2: Humanize description with Sonnet (creative, role-aware)
+    const humanized = await humanizeDescription(ai, fields, timeout);
+
     return {
       result: {
-        rejection: parsed.rejection || undefined,
-        title: parsed.title || undefined,
-        company: parsed.company || undefined,
-        location: parsed.location || undefined,
-        country: parsed.country || undefined,
-        company_url: parsed.company_url || undefined,
-        salary_range: parsed.salary_range || undefined,
-        employment_type: parsed.employment_type || undefined,
-        work_arrangement: parsed.work_arrangement || undefined,
-        humanized_description: parsed.humanized_description || '',
-        standout_perks: Array.isArray(parsed.standout_perks) ? parsed.standout_perks : [],
-        category: parsed.category || undefined,
-        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+        rejection: undefined,
+        title: fields.title,
+        company: fields.company,
+        location: fields.location,
+        country: fields.country,
+        company_url: fields.company_url,
+        salary_range: fields.salary_range,
+        employment_type: fields.employment_type,
+        work_arrangement: fields.work_arrangement,
+        humanized_description: humanized,
+        standout_perks: fields.standout_perks,
+        category: fields.category,
+        tags: fields.tags,
         prompt_version: PROMPT_VERSION,
       },
       fallback: false,
@@ -198,7 +359,8 @@ const SCRAPE_SYSTEM = `Extract structured job posting data from webpage content.
 IMPORTANT:
 - Extract salary ONLY if explicitly stated. Do NOT guess.
 - For company_url, look for the company's main website, not the careers page URL.
-- For location, use the office/HQ location. If purely remote with no location, use null.
+- For work_arrangement: if the role has both in-office and remote days, set to "Hybrid".
+- For location: use the company HQ or office city. For Hybrid roles, use the office where in-person days happen. If fully remote with no office, use null.
 - Extract the FULL job description text — do not summarize.`;
 
 export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<ScrapeResult>> {
