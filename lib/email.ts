@@ -559,7 +559,165 @@ export async function sendIntroContacted(opts: {
   });
 }
 
-// ─── 10. Post-intro follow-up: "How did it go?" ───
+// ─── 10. Job alert: notify subscribers of new job ───
+
+export async function sendJobAlert(opts: {
+  subscriberEmail: string;
+  subscriberName?: string;
+  unsubscribeToken: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobLocation?: string;
+  jobCategory?: string;
+  jobWorkArrangement?: string;
+  jobSalary?: string;
+  jobSummary?: string;
+  jobId: string;
+}): Promise<boolean> {
+  const firstName = opts.subscriberName ? opts.subscriberName.split(' ')[0] : 'there';
+  const jobUrl = `${SITE_URL}/job/${opts.jobId}`;
+  const unsubUrl = `${SITE_URL}/api/subscribe?action=unsubscribe&token=${opts.unsubscribeToken}`;
+
+  const details: string[] = [];
+  if (opts.jobLocation) details.push(`📍 ${esc(opts.jobLocation)}`);
+  if (opts.jobWorkArrangement) details.push(`🏢 ${esc(opts.jobWorkArrangement)}`);
+  if (opts.jobSalary) details.push(`💰 ${esc(opts.jobSalary)}`);
+  if (opts.jobCategory) details.push(`📁 ${esc(opts.jobCategory)}`);
+
+  const detailsHtml =
+    details.length > 0
+      ? `<p style="margin:0 0 12px;padding:12px 16px;background:#F8FAFC;border-radius:8px;border:1px solid #E2E8F0;font-size:14px;color:#475569;">${details.join(' &nbsp;·&nbsp; ')}</p>`
+      : '';
+
+  const summaryHtml = opts.jobSummary
+    ? `<p style="margin:0 0 12px;font-size:14px;color:#64748B;line-height:1.6;">${esc(opts.jobSummary.slice(0, 300))}${opts.jobSummary.length > 300 ? '...' : ''}</p>`
+    : '';
+
+  return send({
+    to: opts.subscriberEmail,
+    subject: `New role: ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Hey ${esc(firstName)}, new role just dropped. 🔥`,
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> just went live.</p>
+      ${detailsHtml}
+      ${summaryHtml}
+      <p style="margin:0;">Warm intros available through the platform.</p>
+    `,
+    preheader: `${opts.jobTitle} at ${opts.jobCompany} — matches your alerts`,
+    cta: { label: 'View Role', url: jobUrl },
+    footer: `You're getting this because you subscribed to job alerts on Fintech Commons.<br/><a href="${unsubUrl}" style="color:#635BFF;text-decoration:none;">Unsubscribe</a> · <a href="${SITE_URL}" style="color:#635BFF;text-decoration:none;">fintechcommons.com</a>`,
+    text: `Hi ${firstName},\n\n${opts.jobTitle} at ${opts.jobCompany} just went live.\n\n${opts.jobLocation ? `Location: ${opts.jobLocation}\n` : ''}${opts.jobWorkArrangement ? `Arrangement: ${opts.jobWorkArrangement}\n` : ''}${opts.jobSalary ? `Salary: ${opts.jobSalary}\n` : ''}\nView: ${jobUrl}\n\nWarm intros available through the platform.\n\nCheers,\nTarique\nFintech Commons\n\nUnsubscribe: ${unsubUrl}`,
+    from: FROM_NOREPLY,
+    eventType: 'job_alert',
+    jobId: opts.jobId,
+  });
+}
+
+// ─── 11. Notify matching subscribers when job goes live ───
+
+export async function notifyMatchingSubscribers(job: {
+  id: string;
+  title: string;
+  company: string;
+  location?: string | null;
+  category?: string | null;
+  tags?: string[] | null;
+  work_arrangement?: string | null;
+  salary_range?: string | null;
+  summary?: string | null;
+}): Promise<{ sent: number; errors: number }> {
+  try {
+    const supabase = getSupabase();
+
+    const { data: subscribers, error } = await supabase
+      .from('job_subscribers')
+      .select('email, name, categories, tags, work_arrangement, unsubscribe_token')
+      .eq('active', true)
+      .eq('type', 'candidate')
+      .limit(500);
+
+    if (error || !subscribers || subscribers.length === 0) {
+      return { sent: 0, errors: 0 };
+    }
+
+    let sent = 0;
+    let errors = 0;
+
+    for (const sub of subscribers) {
+      if (!doesJobMatchSubscriber(job, sub)) continue;
+
+      try {
+        await sendJobAlert({
+          subscriberEmail: sub.email,
+          subscriberName: sub.name || undefined,
+          unsubscribeToken: sub.unsubscribe_token,
+          jobTitle: job.title,
+          jobCompany: job.company,
+          jobLocation: job.location || undefined,
+          jobCategory: job.category || undefined,
+          jobWorkArrangement: job.work_arrangement || undefined,
+          jobSalary: job.salary_range || undefined,
+          jobSummary: job.summary || undefined,
+          jobId: job.id,
+        });
+        sent++;
+      } catch {
+        errors++;
+      }
+
+      // Small delay between emails to avoid Resend rate limits
+      if (sent % 10 === 0) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+
+    if (sent > 0 || errors > 0) {
+      logger.info('Job alerts sent', {
+        jobId: job.id,
+        jobTitle: job.title,
+        totalSubscribers: subscribers.length,
+        matched: sent + errors,
+        sent,
+        errors,
+      });
+    }
+
+    return { sent, errors };
+  } catch (err) {
+    logger.error('notifyMatchingSubscribers failed', { jobId: job.id, error: err });
+    return { sent: 0, errors: 0 };
+  }
+}
+
+function doesJobMatchSubscriber(
+  job: { category?: string | null; tags?: string[] | null; work_arrangement?: string | null },
+  sub: { categories: string[]; tags: string[]; work_arrangement: string | null },
+): boolean {
+  // No preferences = match everything
+  if (sub.categories.length === 0 && sub.tags.length === 0 && !sub.work_arrangement) {
+    return true;
+  }
+
+  // Category filter
+  if (sub.categories.length > 0) {
+    if (!job.category || !sub.categories.includes(job.category)) return false;
+  }
+
+  // Work arrangement filter
+  if (sub.work_arrangement) {
+    if (!job.work_arrangement || job.work_arrangement !== sub.work_arrangement) return false;
+  }
+
+  // Tag filter: at least one overlap
+  if (sub.tags.length > 0) {
+    const jobTags = (job.tags || []).map((t) => t.toLowerCase());
+    if (!sub.tags.some((t) => jobTags.includes(t.toLowerCase()))) return false;
+  }
+
+  return true;
+}
+
+// ─── 12. Post-intro follow-up: "How did it go?" ───
 
 export async function sendIntroFollowUp(opts: {
   requesterName: string;

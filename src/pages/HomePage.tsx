@@ -8,6 +8,7 @@ import JobDetailModal from '../components/JobDetailModal';
 import SortStrip from '../components/SortStrip';
 import BottomNav from '../components/BottomNav';
 import CircuitLines from '../components/CircuitLines';
+import JobAlertBar from '../components/JobAlertBar';
 import { useJobs } from '../hooks/useJobs';
 import { useFilters } from '../hooks/useFilters';
 import type { Job } from '../lib/types';
@@ -242,6 +243,11 @@ export default function HomePage() {
               onSelectJob={setSelectedJob}
             />
           </div>
+        </div>
+
+        {/* Job alerts subscribe bar */}
+        <div className="mt-8">
+          <JobAlertBar />
         </div>
       </main>
 

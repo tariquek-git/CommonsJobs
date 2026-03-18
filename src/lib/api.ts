@@ -343,6 +343,30 @@ export interface EmailLogsResponse {
   total: number;
 }
 
+// ── Job Alerts / Subscribe ──
+
+export interface SubscribeRequest {
+  email: string;
+  name?: string;
+  type?: 'candidate' | 'employer';
+  categories?: string[];
+  tags?: string[];
+  work_arrangement?: string;
+  location?: string;
+  frequency?: 'instant' | 'weekly';
+}
+
+export async function subscribe(
+  payload: SubscribeRequest,
+): Promise<{ subscribed: boolean; message: string }> {
+  return request('/subscribe', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+// ── Email Logs ──
+
 export async function getEmailLogs(
   token: string,
   filters?: {

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
-import { sendJobApproved } from '../../../../lib/email.js';
+import { sendJobApproved, notifyMatchingSubscribers } from '../../../../lib/email.js';
 import { logger } from '../../../../lib/logger.js';
 import { humanizeJobPost } from '../../../../lib/ai.js';
 import type { JobStatus, Job } from '../../../../shared/types.js';
@@ -88,34 +88,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Job not found', code: 'NOT_FOUND' });
     }
 
-    // Send approval email when job goes live (with duplicate check)
-    if (status === 'active' && (data as Job).submitter_email) {
-      const j = data as Job;
+    // When job goes live: send approval email + notify subscribers
+    if (status === 'active') {
+      const approvedJob = data as Job;
 
-      // Prevent duplicate approval emails
-      const { data: existingApproval } = await supabase
-        .from('email_logs')
-        .select('id')
-        .eq('related_job_id', id)
-        .eq('event_type', 'job_approved_notification')
-        .eq('status', 'sent')
-        .limit(1);
+      // Send approval email to submitter (with duplicate check)
+      if (approvedJob.submitter_email) {
+        const { data: existingApproval } = await supabase
+          .from('email_logs')
+          .select('id')
+          .eq('related_job_id', id)
+          .eq('event_type', 'job_approved_notification')
+          .eq('status', 'sent')
+          .limit(1);
 
-      if (!existingApproval?.length) {
-        sendJobApproved({
-          submitterName: j.submitter_name || 'there',
-          submitterEmail: j.submitter_email!,
-          jobTitle: j.title,
-          jobCompany: j.company,
-          jobId: j.id,
-        }).catch((err: unknown) => {
-          logger.warn('Job approval email failed', {
-            endpoint: 'admin/jobs/status',
-            jobId: id,
-            error: err,
+        if (!existingApproval?.length) {
+          sendJobApproved({
+            submitterName: approvedJob.submitter_name || 'there',
+            submitterEmail: approvedJob.submitter_email,
+            jobTitle: approvedJob.title,
+            jobCompany: approvedJob.company,
+            jobId: approvedJob.id,
+          }).catch((err: unknown) => {
+            logger.warn('Job approval email failed', {
+              endpoint: 'admin/jobs/status',
+              jobId: id,
+              error: err,
+            });
           });
-        });
+        }
       }
+
+      // Notify matching job alert subscribers (non-blocking)
+      notifyMatchingSubscribers({
+        id: approvedJob.id,
+        title: approvedJob.title,
+        company: approvedJob.company,
+        location: approvedJob.location,
+        category: approvedJob.category,
+        tags: approvedJob.tags,
+        work_arrangement: approvedJob.work_arrangement,
+        salary_range: approvedJob.salary_range,
+        summary: approvedJob.summary,
+      }).catch((err: unknown) => {
+        logger.warn('Job alert notification failed', { jobId: id, error: err });
+      });
     }
 
     return res.status(200).json(data);
