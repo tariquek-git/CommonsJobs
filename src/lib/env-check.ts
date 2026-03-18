@@ -16,9 +16,9 @@ export function checkClientEnv() {
     warnings.push('VITE_SENTRY_DSN is not set — error tracking disabled');
   }
 
-  if (warnings.length > 0) {
-    console.warn(
-      `[Fintech Commons] Missing environment variables:\n${warnings.map((w) => `  ⚠️  ${w}`).join('\n')}`,
-    );
+  if (warnings.length > 0 && import.meta.env.DEV) {
+    warnings.forEach((w) => {
+      console.warn(`[Fintech Commons] ${w}`);
+    });
   }
 }
