@@ -134,17 +134,10 @@ export async function humanizeJob(
   title: string,
   preExtracted?: Record<string, string | undefined>,
 ): Promise<AIResult<HumanizeResponse>> {
-  const res = await fetch(`${BASE}/ai/generate-summary`, {
+  return request('/ai/generate-summary', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ description, title, preExtracted }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'AI request failed' }));
-    throw new ApiError(err.error || `HTTP ${res.status}`, res.status);
-  }
-  const body = await res.json();
-  return body;
 }
 
 export async function scrapeUrl(url: string): Promise<
@@ -160,17 +153,10 @@ export async function scrapeUrl(url: string): Promise<
     work_arrangement?: string;
   }>
 > {
-  const res = await fetch(`${BASE}/ai/scrape-url`, {
+  return request('/ai/scrape-url', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Scrape request failed' }));
-    throw new ApiError(err.error || `HTTP ${res.status}`, res.status);
-  }
-  const body = await res.json();
-  return body;
 }
 
 // ── Admin API ──

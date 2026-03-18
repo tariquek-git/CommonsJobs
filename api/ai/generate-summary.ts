@@ -1,6 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { humanizeJobPost } from '../../lib/ai.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { createHash } from 'crypto';
+
+// In-memory dedup cache: prevents double-click duplicate AI calls (5s TTL)
+const recentResults = new Map<string, { result: unknown; expiresAt: number }>();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -24,9 +28,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const safeTitle = (title && typeof title === 'string') ? title.trim() : '';
+    const safeTitle = title && typeof title === 'string' ? title.trim() : '';
+
+    // Dedup: return cached result if same request within 5 seconds
+    const dedupKey = createHash('sha256')
+      .update(ip + safeTitle + description.trim().slice(0, 500))
+      .digest('hex')
+      .slice(0, 16);
+    const cached = recentResults.get(dedupKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return res.status(200).json(cached.result);
+    }
 
     const result = await humanizeJobPost(description.trim(), safeTitle, preExtracted);
+
+    // Cache for 5 seconds to prevent double-click duplicate calls
+    recentResults.set(dedupKey, { result, expiresAt: Date.now() + 5000 });
+    // Cleanup old entries periodically
+    if (recentResults.size > 50) {
+      const now = Date.now();
+      for (const [key, val] of recentResults) {
+        if (val.expiresAt < now) recentResults.delete(key);
+      }
+    }
+
     return res.status(200).json(result);
   } catch (err) {
     const { logger } = await import('../../lib/logger.js');

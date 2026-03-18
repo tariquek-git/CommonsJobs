@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../lib/auth.js';
 import { getSupabase, getJobsTable, getClicksTable } from '../../lib/supabase.js';
+import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -10,6 +11,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireAdmin(req as unknown as Request)) {
     return res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
   }
+
+  const ip = getClientIP(req as unknown as Request);
+  if (rateLimitOrReject(ip, RATE_LIMITS.adminRead, res)) return;
 
   try {
     const supabase = getSupabase();
@@ -33,15 +37,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .order('created_at', { ascending: true }),
 
       // Top 10 jobs by click count
-      supabase
-        .from(getClicksTable())
-        .select('job_id')
-        .gte('created_at', thirtyDaysAgo),
+      supabase.from(getClicksTable()).select('job_id').gte('created_at', thirtyDaysAgo),
 
       // Jobs by status
-      supabase
-        .from(getJobsTable())
-        .select('status'),
+      supabase.from(getJobsTable()).select('status'),
     ]);
 
     // Aggregate clicks by day
@@ -68,12 +67,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .select('id, title, company')
         .in('id', topJobIds);
 
-      topJobs = (jobsData || []).map((j) => ({
-        id: j.id,
-        title: j.title,
-        company: j.company,
-        clicks: jobClickCounts[j.id] || 0,
-      })).sort((a, b) => b.clicks - a.clicks);
+      topJobs = (jobsData || [])
+        .map((j) => ({
+          id: j.id,
+          title: j.title,
+          company: j.company,
+          clicks: jobClickCounts[j.id] || 0,
+        }))
+        .sort((a, b) => b.clicks - a.clicks);
     }
 
     // Status breakdown

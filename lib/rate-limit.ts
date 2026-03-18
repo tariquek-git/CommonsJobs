@@ -9,7 +9,9 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
-export function getClientIP(request: Request | { headers: Record<string, string | string[] | undefined> }): string {
+export function getClientIP(
+  request: Request | { headers: Record<string, string | string[] | undefined> },
+): string {
   const getHeader = (name: string): string | undefined => {
     if ('get' in request.headers && typeof request.headers.get === 'function') {
       return request.headers.get(name) ?? undefined;
@@ -60,13 +62,19 @@ export const RATE_LIMITS = {
   warmIntro: { limit: 10, windowMs: 60 * 60 * 1000 },
   aiScrape: { limit: 10, windowMs: 10 * 60 * 1000 },
   search: { limit: 60, windowMs: 60 * 1000 },
+  jobDetail: { limit: 100, windowMs: 60 * 1000 },
+  click: { limit: 200, windowMs: 60 * 1000 },
+  adminRead: { limit: 30, windowMs: 60 * 1000 },
 } as const;
 
 /** Check rate limit and send 429 if exceeded. Returns true if request was blocked. */
 export function rateLimitOrReject(
   ip: string,
   config: { limit: number; windowMs: number },
-  res: { status: (code: number) => { json: (body: unknown) => unknown }; setHeader: (k: string, v: string) => void },
+  res: {
+    status: (code: number) => { json: (body: unknown) => unknown };
+    setHeader: (k: string, v: string) => void;
+  },
 ): boolean {
   const result = checkRateLimit(ip, config.limit, config.windowMs);
   res.setHeader('X-RateLimit-Limit', String(config.limit));
@@ -76,7 +84,9 @@ export function rateLimitOrReject(
   if (!result.allowed) {
     const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
     res.setHeader('Retry-After', String(retryAfter));
-    res.status(429).json({ error: 'Too many requests. Please try again later.', code: 'RATE_LIMITED' });
+    res
+      .status(429)
+      .json({ error: 'Too many requests. Please try again later.', code: 'RATE_LIMITED' });
     return true;
   }
   return false;

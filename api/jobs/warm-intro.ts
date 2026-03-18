@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { logger } from '../../lib/logger.js';
 import { createHash } from 'crypto';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -83,7 +84,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           referrerName: referrer_name?.trim(),
           referrerCompany: referrer_company?.trim(),
           introId: intro?.id,
-        }).catch(() => {});
+        }).catch((err: unknown) => {
+          logger.warn('Admin warm intro notification failed', {
+            endpoint: 'warm-intro',
+            error: err,
+          });
+        });
 
         // 2. Send thank-you to requester
         sendWarmIntroThankYou({
@@ -93,11 +99,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           jobCompany,
           jobId: job_id,
           introId: intro?.id,
-        }).catch(() => {});
+        }).catch((err: unknown) => {
+          logger.warn('Warm intro thank-you email failed', { endpoint: 'warm-intro', error: err });
+        });
       },
     );
 
-    emailOps.catch(() => {});
+    emailOps.catch((err: unknown) => {
+      logger.warn('Email module import failed', { endpoint: 'warm-intro', error: err });
+    });
 
     return res.status(201).json({
       success: true,

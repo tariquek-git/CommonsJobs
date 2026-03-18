@@ -1,12 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable, getClicksTable } from '../../../lib/supabase.js';
-import { getClientIP } from '../../../lib/rate-limit.js';
+import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../../lib/rate-limit.js';
 import { createHash } from 'crypto';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
   }
+
+  const ip = getClientIP(req as unknown as Request);
+  if (rateLimitOrReject(ip, RATE_LIMITS.click, res)) return;
 
   try {
     const { id } = req.query;
@@ -28,7 +31,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (job.status !== 'active') {
-      return res.status(403).json({ error: 'Click tracking only for active jobs', code: 'FORBIDDEN' });
+      return res
+        .status(403)
+        .json({ error: 'Click tracking only for active jobs', code: 'FORBIDDEN' });
     }
 
     // Hash IP for privacy
@@ -42,7 +47,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body || {};
     const utmSource = typeof body.utm_source === 'string' ? body.utm_source.slice(0, 100) : null;
     const utmMedium = typeof body.utm_medium === 'string' ? body.utm_medium.slice(0, 100) : null;
-    const utmCampaign = typeof body.utm_campaign === 'string' ? body.utm_campaign.slice(0, 200) : null;
+    const utmCampaign =
+      typeof body.utm_campaign === 'string' ? body.utm_campaign.slice(0, 200) : null;
 
     const { error: clickError } = await supabase.from(getClicksTable()).insert({
       job_id: id,
@@ -62,7 +68,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ tracked: true });
   } catch (err) {
-    // Click tracking should never block - return success
+    // Click tracking should never block - log and return success
+    import('../../../lib/logger.js')
+      .then(({ logger }) => {
+        logger.warn('Click tracking exception', { endpoint: 'click', error: err });
+      })
+      .catch(() => {});
     return res.status(200).json({ tracked: false });
   }
 }

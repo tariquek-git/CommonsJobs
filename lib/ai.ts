@@ -116,7 +116,7 @@ export async function humanizeJobPost(
 
     const response = await ai.messages.create(
       {
-        model: 'claude-sonnet-4-20250514',
+        model: process.env.AI_HUMANIZE_MODEL || 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
         system: HUMANIZE_SYSTEM,
         messages: [{ role: 'user', content: userMessage }],

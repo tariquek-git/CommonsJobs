@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../lib/auth.js';
 import { getSupabase } from '../../../lib/supabase.js';
+import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../../lib/rate-limit.js';
 
 /**
  * GET /api/admin/email/logs
@@ -20,6 +21,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireAdmin(req as unknown as Request)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  const ip = getClientIP(req as unknown as Request);
+  if (rateLimitOrReject(ip, RATE_LIMITS.adminRead, res)) return;
 
   try {
     const supabase = getSupabase();

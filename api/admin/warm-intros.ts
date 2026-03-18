@@ -24,7 +24,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       query = query.eq('status', statusFilter);
     }
 
-    const { data: introsData, error: introsError } = await query.order('created_at', { ascending: false });
+    const { data: introsData, error: introsError } = await query
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (introsError) {
       return res.status(500).json({ error: 'Failed to fetch warm intros', code: 'QUERY_ERROR' });
@@ -34,7 +36,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Fetch related jobs for context
     const jobIds = [...new Set(intros.map((i) => i.job_id).filter(Boolean))];
-    let jobMap: Record<string, { title: string; company: string; submitter_email: string | null; submitter_name: string | null }> = {};
+    let jobMap: Record<
+      string,
+      {
+        title: string;
+        company: string;
+        submitter_email: string | null;
+        submitter_name: string | null;
+      }
+    > = {};
 
     if (jobIds.length > 0) {
       const { data: jobsData } = await supabase

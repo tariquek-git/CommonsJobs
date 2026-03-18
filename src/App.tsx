@@ -1,10 +1,10 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { usePostHog } from '@posthog/react';
-import HomePage from './pages/HomePage';
 import Footer from './components/Footer';
 
-// Lazy-load secondary pages for smaller initial bundle
+// Lazy-load all pages for smaller initial bundle
+const HomePage = lazy(() => import('./pages/HomePage'));
 const JobPage = lazy(() => import('./pages/JobPage'));
 const CompanyPage = lazy(() => import('./pages/CompanyPage'));
 const SubmitPage = lazy(() => import('./pages/SubmitPage'));

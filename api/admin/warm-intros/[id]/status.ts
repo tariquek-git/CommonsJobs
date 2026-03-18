@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
+import { logger } from '../../../../lib/logger.js';
 
 const VALID_STATUSES = ['pending', 'contacted', 'connected', 'no_response'];
 
@@ -81,7 +82,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           );
 
           if (status === 'contacted' && !alreadySent.has('warm_intro_contacted')) {
-            // Notify requester: "I'm reaching out on your behalf"
             email
               .sendIntroContacted({
                 requesterName: intro.name,
@@ -91,16 +91,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 jobId: intro.job_id,
                 introId: intro.id,
               })
-              .catch(() => {});
+              .catch((err: unknown) => {
+                logger.warn('Intro contacted email failed', { introId: id, error: err });
+              });
           }
 
           if (status === 'connected' && !alreadySent.has('warm_intro_connection_requester')) {
-            // Validate we have contact info for the intro
             const cName = contact_name || job?.submitter_name;
             const cEmail = contact_email || job?.submitter_email;
 
-            if (cName && cEmail) {
-              // Email to requester: "meet X"
+            if (!cName || !cEmail) {
+              logger.warn('Connected status set without contact email', {
+                introId: id,
+                contactName: cName,
+                contactEmail: cEmail,
+              });
+            } else {
               email
                 .sendIntroToRequester({
                   requesterName: intro.name,
@@ -113,9 +119,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   jobId: intro.job_id,
                   introId: intro.id,
                 })
-                .catch(() => {});
+                .catch((err: unknown) => {
+                  logger.warn('Intro-to-requester email failed', { introId: id, error: err });
+                });
 
-              // Email to contact: "meet Y"
               email
                 .sendIntroToContact({
                   contactName: cName,
@@ -129,12 +136,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   jobId: intro.job_id,
                   introId: intro.id,
                 })
-                .catch(() => {});
+                .catch((err: unknown) => {
+                  logger.warn('Intro-to-contact email failed', { introId: id, error: err });
+                });
             }
           }
 
           if (status === 'no_response' && !alreadySent.has('warm_intro_no_response')) {
-            // Notify requester: "sorry, didn't hear back"
             email
               .sendIntroNoResponse({
                 requesterName: intro.name,
@@ -144,10 +152,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 jobId: intro.job_id,
                 introId: intro.id,
               })
-              .catch(() => {});
+              .catch((err: unknown) => {
+                logger.warn('Intro no-response email failed', { introId: id, error: err });
+              });
           }
         })
-        .catch(() => {});
+        .catch((err: unknown) => {
+          logger.warn('Email module import failed for intro status', { introId: id, error: err });
+        });
     }
 
     return res.status(200).json({ success: true, intro: data });

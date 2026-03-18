@@ -82,8 +82,8 @@ export default function HomePage() {
           }}
         />
 
-        {/* Animated globe */}
-        <div className="absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-[300px] h-[300px] lg:w-[380px] lg:h-[380px] opacity-30 lg:opacity-60 pointer-events-none">
+        {/* Animated globe — desktop only (saves mobile CPU) */}
+        <div className="absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-[380px] h-[380px] opacity-60 pointer-events-none hidden lg:block">
           <Suspense fallback={null}>
             <TransactionFlowGlobe />
           </Suspense>

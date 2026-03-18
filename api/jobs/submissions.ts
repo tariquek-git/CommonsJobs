@@ -3,6 +3,7 @@ import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { validateSubmission, sanitizeSubmission } from '../../shared/validation.js';
 import type { SubmissionPayload, SubmissionResponse } from '../../shared/types.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { logger } from '../../lib/logger.js';
 import { createHash } from 'crypto';
 
 function generateRefId(): string {
@@ -140,7 +141,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ref: submissionRef,
             jobId: inserted?.id,
           })
-          .catch(() => {});
+          .catch((err: unknown) => {
+            logger.warn('Admin notification email failed', { endpoint: 'submissions', error: err });
+          });
 
         // 2. Send confirmation to submitter
         if (payload.submitter_email) {
@@ -153,10 +156,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               ref: submissionRef,
               jobId: inserted?.id,
             })
-            .catch(() => {});
+            .catch((err: unknown) => {
+              logger.warn('Submission confirmation email failed', {
+                endpoint: 'submissions',
+                error: err,
+              });
+            });
         }
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        logger.warn('Email module import failed', { endpoint: 'submissions', error: err });
+      });
 
     return res.status(201).json({
       success: true,

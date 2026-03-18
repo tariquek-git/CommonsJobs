@@ -8,7 +8,7 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 
 export function createAdminToken(): string {
   const secret = getEnv('ADMIN_TOKEN_SECRET');
-  return jwt.sign({ role: 'admin' }, secret, { expiresIn: '8h' });
+  return jwt.sign({ role: 'admin' }, secret, { expiresIn: '2h' });
 }
 
 export function verifyAdminToken(token: string): boolean {
@@ -21,7 +21,9 @@ export function verifyAdminToken(token: string): boolean {
   }
 }
 
-export function extractToken(request: Request | { headers: Record<string, string | string[] | undefined> }): string | null {
+export function extractToken(
+  request: Request | { headers: Record<string, string | string[] | undefined> },
+): string | null {
   let auth: string | undefined;
   if ('get' in request.headers && typeof request.headers.get === 'function') {
     auth = request.headers.get('authorization') ?? undefined;
@@ -35,7 +37,9 @@ export function extractToken(request: Request | { headers: Record<string, string
   return parts[1];
 }
 
-export function requireAdmin(request: Request | { headers: Record<string, string | string[] | undefined> }): boolean {
+export function requireAdmin(
+  request: Request | { headers: Record<string, string | string[] | undefined> },
+): boolean {
   const token = extractToken(request);
   if (!token) return false;
   return verifyAdminToken(token);

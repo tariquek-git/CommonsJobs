@@ -24,7 +24,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Community feed: direct sources, active only
     let query = supabase
       .from(table)
-      .select('*', { count: 'exact' })
+      .select(
+        'id, title, company, location, country, summary, salary_range, employment_type, work_arrangement, tags, category, standout_perks, warm_intro_ok, company_logo_url, company_url, apply_url, posted_date, pinned, featured, source_type',
+        { count: 'exact' },
+      )
       .eq('status', 'active');
 
     if (body.location) {
@@ -51,7 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (error?.code === '42703') {
       let retryQuery = supabase
         .from(table)
-        .select('*', { count: 'exact' })
+        .select(
+          'id, title, company, location, country, summary, salary_range, employment_type, work_arrangement, tags, category, standout_perks, warm_intro_ok, company_logo_url, company_url, apply_url, posted_date, pinned, featured, source_type',
+          { count: 'exact' },
+        )
         .eq('status', 'active');
       if (body.location) retryQuery = retryQuery.ilike('location', `%${body.location}%`);
       if (body.tags && body.tags.length > 0) retryQuery = retryQuery.overlaps('tags', body.tags);
@@ -66,16 +72,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Search failed', code: 'SEARCH_ERROR' });
     }
 
-    // Strip sensitive PII and internal fields before responding
-    const PII_FIELDS = ['submitter_name', 'submitter_email', 'submitter_ip_hash', 'submitter_user_agent', 'submitter_referrer', 'ai_summary', 'tags_text'];
-    const sanitizedJobs = ((data || []) as Record<string, unknown>[]).map((row) => {
-      const clean = { ...row };
-      for (const key of PII_FIELDS) delete clean[key];
-      return clean;
-    });
-
     const response: SearchResponse = {
-      jobs: sanitizedJobs as unknown as Job[],
+      jobs: (data || []) as unknown as Job[],
       meta: {
         total: count || 0,
         page,

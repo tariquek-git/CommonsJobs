@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
 import { sendJobApproved } from '../../../../lib/email.js';
+import { logger } from '../../../../lib/logger.js';
 import { humanizeJobPost } from '../../../../lib/ai.js';
 import type { JobStatus, Job } from '../../../../shared/types.js';
 
@@ -107,7 +108,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           jobTitle: j.title,
           jobCompany: j.company,
           jobId: j.id,
-        }).catch(() => {});
+        }).catch((err: unknown) => {
+          logger.warn('Job approval email failed', {
+            endpoint: 'admin/jobs/status',
+            jobId: id,
+            error: err,
+          });
+        });
       }
     }
 

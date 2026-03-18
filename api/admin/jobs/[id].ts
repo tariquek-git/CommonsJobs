@@ -60,8 +60,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const updates: Record<string, unknown> = {};
     const body = req.body as Record<string, unknown>;
 
+    // Type validation for structured fields
+    const VALID_STATUSES = ['pending', 'active', 'rejected', 'archived', 'expired'];
+    const typeChecks: Record<string, (v: unknown) => boolean> = {
+      tags: (v) => Array.isArray(v),
+      standout_perks: (v) => Array.isArray(v),
+      pinned: (v) => typeof v === 'boolean',
+      warm_intro_ok: (v) => typeof v === 'boolean',
+      status: (v) => typeof v === 'string' && VALID_STATUSES.includes(v),
+    };
+
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
+        const check = typeChecks[field];
+        if (check && !check(body[field])) {
+          return res.status(400).json({
+            error: `Invalid type for field "${field}"`,
+            code: 'VALIDATION_ERROR',
+          });
+        }
         updates[field] = body[field];
       }
     }

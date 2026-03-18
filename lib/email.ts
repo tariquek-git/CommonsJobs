@@ -215,8 +215,9 @@ function logEmail(
         },
         error_message: errorMessage || null,
       });
-    } catch {
-      // Non-critical
+    } catch (err) {
+      const { logger } = await import('./logger.js');
+      logger.warn('Email log insert failed', { event_type: eventType, recipient, error: err });
     }
   })();
 }
