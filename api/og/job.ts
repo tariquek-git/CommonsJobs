@@ -109,6 +109,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Read the built SPA index.html and inject OG tags + JSON-LD
     let html = getSpaHtml();
+    // Strip existing generic OG/Twitter meta tags so job-specific ones take priority
+    html = html.replace(/<meta\s+(?:property="og:|name="twitter:)[^>]*\/?\s*>\s*\n?/g, '');
+    html = html.replace(/<meta\s+name="description"[^>]*\/?\s*>\s*\n?/g, '');
     html = html.replace('</head>', `    ${ogTags}\n    ${jsonLdTag}\n  </head>`);
     // Update the title too
     html = html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
