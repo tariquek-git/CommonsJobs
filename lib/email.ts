@@ -337,17 +337,17 @@ export async function sendWarmIntroThankYou(opts: {
 
   return send({
     to: opts.requesterEmail,
-    subject: `Got your intro request. ${opts.jobTitle} at ${opts.jobCompany}`,
-    heading: `Got it, ${esc(firstName)}.`,
+    subject: `Got your intro request 👋 ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Got it, ${esc(firstName)}. 👍`,
     body: `
       <p style="margin:0 0 12px;">Your warm intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> is in.</p>
-      <p style="margin:0 0 12px;">I'll take a careful look and put your name in front of the right person. Most intros happen within a few business days.</p>
+      <p style="margin:0 0 12px;">I'll put your name in front of the right person. Most intros happen within a few business days.</p>
       <p style="margin:0 0 12px;">No guarantees. Hiring is messy and timelines shift. But it beats a cold apply.</p>
       <p style="margin:0;">Questions? Reply here. It comes straight to me.</p>
     `,
     preheader: `I'll put your name in front of the right person.`,
     cta: { label: 'Browse More Roles', url: SITE_URL },
-    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll take a careful look and put your name in front of the right person. Most intros happen within a few business days.\n\nNo guarantees. Hiring is messy and timelines shift. But it beats a cold apply.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll put your name in front of the right person. Most intros happen within a few business days.\n\nNo guarantees. Hiring is messy and timelines shift. But it beats a cold apply.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_thank_you',
     jobId: opts.jobId,
     introId: opts.introId,
@@ -373,17 +373,17 @@ export async function sendIntroToRequester(opts: {
   return send({
     to: opts.requesterEmail,
     subject: `Intro: ${opts.requesterName} ↔ ${opts.contactName} (${opts.jobCompany})`,
-    heading: `${esc(firstName)}, meet ${esc(contactFirst)}.`,
+    heading: `${esc(firstName)}, meet ${esc(contactFirst)}. 🤝`,
     body: `
       <p style="margin:0 0 12px;">I've connected you with <strong>${esc(opts.contactName)}</strong>${opts.contactRole ? ` (${esc(opts.contactRole)})` : ''} at <strong>${esc(opts.jobCompany)}</strong> for the <strong>${esc(opts.jobTitle)}</strong> role.</p>
       <p style="margin:0 0 12px;">${esc(contactFirst)} is CC'd. Take it from here. Introduce yourself, share why you're interested, and suggest a time to chat.</p>
       <p style="margin:0 0 16px;padding:12px 16px;background:#F0F0FF;border-left:3px solid #635BFF;border-radius:0 6px 6px 0;font-size:14px;color:#475569;">
         Keep it short. One or two reasons you're a fit. A time that works for a call. That's it.
       </p>
-      <p style="margin:0;">Skip the cover letter energy. Just be genuine.</p>
+      <p style="margin:0;">Skip the cover letter energy. Just be genuine. Good luck 🚀</p>
     `,
     preheader: `You've been introduced to ${opts.contactName} at ${opts.jobCompany}`,
-    text: `Hi ${firstName},\n\nI've connected you with ${opts.contactName}${opts.contactRole ? ` (${opts.contactRole})` : ''} at ${opts.jobCompany} for the ${opts.jobTitle} role.\n\n${contactFirst} is CC'd. Take it from here. Introduce yourself, share why you're interested, and suggest a time to chat.\n\nKeep it short. Skip the cover letter energy. Just be genuine.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nI've connected you with ${opts.contactName}${opts.contactRole ? ` (${opts.contactRole})` : ''} at ${opts.jobCompany} for the ${opts.jobTitle} role.\n\n${contactFirst} is CC'd. Take it from here. Introduce yourself, share why you're interested, and suggest a time to chat.\n\nKeep it short. Skip the cover letter energy. Just be genuine. Good luck 🚀\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_connection_requester',
     jobId: opts.jobId,
     introId: opts.introId,
@@ -421,7 +421,7 @@ export async function sendIntroToContact(opts: {
   return send({
     to: opts.contactEmail,
     subject: `Intro: ${opts.requesterName} ↔ ${opts.contactName} (${opts.jobTitle})`,
-    heading: `${esc(contactFirst)}, meet ${esc(opts.requesterName.split(' ')[0])}.`,
+    heading: `${esc(contactFirst)}, meet ${esc(opts.requesterName.split(' ')[0])}. 👋`,
     body: `
       <p style="margin:0 0 12px;">Connecting you with <strong>${esc(opts.requesterName)}</strong>. They're interested in the <strong>${esc(opts.jobTitle)}</strong> role at <strong>${esc(opts.jobCompany)}</strong>.</p>
       <p style="margin:0 0 12px;">They came through Fintech Commons, where I review every intro request personally. This is a warm lead, not a cold apply.</p>
@@ -450,12 +450,12 @@ export async function sendJobApproved(opts: {
 
   return send({
     to: opts.submitterEmail,
-    subject: `Your role is live — ${opts.jobTitle} at ${opts.jobCompany}`,
-    heading: `${esc(firstName)}, you're live.`,
+    subject: `Your role is live 🎉 ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `${esc(firstName)}, you're live. 🎉`,
     body: `
       <p style="margin:0 0 12px;">I reviewed <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>. It's live on Fintech Commons now.</p>
       <p style="margin:0 0 12px;">Candidates can view it, apply, and request warm intros straight to you through the platform.</p>
-      <p style="margin:0;">Thanks for posting. Happy hiring.</p>
+      <p style="margin:0;">Thanks for posting. Happy hiring. 🙌</p>
     `,
     preheader: `${opts.jobTitle} at ${opts.jobCompany} is now live on Fintech Commons`,
     cta: { label: 'View Your Posting', url: jobUrl },
@@ -484,11 +484,11 @@ export async function sendIntroNoResponse(opts: {
     body: `
       <p style="margin:0 0 12px;">Following up on your intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
       <p style="margin:0 0 12px;">I reached out but didn't hear back from the hiring side. Not a reflection on you. Sometimes timing doesn't line up.</p>
-      <p style="margin:0 0 12px;">There are other roles on the board worth a look. Request intros for anything that catches your eye. I'm here.</p>
+      <p style="margin:0 0 12px;">There are other roles on the board worth a look. Request intros for anything that catches your eye. I'm here. 💪</p>
     `,
     preheader: `Update on your intro for ${opts.jobTitle} at ${opts.jobCompany}`,
     cta: { label: 'Browse Roles', url: SITE_URL },
-    text: `Hi ${firstName},\n\nFollowing up on your intro request for ${opts.jobTitle} at ${opts.jobCompany}.\n\nI reached out but didn't hear back from the hiring side. Not a reflection on you. Sometimes timing doesn't line up.\n\nThere are other roles on the board worth a look. Request intros for anything that catches your eye.\n\n${SITE_URL}\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nFollowing up on your intro request for ${opts.jobTitle} at ${opts.jobCompany}.\n\nI reached out but didn't hear back from the hiring side. Not a reflection on you. Sometimes timing doesn't line up.\n\nThere are other roles on the board worth a look. Request intros for anything that catches your eye. I'm here. 💪\n\n${SITE_URL}\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_no_response',
     jobId: opts.jobId,
     introId: opts.introId,
@@ -509,8 +509,8 @@ export async function sendSubmissionConfirmation(opts: {
 
   return send({
     to: opts.submitterEmail,
-    subject: `Got your submission — ${opts.jobTitle} at ${opts.jobCompany}`,
-    heading: `Got it, ${esc(firstName)}.`,
+    subject: `Got your submission 👍 ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Got it, ${esc(firstName)}. 👍`,
     body: `
       <p style="margin:0 0 12px;">Your submission for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> is in.</p>
       <p style="margin:0 0 12px;padding:12px 16px;background:#F8FAFC;border-radius:8px;border:1px solid #E2E8F0;font-size:14px;">
@@ -543,7 +543,7 @@ export async function sendIntroContacted(opts: {
   return send({
     to: opts.requesterEmail,
     subject: `On it — ${opts.jobTitle} at ${opts.jobCompany}`,
-    heading: `Quick update, ${esc(firstName)}.`,
+    heading: `Quick update, ${esc(firstName)}. ⏳`,
     body: `
       <p style="margin:0 0 12px;">I reached out to the team at <strong>${esc(opts.jobCompany)}</strong> about the <strong>${esc(opts.jobTitle)}</strong> role on your behalf.</p>
       <p style="margin:0 0 12px;">Sit tight. These things usually move within a few business days. I'll let you know as soon as I hear back.</p>
@@ -581,10 +581,10 @@ export async function sendIntroFollowUp(opts: {
       <p style="margin:0 0 16px;padding:12px 16px;background:#F0F0FF;border-left:3px solid #635BFF;border-radius:0 6px 6px 0;font-size:14px;color:#475569;">
         Reply here. Even a one-liner works.
       </p>
-      <p style="margin:0;">Either way, I'm in your corner.</p>
+      <p style="margin:0;">Either way, I'm in your corner. 🤞</p>
     `,
     preheader: `How did your intro with ${opts.jobCompany} go?`,
-    text: `Hi ${firstName},\n\nDid you get a chance to connect with ${contactFirst} at ${opts.jobCompany} about the ${opts.jobTitle} role?\n\nGood news, bad news, still waiting. Whatever it is, I want to hear it. Helps me make better intros for everyone.\n\nReply here. Even a one-liner works.\n\nEither way, I'm in your corner.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nDid you get a chance to connect with ${contactFirst} at ${opts.jobCompany} about the ${opts.jobTitle} role?\n\nGood news, bad news, still waiting. Whatever it is, I want to hear it. Helps me make better intros for everyone.\n\nReply here. Even a one-liner works.\n\nEither way, I'm in your corner. 🤞\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_follow_up',
     jobId: opts.jobId,
     introId: opts.introId,
