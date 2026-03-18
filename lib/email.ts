@@ -26,7 +26,7 @@ function esc(str: string): string {
 }
 
 const DOMAIN = 'fintechcommons.com';
-const SITE_URL = `https://www.${DOMAIN}/jobs`;
+const SITE_URL = `https://www.${DOMAIN}`;
 const FROM_TARIQUE = `Tarique @ Fintech Commons <tarique@${DOMAIN}>`;
 const FROM_NOREPLY = `Fintech Commons <noreply@${DOMAIN}>`;
 
@@ -97,7 +97,7 @@ ${preheader}
   <!-- Footer -->
   <tr><td style="padding:16px 32px 28px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;color:#94A3B8;line-height:1.5;">
     ${footerText}<br/>
-    <a href="${SITE_URL}" style="color:#635BFF;text-decoration:none;">fintechcommons.com/jobs</a>
+    <a href="${SITE_URL}" style="color:#635BFF;text-decoration:none;">fintechcommons.com</a>
   </td></tr>
 </table>
 <!-- /Card -->
@@ -342,12 +342,12 @@ export async function sendWarmIntroThankYou(opts: {
     body: `
       <p style="margin:0 0 12px;">Your warm intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> is in.</p>
       <p style="margin:0 0 12px;">I'll put your name in front of the right person. Most intros happen within a few business days.</p>
-      <p style="margin:0 0 12px;">No guarantees. Hiring is messy and timelines shift. But it beats a cold apply.</p>
+      <p style="margin:0 0 12px;">I know not every intro leads somewhere. That's the reality of hiring. But a warm intro always beats a cold apply, and I want you to keep putting yourself out there.</p>
       <p style="margin:0;">Questions? Reply here. It comes straight to me.</p>
     `,
     preheader: `I'll put your name in front of the right person.`,
     cta: { label: 'Browse More Roles', url: SITE_URL },
-    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll put your name in front of the right person. Most intros happen within a few business days.\n\nNo guarantees. Hiring is messy and timelines shift. But it beats a cold apply.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll put your name in front of the right person. Most intros happen within a few business days.\n\nI know not every intro leads somewhere. That's the reality of hiring. But a warm intro always beats a cold apply, and I want you to keep putting yourself out there.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_thank_you',
     jobId: opts.jobId,
     introId: opts.introId,
@@ -446,7 +446,7 @@ export async function sendJobApproved(opts: {
   jobId: string;
 }): Promise<boolean> {
   const firstName = opts.submitterName.split(' ')[0];
-  const jobUrl = `${SITE_URL}/jobs/${opts.jobId}`;
+  const jobUrl = `${SITE_URL}/job/${opts.jobId}`;
 
   return send({
     to: opts.submitterEmail,
@@ -455,11 +455,12 @@ export async function sendJobApproved(opts: {
     body: `
       <p style="margin:0 0 12px;">I reviewed <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>. It's live on Fintech Commons now.</p>
       <p style="margin:0 0 12px;">Candidates can view it, apply, and request warm intros straight to you through the platform.</p>
+      <p style="margin:0 0 12px;">If you need to make any changes, just reply here and let me know.</p>
       <p style="margin:0;">Thanks for posting. Happy hiring. 🙌</p>
     `,
     preheader: `${opts.jobTitle} at ${opts.jobCompany} is now live on Fintech Commons`,
     cta: { label: 'View Your Posting', url: jobUrl },
-    text: `Hi ${firstName},\n\nI reviewed ${opts.jobTitle} at ${opts.jobCompany}. It's live on Fintech Commons now.\n\nView it: ${jobUrl}\n\nCandidates can view it, apply, and request warm intros straight to you.\n\nThanks for posting. Happy hiring.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nI reviewed ${opts.jobTitle} at ${opts.jobCompany}. It's live on Fintech Commons now.\n\nView it: ${jobUrl}\n\nCandidates can view it, apply, and request warm intros straight to you.\n\nIf you need to make any changes, just reply here and let me know.\n\nThanks for posting. Happy hiring.\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'job_approved_notification',
     jobId: opts.jobId,
   });
