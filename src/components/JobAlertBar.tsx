@@ -70,18 +70,18 @@ export default function JobAlertBar() {
 
   if (result?.ok) {
     return (
-      <div className="bg-gradient-to-r from-[#0A2540]/5 to-[#635BFF]/5 border border-[#635BFF]/20 rounded-xl p-6 text-center">
-        <p className="text-[#0A2540] font-semibold text-lg">You're in. 🎉</p>
-        <p className="text-slate-600 text-sm mt-1">{result.message}</p>
+      <div className="bg-gradient-to-r from-navy-900/5 to-brand-500/5 border border-brand-500/20 rounded-xl p-6 text-center">
+        <p className="text-navy-900 font-semibold text-lg">You're in. 🎉</p>
+        <p className="text-gray-600 text-sm mt-1">{result.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#0A2540]/5 to-[#635BFF]/5 border border-[#635BFF]/20 rounded-xl p-6">
+    <div className="bg-gradient-to-r from-navy-900/5 to-brand-500/5 border border-brand-500/20 rounded-xl p-6">
       <div className="text-center mb-4">
-        <h3 className="text-[#0A2540] font-bold text-lg">Get alerts for new roles</h3>
-        <p className="text-slate-500 text-sm mt-1">
+        <h3 className="text-navy-900 font-bold text-lg">Get alerts for new roles</h3>
+        <p className="text-gray-500 text-sm mt-1">
           Be the first to know when a role matching your interests goes live.
         </p>
       </div>
@@ -94,8 +94,8 @@ export default function JobAlertBar() {
             onClick={() => setType('candidate')}
             className={`px-3 py-1 rounded-full transition-colors ${
               type === 'candidate'
-                ? 'bg-[#635BFF] text-white'
-                : 'bg-white text-slate-500 border border-slate-200 hover:border-[#635BFF]/40'
+                ? 'bg-brand-500 text-white'
+                : 'bg-white text-gray-500 border border-gray-200 hover:border-brand-500/40'
             }`}
           >
             I'm looking for a role
@@ -105,8 +105,8 @@ export default function JobAlertBar() {
             onClick={() => setType('employer')}
             className={`px-3 py-1 rounded-full transition-colors ${
               type === 'employer'
-                ? 'bg-[#635BFF] text-white'
-                : 'bg-white text-slate-500 border border-slate-200 hover:border-[#635BFF]/40'
+                ? 'bg-brand-500 text-white'
+                : 'bg-white text-gray-500 border border-gray-200 hover:border-brand-500/40'
             }`}
           >
             I'm hiring
@@ -119,7 +119,7 @@ export default function JobAlertBar() {
             placeholder="Name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-[#0A2540] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#635BFF]/30 focus:border-[#635BFF]"
+            className="input-field flex-1"
           />
           <input
             type="email"
@@ -127,12 +127,12 @@ export default function JobAlertBar() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-[2] px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-[#0A2540] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#635BFF]/30 focus:border-[#635BFF]"
+            className="input-field flex-[2]"
           />
           <button
             type="submit"
             disabled={submitting || !email.trim()}
-            className="px-5 py-2.5 bg-[#635BFF] text-white font-semibold text-sm rounded-lg hover:bg-[#5246E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="btn-primary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? 'Subscribing...' : 'Subscribe'}
           </button>
@@ -144,7 +144,7 @@ export default function JobAlertBar() {
             <button
               type="button"
               onClick={() => setShowPrefs(!showPrefs)}
-              className="text-xs text-[#635BFF] hover:text-[#5246E5] font-medium mx-auto block"
+              className="text-xs text-brand-500 hover:text-brand-600 font-medium mx-auto block"
             >
               {showPrefs ? '− Hide preferences' : '+ Set category preferences'}
             </button>
@@ -158,8 +158,8 @@ export default function JobAlertBar() {
                     onClick={() => toggleCategory(cat)}
                     className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
                       selectedCategories.includes(cat)
-                        ? 'bg-[#635BFF] text-white border-[#635BFF]'
-                        : 'bg-white text-slate-500 border-slate-200 hover:border-[#635BFF]/40'
+                        ? 'bg-brand-500 text-white border-brand-500'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-brand-500/40'
                     }`}
                   >
                     {cat}
@@ -174,7 +174,7 @@ export default function JobAlertBar() {
           <p className="text-red-600 text-xs text-center">{result.message}</p>
         )}
 
-        <p className="text-[10px] text-slate-400 text-center">
+        <p className="text-[10px] text-gray-400 text-center">
           No spam. Unsubscribe anytime with one click.
         </p>
       </form>

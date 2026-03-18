@@ -168,7 +168,13 @@ async function extractJobFields(
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return null;
 
-  const parsed = JSON.parse(jsonMatch[0]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch {
+    return null;
+  }
   return {
     rejection: parsed.rejection || undefined,
     title: parsed.title || undefined,
@@ -252,8 +258,12 @@ async function humanizeDescription(
 
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
-    const parsed = JSON.parse(jsonMatch[0]);
-    return parsed.humanized_description || '';
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return parsed.humanized_description || '';
+    } catch {
+      // If JSON parse fails, fall through to plain text
+    }
   }
 
   // If Sonnet returned plain text instead of JSON, use it directly
@@ -399,7 +409,13 @@ export async function scrapeAndExtract(htmlContent: string): Promise<AIResult<Sc
       return { result: {}, fallback: true };
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch {
+      return { result: {}, fallback: true };
+    }
     return {
       result: {
         title: parsed.title || undefined,

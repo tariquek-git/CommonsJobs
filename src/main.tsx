@@ -1,10 +1,6 @@
-// Sentry must be imported FIRST, before any other modules
-import './instrument';
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import * as Sentry from '@sentry/react';
 import App from './App';
 import { ToastProvider } from './components/Toast';
 import { checkClientEnv } from './lib/env-check';
@@ -12,6 +8,9 @@ import './index.css';
 
 // Warn about missing env vars in development
 checkClientEnv();
+
+// Defer Sentry loading — load after first paint to keep critical path lean
+const sentryReady = import('./instrument').then(() => import('@sentry/react'));
 
 // Load Google Tag Manager dynamically (avoids Vite inline-script parse errors)
 (function () {
@@ -66,24 +65,42 @@ posthog.register({
   utm_campaign: params.get('utm_campaign') || undefined,
 });
 
+// Helper: capture exception to PostHog (works before Sentry loads)
+function captureException(
+  error: unknown,
+  errorInfo: { componentStack?: string | null },
+  severity: string,
+) {
+  posthog.capture('$exception', {
+    $exception_message: error instanceof Error ? error.message : String(error),
+    $exception_stack: error instanceof Error ? error.stack : undefined,
+    component_stack: errorInfo.componentStack,
+    severity,
+  });
+}
+
+// Wire up Sentry error handlers once loaded, fall back to PostHog-only until then
+let onCaughtError = (error: unknown, errorInfo: { componentStack?: string | null }) =>
+  captureException(error, errorInfo, 'caught');
+let onUncaughtError = (error: unknown, errorInfo: { componentStack?: string | null }) =>
+  captureException(error, errorInfo, 'uncaught');
+
+sentryReady
+  .then((Sentry) => {
+    onCaughtError = Sentry.reactErrorHandler((error, errorInfo) =>
+      captureException(error, errorInfo, 'caught'),
+    );
+    onUncaughtError = Sentry.reactErrorHandler((error, errorInfo) =>
+      captureException(error, errorInfo, 'uncaught'),
+    );
+  })
+  .catch(() => {
+    /* Sentry failed to load — PostHog-only error tracking continues */
+  });
+
 ReactDOM.createRoot(document.getElementById('root')!, {
-  // React 19 error handlers — Sentry captures these automatically
-  onCaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
-    posthog.capture('$exception', {
-      $exception_message: error instanceof Error ? error.message : String(error),
-      $exception_stack: error instanceof Error ? error.stack : undefined,
-      component_stack: errorInfo.componentStack,
-      severity: 'caught',
-    });
-  }),
-  onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
-    posthog.capture('$exception', {
-      $exception_message: error instanceof Error ? error.message : String(error),
-      $exception_stack: error instanceof Error ? error.stack : undefined,
-      component_stack: errorInfo.componentStack,
-      severity: 'uncaught',
-    });
-  }),
+  onCaughtError: (error, errorInfo) => onCaughtError(error, errorInfo),
+  onUncaughtError: (error, errorInfo) => onUncaughtError(error, errorInfo),
 }).render(
   <React.StrictMode>
     <PostHogProvider client={posthog}>

@@ -285,12 +285,14 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                             }}
                           />
                           {activeStep === i && (
-                            <div
-                              className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
-                              style={{
-                                animation: `travel-right ${CYCLE_MS}ms ease-in-out infinite`,
-                              }}
-                            />
+                            <div className="absolute inset-y-0 left-0 w-full flex items-center">
+                              <div
+                                className="h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
+                                style={{
+                                  animation: `travel-right ${CYCLE_MS}ms ease-in-out infinite`,
+                                }}
+                              />
+                            </div>
                           )}
                         </div>
                       </div>
@@ -412,12 +414,14 @@ export default function FounderSection({ dark = false }: FounderSectionProps) {
                         />
                         {/* Traveling dot */}
                         {activeStep === i && (
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
-                            style={{
-                              animation: `travel-down ${CYCLE_MS}ms ease-in-out infinite`,
-                            }}
-                          />
+                          <div className="absolute inset-x-0 top-0 h-full flex justify-center">
+                            <div
+                              className="h-1.5 w-1.5 rounded-full bg-white shadow-sm shadow-white/50"
+                              style={{
+                                animation: `travel-down ${CYCLE_MS}ms ease-in-out infinite`,
+                              }}
+                            />
+                          </div>
                         )}
                       </div>
                     )}

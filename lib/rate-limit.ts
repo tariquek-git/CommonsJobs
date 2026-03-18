@@ -9,6 +9,21 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
+// Periodic cleanup: remove expired entries to prevent memory leaks
+const CLEANUP_INTERVAL_MS = 60_000;
+let lastCleanup = Date.now();
+
+function cleanupExpired() {
+  const now = Date.now();
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+  lastCleanup = now;
+  for (const [key, entry] of store) {
+    if (now > entry.resetAt) {
+      store.delete(key);
+    }
+  }
+}
+
 export function getClientIP(
   request: Request | { headers: Record<string, string | string[] | undefined> },
 ): string {
@@ -37,6 +52,8 @@ export function checkRateLimit(
   limit: number,
   windowMs: number,
 ): { allowed: boolean; remaining: number; resetAt: number } {
+  cleanupExpired();
+
   const now = Date.now();
   const key = `rl:${ip}`;
 
