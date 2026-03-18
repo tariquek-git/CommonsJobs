@@ -15,7 +15,7 @@ function getAI(): Anthropic | null {
 }
 
 // ── Prompt Versioning ──
-export const PROMPT_VERSION = 'v5';
+export const PROMPT_VERSION = 'v6';
 
 // ── Humanize Job Post ──
 
@@ -47,6 +47,8 @@ Your task: Given a job title (may be empty) and corporate job description, retur
 11. "standout_perks" — Short punchy tags (1-3 words each) for genuinely interesting things about this role. Examples: "Equity", "Series A", "Small team", "Open source", "Learning budget", "Founder-led", "Profitable", "4-day week".
    - DO NOT include: salary, employment type, work arrangement, or standard benefits (health/dental/PTO).
    - Empty array is fine if nothing stands out. Do NOT pad with generic items.
+12. "category" — Classify this role into ONE broad department. Use your best judgment but keep it high-level. Common examples: "Engineering", "Product", "Design", "Data", "Operations", "Sales/BD", "Marketing", "Finance", "Compliance/Risk", "Leadership". Don't over-split — group similar things (e.g. "DevOps" → "Engineering", "Growth" → "Marketing", "Legal" → "Compliance/Risk", "People/HR" → "Operations"). null if rejected.
+13. "tags" — 3-6 specific keyword tags for this role. These help candidates find jobs via filters. Use lowercase, concise terms. Examples: "python", "react", "payments", "blockchain", "lending", "aws", "senior", "startup", "series-b", "crypto", "regtech", "banking", "api", "mobile", "defi", "fraud", "underwriting". Pick tags specific enough to be useful but common enough to match similar roles. Empty array if rejected.
 
 Return ONLY a valid JSON object, nothing else:
 {
@@ -60,7 +62,9 @@ Return ONLY a valid JSON object, nothing else:
   "employment_type": "..." or null,
   "work_arrangement": "..." or null,
   "humanized_description": "...",
-  "standout_perks": ["...", "..."]
+  "standout_perks": ["...", "..."],
+  "category": "..." or null,
+  "tags": ["...", "..."]
 }`;
 
 export interface HumanizeResult {
@@ -75,6 +79,8 @@ export interface HumanizeResult {
   work_arrangement?: string;
   humanized_description: string;
   standout_perks: string[];
+  category?: string;
+  tags?: string[];
   prompt_version?: string;
 }
 
@@ -144,6 +150,8 @@ export async function humanizeJobPost(
         work_arrangement: parsed.work_arrangement || undefined,
         humanized_description: parsed.humanized_description || '',
         standout_perks: Array.isArray(parsed.standout_perks) ? parsed.standout_perks : [],
+        category: parsed.category || undefined,
+        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
         prompt_version: PROMPT_VERSION,
       },
       fallback: false,

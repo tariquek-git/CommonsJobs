@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
-import { sendApprovalEmail } from '../../../../lib/email.js';
+import { sendJobApproved } from '../../../../lib/email.js';
 import { humanizeJobPost } from '../../../../lib/ai.js';
 import type { JobStatus, Job } from '../../../../shared/types.js';
 
@@ -63,9 +63,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Fill in any missing metadata from AI
         if (!job.location && aiResult.result.location) updates.location = aiResult.result.location;
         if (!job.country && aiResult.result.country) updates.country = aiResult.result.country;
-        if (!job.salary_range && aiResult.result.salary_range) updates.salary_range = aiResult.result.salary_range;
-        if (!job.employment_type && aiResult.result.employment_type) updates.employment_type = aiResult.result.employment_type;
-        if (!job.work_arrangement && aiResult.result.work_arrangement) updates.work_arrangement = aiResult.result.work_arrangement;
+        if (!job.salary_range && aiResult.result.salary_range)
+          updates.salary_range = aiResult.result.salary_range;
+        if (!job.employment_type && aiResult.result.employment_type)
+          updates.employment_type = aiResult.result.employment_type;
+        if (!job.work_arrangement && aiResult.result.work_arrangement)
+          updates.work_arrangement = aiResult.result.work_arrangement;
       }
     }
 
@@ -84,9 +87,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Job not found', code: 'NOT_FOUND' });
     }
 
-    // Send approval email when job goes live
+    // Send approval email when job goes live (with duplicate check)
     if (status === 'active' && (data as Job).submitter_email) {
-      sendApprovalEmail((data as Job).submitter_email!, data as Job).catch(() => {});
+      const j = data as Job;
+
+      // Prevent duplicate approval emails
+      const { data: existingApproval } = await supabase
+        .from('email_logs')
+        .select('id')
+        .eq('related_job_id', id)
+        .eq('event_type', 'job_approved_notification')
+        .eq('status', 'sent')
+        .limit(1);
+
+      if (!existingApproval?.length) {
+        sendJobApproved({
+          submitterName: j.submitter_name || 'there',
+          submitterEmail: j.submitter_email!,
+          jobTitle: j.title,
+          jobCompany: j.company,
+          jobId: j.id,
+        }).catch(() => {});
+      }
     }
 
     return res.status(200).json(data);

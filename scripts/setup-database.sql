@@ -65,6 +65,7 @@ ALTER TABLE jobs ADD COLUMN IF NOT EXISTS expires_at         TIMESTAMPTZ;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_ip_hash    TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_user_agent TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS submitter_referrer   TEXT;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS referral_source      TEXT;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_min           INTEGER;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_max           INTEGER;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary_currency      TEXT DEFAULT 'USD';
@@ -122,7 +123,9 @@ ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS message    TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS ip_hash    TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS user_agent TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer   TEXT;
-ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS status     TEXT DEFAULT 'pending';
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS status          TEXT DEFAULT 'pending';
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_name    TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_company TEXT;
 
 
 -- ============================================================

@@ -15,6 +15,9 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
   const [email, setEmail] = useState('');
   const [linkedin, setLinkedin] = useState('');
   const [message, setMessage] = useState('');
+  const [showReferral, setShowReferral] = useState(false);
+  const [referrerName, setReferrerName] = useState('');
+  const [referrerCompany, setReferrerCompany] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +46,8 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         email: email.trim(),
         linkedin: linkedin.trim() || undefined,
         message: message.trim() || undefined,
+        referrer_name: referrerName.trim() || undefined,
+        referrer_company: referrerCompany.trim() || undefined,
       });
       posthog?.capture('warm_intro_requested', {
         job_id: job.id,
@@ -50,6 +55,9 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
         company: job.company,
         has_linkedin: !!linkedin.trim(),
         has_message: !!message.trim(),
+        has_referral: !!(referrerName.trim() || referrerCompany.trim()),
+        referrer_name: referrerName.trim() || undefined,
+        referrer_company: referrerCompany.trim() || undefined,
       });
       setSubmitted(true);
     } catch (err) {
@@ -317,6 +325,82 @@ export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
               <p className="text-[11px] text-gray-600 mt-1">
                 This goes directly to the job poster along with your intro.
               </p>
+            </div>
+
+            {/* Referral tracking */}
+            <div>
+              {!showReferral ? (
+                <button
+                  type="button"
+                  onClick={() => setShowReferral(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600 transition-colors font-medium"
+                >
+                  <svg
+                    className="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+                    />
+                  </svg>
+                  Someone sent me here
+                </button>
+              ) : (
+                <div className="rounded-xl bg-gray-50 border border-gray-200/60 p-3.5 space-y-2.5 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-gray-600">I was sent by…</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowReferral(false);
+                        setReferrerName('');
+                        setReferrerCompany('');
+                      }}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Remove referral info"
+                    >
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={referrerName}
+                      onChange={(e) => setReferrerName(e.target.value)}
+                      className="input-field flex-1 !py-2 !text-sm"
+                      placeholder="Their name"
+                    />
+                    <span className="text-xs text-gray-400 self-center shrink-0">from</span>
+                    <input
+                      type="text"
+                      value={referrerCompany}
+                      onChange={(e) => setReferrerCompany(e.target.value)}
+                      className="input-field flex-1 !py-2 !text-sm"
+                      placeholder="Company"
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-400 leading-relaxed">
+                    Optional — helps me track who's spreading the word and connect dots.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

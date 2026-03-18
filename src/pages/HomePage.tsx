@@ -9,6 +9,7 @@ import SortStrip from '../components/SortStrip';
 import BottomNav from '../components/BottomNav';
 import CircuitLines from '../components/CircuitLines';
 import { useJobs } from '../hooks/useJobs';
+import { useFilters } from '../hooks/useFilters';
 import type { Job } from '../lib/types';
 
 const TransactionFlowGlobe = lazy(() => import('../components/TransactionFlowGlobe'));
@@ -29,6 +30,7 @@ export default function HomePage() {
     setCategory,
     refresh,
   } = useJobs();
+  const { categories: availableCategories, tags: availableTags } = useFilters();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -174,6 +176,8 @@ export default function HomePage() {
           onTagsChange={setTags}
           category={category}
           onCategoryChange={setCategory}
+          availableCategories={availableCategories}
+          availableTags={availableTags}
         />
 
         {/* Search bar */}
@@ -226,6 +230,8 @@ export default function HomePage() {
             onTagsChange={setTags}
             category={category}
             onCategoryChange={setCategory}
+            availableCategories={availableCategories}
+            availableTags={availableTags}
           />
 
           <div className="flex-1 min-w-0">

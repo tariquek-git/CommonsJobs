@@ -138,6 +138,16 @@ export default function SubmitForm() {
           filled.push('Perks');
         }
 
+        if (r.category && !form.category) {
+          updateField('category', r.category);
+          filled.push('Category');
+        }
+
+        if (r.tags && r.tags.length > 0 && (!form.tags || form.tags.length === 0)) {
+          updateField('tags', r.tags);
+          filled.push('Tags');
+        }
+
         setAiFilledFields(filled);
         setAiMissingFields(missing);
 
@@ -316,6 +326,16 @@ export default function SubmitForm() {
             filled.push('Perks');
           }
 
+          if (r.category && !prev.category) {
+            updates.category = r.category;
+            filled.push('Category');
+          }
+
+          if (r.tags && r.tags.length > 0 && (!prev.tags || prev.tags.length === 0)) {
+            updates.tags = r.tags;
+            filled.push('Tags');
+          }
+
           return { ...prev, ...updates };
         });
 
@@ -417,6 +437,7 @@ export default function SubmitForm() {
         salary_range: form.salary_range || null,
         employment_type: form.employment_type || null,
         work_arrangement: form.work_arrangement || null,
+        referral_source: form.referral_source || null,
       });
       setResult({ ref: res.submission_ref, message: res.message });
       toast('Submission successful!', 'success');
@@ -472,6 +493,7 @@ export default function SubmitForm() {
               tags: [],
               submitter_name: '',
               submitter_email: '',
+              referral_source: '',
               standout_perks: [],
               warm_intro_ok: true,
               salary_range: '',
@@ -1175,6 +1197,29 @@ export default function SubmitForm() {
           <p className="text-sm text-gray-700">
             <span className="font-medium">Allow warm intros</span>
             <span className="text-gray-500 ml-1">. I'll notify you when candidates reach out</span>
+          </p>
+        </div>
+
+        {/* How did you hear about us */}
+        <div>
+          <label
+            htmlFor="submit-referral"
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+          >
+            How did you hear about Fintech Commons?
+            <span className="text-xs text-gray-400 ml-1.5 font-normal">optional</span>
+          </label>
+          <input
+            id="submit-referral"
+            type="text"
+            value={form.referral_source || ''}
+            onChange={(e) => updateField('referral_source', e.target.value)}
+            className="input-field"
+            placeholder="e.g. LinkedIn, a friend, Twitter, John from Stripe…"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">
+            Helps me understand what's working. If someone referred you, share their name — I'll
+            connect the dots.
           </p>
         </div>
 

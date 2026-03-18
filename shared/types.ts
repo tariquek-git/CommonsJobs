@@ -70,6 +70,7 @@ export interface SubmissionPayload {
   apply_url?: string;
   company_url?: string;
   tags?: string[];
+  category?: string;
   standout_perks?: string[];
   warm_intro_ok?: boolean;
   salary_range?: string;
@@ -77,6 +78,7 @@ export interface SubmissionPayload {
   work_arrangement?: string;
   submitter_name?: string;
   submitter_email?: string;
+  referral_source?: string;
   // Honeypot - should be empty
   website?: string;
 }

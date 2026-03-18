@@ -1,7 +1,7 @@
 import type { SortOption } from '../lib/types';
 import type { SearchMeta } from '../lib/types';
+import type { FiltersResponse } from '../lib/api';
 import { useCountUp } from '../hooks/useCountUp';
-import { CATEGORIES } from '../lib/constants';
 
 interface FilterRailProps {
   sort: SortOption;
@@ -11,6 +11,8 @@ interface FilterRailProps {
   onTagsChange: (tags: string[]) => void;
   category: string | null;
   onCategoryChange: (category: string | null) => void;
+  availableCategories: FiltersResponse['categories'];
+  availableTags: FiltersResponse['tags'];
 }
 
 export default function FilterRail({
@@ -21,12 +23,24 @@ export default function FilterRail({
   onTagsChange,
   category,
   onCategoryChange,
+  availableCategories,
+  availableTags,
 }: FilterRailProps) {
   const roleCount = useCountUp(meta?.total ?? 0, 600, !!meta);
 
   const toggleCategory = (cat: string) => {
     onCategoryChange(category === cat ? null : cat);
   };
+
+  const toggleTag = (tag: string) => {
+    if (tags.includes(tag)) {
+      onTagsChange(tags.filter((t) => t !== tag));
+    } else {
+      onTagsChange([...tags, tag]);
+    }
+  };
+
+  const hasFilters = !!(category || tags.length > 0);
 
   return (
     <aside className="hidden lg:block w-56 shrink-0">
@@ -52,34 +66,64 @@ export default function FilterRail({
           </div>
         </div>
 
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
-            Category
-          </h3>
-          <div className="space-y-1">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => toggleCategory(cat)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
-                  category === cat
-                    ? 'bg-brand-50 text-brand-500 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-            {category && (
-              <button
-                onClick={() => onCategoryChange(null)}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-600 hover:text-gray-700 transition-colors"
-              >
-                Clear filters
-              </button>
-            )}
+        {availableCategories.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+              Category
+            </h3>
+            <div className="space-y-1">
+              {availableCategories.map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => toggleCategory(cat.name)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center justify-between ${
+                    category === cat.name
+                      ? 'bg-brand-50 text-brand-500 font-semibold'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  {cat.name}
+                  <span className="text-xs text-gray-400 font-normal">{cat.count}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {availableTags.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+              Popular tags
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag.name}
+                  onClick={() => toggleTag(tag.name)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                    tags.includes(tag.name)
+                      ? 'bg-brand-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {hasFilters && (
+          <button
+            onClick={() => {
+              onCategoryChange(null);
+              onTagsChange([]);
+            }}
+            className="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-600 hover:text-gray-700 transition-colors"
+          >
+            Clear all filters
+          </button>
+        )}
 
         {meta && (
           <div className="surface-tinted p-4">

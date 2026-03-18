@@ -1,6 +1,6 @@
 import type { SortOption, SearchMeta } from '../lib/types';
+import type { FiltersResponse } from '../lib/api';
 import { usePostHog } from '@posthog/react';
-import { CATEGORIES } from '../lib/constants';
 
 interface SortStripProps {
   sort: SortOption;
@@ -11,6 +11,8 @@ interface SortStripProps {
   onTagsChange: (tags: string[]) => void;
   category: string | null;
   onCategoryChange: (category: string | null) => void;
+  availableCategories: FiltersResponse['categories'];
+  availableTags: FiltersResponse['tags'];
 }
 
 export default function SortStrip({
@@ -22,8 +24,30 @@ export default function SortStrip({
   onTagsChange,
   category,
   onCategoryChange,
+  availableCategories,
+  availableTags,
 }: SortStripProps) {
   const posthog = usePostHog();
+
+  const hasFilters = !!(category || tags.length > 0);
+
+  const toggleTag = (tag: string) => {
+    if (tags.includes(tag)) {
+      posthog?.capture('job_filter_applied', {
+        filter_type: 'tag',
+        tag,
+        action: 'removed',
+      });
+      onTagsChange(tags.filter((t) => t !== tag));
+    } else {
+      posthog?.capture('job_filter_applied', {
+        filter_type: 'tag',
+        tag,
+        action: 'added',
+      });
+      onTagsChange([...tags, tag]);
+    }
+  };
 
   const toggleCategory = (cat: string) => {
     const newCategory = category === cat ? null : cat;
@@ -75,27 +99,55 @@ export default function SortStrip({
           </svg>
         </button>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => toggleCategory(cat)}
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              category === cat ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-        {category && (
-          <button
-            onClick={() => onCategoryChange(null)}
-            className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-700"
-          >
-            Clear
-          </button>
-        )}
-      </div>
+      {availableCategories.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+          {availableCategories.map((cat) => (
+            <button
+              key={cat.name}
+              onClick={() => toggleCategory(cat.name)}
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                category === cat.name ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              {cat.name}
+              <span
+                className={`ml-1 text-xs ${category === cat.name ? 'text-white/70' : 'text-gray-400'}`}
+              >
+                {cat.count}
+              </span>
+            </button>
+          ))}
+          {hasFilters && (
+            <button
+              onClick={() => {
+                onCategoryChange(null);
+                onTagsChange([]);
+              }}
+              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-700"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
+
+      {availableTags.length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+          {availableTags.map((tag) => (
+            <button
+              key={tag.name}
+              onClick={() => toggleTag(tag.name)}
+              className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                tags.includes(tag.name)
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

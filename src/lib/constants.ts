@@ -1,7 +1,7 @@
 export const APP_NAME = 'Fintech Commons';
 export const APP_DESCRIPTION = 'Fintech & Banking Job Board';
 
-export const CATEGORIES = ['Engineering', 'Product', 'Operations', 'Sales/BD', 'Remote'] as const;
+// Categories are now dynamic — fetched from /api/jobs/filters
 
 export const FEEDS = {
   community: {
