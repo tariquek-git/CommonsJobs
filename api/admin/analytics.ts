@@ -21,11 +21,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get clicks with job info (last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [clicksResult, warmIntrosResult, topJobsResult, jobsByStatusResult] = await Promise.all([
-      // Clicks in last 30 days
+    const [clicksResult, warmIntrosResult, jobsByStatusResult] = await Promise.all([
+      // Clicks in last 30 days (single query for both daily counts and top jobs)
       supabase
         .from(getClicksTable())
-        .select('created_at')
+        .select('created_at, job_id')
         .gte('created_at', thirtyDaysAgo)
         .order('created_at', { ascending: true }),
 
@@ -36,20 +36,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .gte('created_at', thirtyDaysAgo)
         .order('created_at', { ascending: true }),
 
-      // Top 10 jobs by click count
-      supabase.from(getClicksTable()).select('job_id').gte('created_at', thirtyDaysAgo),
-
       // Jobs by status
       supabase.from(getJobsTable()).select('status'),
     ]);
 
+    const clicksData = clicksResult.data || [];
+
     // Aggregate clicks by day
-    const clicksByDay = aggregateByDay(clicksResult.data?.map((r) => r.created_at) || []);
+    const clicksByDay = aggregateByDay(clicksData.map((r) => r.created_at));
     const introsByDay = aggregateByDay(warmIntrosResult.data?.map((r) => r.created_at) || []);
 
-    // Count clicks per job
+    // Count clicks per job (reuse the same query result)
     const jobClickCounts: Record<string, number> = {};
-    for (const click of topJobsResult.data || []) {
+    for (const click of clicksData) {
       jobClickCounts[click.job_id] = (jobClickCounts[click.job_id] || 0) + 1;
     }
 
@@ -89,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       topJobs,
       statusCounts,
       totals: {
-        clicks30d: clicksResult.data?.length || 0,
+        clicks30d: clicksData.length,
         intros30d: warmIntrosResult.data?.length || 0,
       },
     });

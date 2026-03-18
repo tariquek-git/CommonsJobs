@@ -196,7 +196,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       emails: emailResults,
     });
   } catch (err) {
-    console.error('Admin Warm Intros Status API Error:', err);
+    logger.error('Admin Warm Intros Status API Error', { error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

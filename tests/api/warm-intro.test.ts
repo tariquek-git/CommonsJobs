@@ -127,7 +127,7 @@ describe('POST /api/jobs/warm-intro', () => {
     mockInsert.mockReturnValue({ select: mockIntroSelect });
     const req = mockReq({
       body: {
-        job_id: '123',
+        job_id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'John',
         email: 'john@example.com',
       },
@@ -155,7 +155,7 @@ describe('POST /api/jobs/warm-intro', () => {
   it('accepts optional linkedin and message fields', async () => {
     const req = mockReq({
       body: {
-        job_id: '123',
+        job_id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'John Doe',
         email: 'john@example.com',
         linkedin: 'https://linkedin.com/in/johndoe',

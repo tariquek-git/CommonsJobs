@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
+import { logger } from '../../lib/logger.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -151,7 +152,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ intros: result });
   } catch (err) {
-    console.error('Admin Warm Intros API Error:', err);
+    logger.error('Admin Warm Intros API Error', { error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

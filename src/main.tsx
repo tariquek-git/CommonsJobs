@@ -35,6 +35,12 @@ posthog.register({
   utm_campaign: params.get('utm_campaign') || undefined,
 });
 
+// Vercel Analytics & Speed Insights (zero-config, server-injected)
+import { inject as injectAnalytics } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
+injectAnalytics();
+injectSpeedInsights();
+
 // Helper: capture exception to PostHog (works before Sentry loads)
 function captureException(
   error: unknown,

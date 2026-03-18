@@ -213,8 +213,8 @@ async function fetchSentry(): Promise<SentryData | null> {
 
 async function fetchVercel(): Promise<VercelData | null> {
   const token = getEnv('VERCEL_TOKEN');
-  const projectId = getEnv('VERCEL_PROJECT_ID', 'prj_LUAIAAqAtjWXBddBkykiBXEPVi3k');
-  const teamId = getEnv('VERCEL_TEAM_ID', 'team_STzWxd5CFWZJluy9ayRxCorw');
+  const projectId = getEnv('VERCEL_PROJECT_ID', '');
+  const teamId = getEnv('VERCEL_TEAM_ID', '');
 
   if (!token) return null;
 

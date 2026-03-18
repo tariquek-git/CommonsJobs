@@ -23,6 +23,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    // UUID format validation for job_id
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(job_id)) {
+      return res.status(400).json({ error: 'Invalid job ID format', code: 'VALIDATION_ERROR' });
+    }
+
     // Basic email check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email', code: 'VALIDATION_ERROR' });

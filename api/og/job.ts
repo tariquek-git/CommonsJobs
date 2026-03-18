@@ -46,8 +46,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : `${job.title} role at ${job.company}${job.location ? ` in ${job.location}` : ''}. Community-reviewed on Fintech Commons.`;
     const url = `https://www.fintechcommons.com/job/${job.id}`;
 
-    const ogImage = job.company_logo_url || 'https://www.fintechcommons.com/og-image.png';
-    const isDefaultImage = !job.company_logo_url;
+    const hasValidLogo =
+      !!job.company_logo_url &&
+      job.company_logo_url.trim() !== '' &&
+      /^https?:\/\//i.test(job.company_logo_url);
+    const ogImage = hasValidLogo
+      ? job.company_logo_url
+      : 'https://www.fintechcommons.com/og-image.png';
+    const isDefaultImage = !hasValidLogo;
 
     const ogTags = [
       `<meta property="og:type" content="website" />`,
