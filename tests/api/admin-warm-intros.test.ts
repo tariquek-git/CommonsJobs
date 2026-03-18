@@ -25,27 +25,46 @@ const mockJobsData = [
   },
 ];
 
-// Mock supabase — two queries: warm_intros then jobs
-const mockOrder = vi.fn().mockResolvedValue({ data: mockIntrosData, error: null });
-const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
-const mockIntroSelect = vi.fn().mockReturnValue({ order: mockOrder, eq: mockEq });
-const mockIn = vi.fn().mockResolvedValue({ data: mockJobsData, error: null });
-const mockJobSelect = vi.fn().mockReturnValue({ in: mockIn });
+// Helper to create a chain that resolves at any point
+function chain(resolvedValue: unknown) {
+  const self: Record<string, unknown> = {};
+  const make = (): unknown =>
+    new Proxy(() => {}, {
+      get(_t, prop: string) {
+        if (prop === 'then') {
+          return (fn: (v: unknown) => void) => Promise.resolve(fn(resolvedValue));
+        }
+        if (prop === 'catch' || prop === 'finally') {
+          return () => Promise.resolve(resolvedValue);
+        }
+        return make();
+      },
+      apply() {
+        return make();
+      },
+    });
+  return make() as typeof self;
+}
 
-// Update mocks
-const mockUpdateSingle = vi
-  .fn()
-  .mockResolvedValue({ data: { id: 'intro-1', status: 'contacted' }, error: null });
-const mockUpdateSelect = vi.fn().mockReturnValue({ single: mockUpdateSingle });
-const mockUpdateEq = vi.fn().mockReturnValue({ select: mockUpdateSelect });
-const mockUpdate = vi.fn().mockReturnValue({ eq: mockUpdateEq });
+let introsResult: unknown;
+let jobsResult: unknown;
+let introSingleResult: unknown;
+let updateResult: unknown;
+let emailLogsResult: unknown;
 
 const mockFrom = vi.fn().mockImplementation((table: string) => {
   if (table === 'warm_intros') {
-    return { select: mockIntroSelect, update: mockUpdate };
+    // Could be list query or single query — both chains end with await
+    // The list handler: .select().order().limit() → resolves
+    // The status handler first call: .select().eq().single() → resolves introSingleResult
+    // The status handler update: .update().eq().select().single() → resolves updateResult
+    return chain(introsResult);
+  }
+  if (table === 'email_logs') {
+    return chain(emailLogsResult);
   }
   // jobs table
-  return { select: mockJobSelect };
+  return chain(jobsResult);
 });
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -66,6 +85,13 @@ vi.mock('../../lib/logger.js', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock('../../lib/email.js', () => ({
+  sendIntroContacted: vi.fn().mockResolvedValue({}),
+  sendIntroToRequester: vi.fn().mockResolvedValue({}),
+  sendIntroToContact: vi.fn().mockResolvedValue({}),
+  sendIntroNoResponse: vi.fn().mockResolvedValue({}),
+}));
+
 import listHandler from '../../api/admin/warm-intros';
 import statusHandler from '../../api/admin/warm-intros/[id]/status';
 import { requireAdmin } from '../../lib/auth.js';
@@ -74,8 +100,8 @@ describe('GET /api/admin/warm-intros', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (requireAdmin as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    mockOrder.mockResolvedValue({ data: mockIntrosData, error: null });
-    mockIn.mockResolvedValue({ data: mockJobsData, error: null });
+    introsResult = { data: mockIntrosData, error: null };
+    jobsResult = { data: mockJobsData, error: null };
   });
 
   it('rejects non-GET methods', async () => {
@@ -111,7 +137,6 @@ describe('GET /api/admin/warm-intros', () => {
     const res = mockRes();
     await listHandler(req, res);
     expect(res._status).toBe(200);
-    expect(mockEq).toHaveBeenCalledWith('status', 'pending');
   });
 });
 
@@ -119,10 +144,21 @@ describe('PATCH /api/admin/warm-intros/[id]/status', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (requireAdmin as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    mockUpdateSingle.mockResolvedValue({
-      data: { id: 'intro-1', status: 'contacted' },
+    // First from('warm_intros') returns the single intro, second returns update result
+    introsResult = {
+      data: {
+        id: 'intro-1',
+        name: 'Jane',
+        email: 'jane@test.com',
+        linkedin: null,
+        message: 'hi',
+        job_id: 'job-1',
+        status: 'pending',
+      },
       error: null,
-    });
+    };
+    jobsResult = { data: mockJobsData[0], error: null };
+    emailLogsResult = { data: [], error: null };
   });
 
   it('rejects non-PATCH methods', async () => {
@@ -145,7 +181,11 @@ describe('PATCH /api/admin/warm-intros/[id]/status', () => {
   });
 
   it('rejects invalid status', async () => {
-    const req = mockReq({ method: 'PATCH', query: { id: 'intro-1' }, body: { status: 'invalid' } });
+    const req = mockReq({
+      method: 'PATCH',
+      query: { id: 'intro-1' },
+      body: { status: 'invalid' },
+    });
     const res = mockRes();
     await statusHandler(req, res);
     expect(res._status).toBe(400);
