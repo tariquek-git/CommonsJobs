@@ -102,6 +102,7 @@ describe('GET /api/admin/warm-intros', () => {
     (requireAdmin as ReturnType<typeof vi.fn>).mockReturnValue(true);
     introsResult = { data: mockIntrosData, error: null };
     jobsResult = { data: mockJobsData, error: null };
+    emailLogsResult = { data: [], error: null };
   });
 
   it('rejects non-GET methods', async () => {

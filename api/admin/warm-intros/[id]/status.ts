@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Update status
     const { data, error } = await supabase
       .from('warm_intros')
-      .update({ status })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select('id, status')
       .single();
@@ -65,105 +65,138 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const jobTitle = job?.title || 'Unknown Role';
     const jobCompany = job?.company || 'Unknown Company';
 
-    // Auto-fire emails on status transitions (non-blocking)
-    // Safeguard: only send if status actually changed AND check for duplicate emails
+    // Auto-fire emails on status transitions — awaited for reliability
+    const emailResults: { type: string; status: 'sent' | 'failed' | 'skipped'; error?: string }[] =
+      [];
+
     if (previousStatus !== status) {
-      import('../../../../lib/email.js')
-        .then(async (email) => {
-          // Check what emails have already been sent for this intro to prevent duplicates
-          const { data: existingLogs } = await supabase
-            .from('email_logs')
-            .select('event_type')
-            .eq('related_warm_intro_id', id)
-            .eq('status', 'sent');
+      try {
+        const email = await import('../../../../lib/email.js');
 
-          const alreadySent = new Set(
-            (existingLogs || []).map((l: { event_type: string }) => l.event_type),
-          );
+        // Check what emails have already been sent for this intro to prevent duplicates
+        const { data: existingLogs } = await supabase
+          .from('email_logs')
+          .select('event_type')
+          .eq('related_warm_intro_id', id)
+          .eq('status', 'sent');
 
-          if (status === 'contacted' && !alreadySent.has('warm_intro_contacted')) {
-            email
-              .sendIntroContacted({
+        const alreadySent = new Set(
+          (existingLogs || []).map((l: { event_type: string }) => l.event_type),
+        );
+
+        if (status === 'contacted' && !alreadySent.has('warm_intro_contacted')) {
+          try {
+            await email.sendIntroContacted({
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              jobTitle,
+              jobCompany,
+              jobId: intro.job_id,
+              introId: intro.id,
+            });
+            emailResults.push({ type: 'warm_intro_contacted', status: 'sent' });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            logger.warn('Intro contacted email failed', { introId: id, error: err });
+            emailResults.push({ type: 'warm_intro_contacted', status: 'failed', error: msg });
+          }
+        }
+
+        if (status === 'connected' && !alreadySent.has('warm_intro_connection_requester')) {
+          const cName = contact_name || job?.submitter_name;
+          const cEmail = contact_email || job?.submitter_email;
+
+          if (!cName || !cEmail) {
+            logger.warn('Connected status set without contact email', {
+              introId: id,
+              contactName: cName,
+              contactEmail: cEmail,
+            });
+            emailResults.push({
+              type: 'warm_intro_connection',
+              status: 'skipped',
+              error: 'Missing contact name or email',
+            });
+          } else {
+            try {
+              await email.sendIntroToRequester({
                 requesterName: intro.name,
                 requesterEmail: intro.email,
-                jobTitle,
-                jobCompany,
-                jobId: intro.job_id,
-                introId: intro.id,
-              })
-              .catch((err: unknown) => {
-                logger.warn('Intro contacted email failed', { introId: id, error: err });
-              });
-          }
-
-          if (status === 'connected' && !alreadySent.has('warm_intro_connection_requester')) {
-            const cName = contact_name || job?.submitter_name;
-            const cEmail = contact_email || job?.submitter_email;
-
-            if (!cName || !cEmail) {
-              logger.warn('Connected status set without contact email', {
-                introId: id,
                 contactName: cName,
                 contactEmail: cEmail,
-              });
-            } else {
-              email
-                .sendIntroToRequester({
-                  requesterName: intro.name,
-                  requesterEmail: intro.email,
-                  contactName: cName,
-                  contactEmail: cEmail,
-                  contactRole: contact_role,
-                  jobTitle,
-                  jobCompany,
-                  jobId: intro.job_id,
-                  introId: intro.id,
-                })
-                .catch((err: unknown) => {
-                  logger.warn('Intro-to-requester email failed', { introId: id, error: err });
-                });
-
-              email
-                .sendIntroToContact({
-                  contactName: cName,
-                  contactEmail: cEmail,
-                  requesterName: intro.name,
-                  requesterEmail: intro.email,
-                  requesterLinkedin: intro.linkedin || undefined,
-                  requesterMessage: intro.message || undefined,
-                  jobTitle,
-                  jobCompany,
-                  jobId: intro.job_id,
-                  introId: intro.id,
-                })
-                .catch((err: unknown) => {
-                  logger.warn('Intro-to-contact email failed', { introId: id, error: err });
-                });
-            }
-          }
-
-          if (status === 'no_response' && !alreadySent.has('warm_intro_no_response')) {
-            email
-              .sendIntroNoResponse({
-                requesterName: intro.name,
-                requesterEmail: intro.email,
+                contactRole: contact_role,
                 jobTitle,
                 jobCompany,
                 jobId: intro.job_id,
                 introId: intro.id,
-              })
-              .catch((err: unknown) => {
-                logger.warn('Intro no-response email failed', { introId: id, error: err });
               });
+              emailResults.push({ type: 'warm_intro_connection_requester', status: 'sent' });
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : 'Unknown error';
+              logger.warn('Intro-to-requester email failed', { introId: id, error: err });
+              emailResults.push({
+                type: 'warm_intro_connection_requester',
+                status: 'failed',
+                error: msg,
+              });
+            }
+
+            try {
+              await email.sendIntroToContact({
+                contactName: cName,
+                contactEmail: cEmail,
+                requesterName: intro.name,
+                requesterEmail: intro.email,
+                requesterLinkedin: intro.linkedin || undefined,
+                requesterMessage: intro.message || undefined,
+                jobTitle,
+                jobCompany,
+                jobId: intro.job_id,
+                introId: intro.id,
+              });
+              emailResults.push({ type: 'warm_intro_connection_contact', status: 'sent' });
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : 'Unknown error';
+              logger.warn('Intro-to-contact email failed', { introId: id, error: err });
+              emailResults.push({
+                type: 'warm_intro_connection_contact',
+                status: 'failed',
+                error: msg,
+              });
+            }
           }
-        })
-        .catch((err: unknown) => {
-          logger.warn('Email module import failed for intro status', { introId: id, error: err });
-        });
+        }
+
+        if (status === 'no_response' && !alreadySent.has('warm_intro_no_response')) {
+          try {
+            await email.sendIntroNoResponse({
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              jobTitle,
+              jobCompany,
+              jobId: intro.job_id,
+              introId: intro.id,
+            });
+            emailResults.push({ type: 'warm_intro_no_response', status: 'sent' });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            logger.warn('Intro no-response email failed', { introId: id, error: err });
+            emailResults.push({ type: 'warm_intro_no_response', status: 'failed', error: msg });
+          }
+        }
+      } catch (err: unknown) {
+        logger.warn('Email module import failed for intro status', { introId: id, error: err });
+        emailResults.push({ type: 'email_module', status: 'failed', error: 'Module load failed' });
+      }
     }
 
-    return res.status(200).json({ success: true, intro: data });
-  } catch {
+    return res.status(200).json({
+      success: true,
+      intro: data,
+      emails: emailResults,
+    });
+  } catch (err) {
+    console.error('Admin Warm Intros Status API Error:', err);
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

@@ -124,6 +124,8 @@ export default function IntrosPage() {
   const [allIntros, setAllIntros] = useState<WarmIntroRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'stale'>('newest');
 
   // Confirmation modal
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
@@ -171,17 +173,38 @@ export default function IntrosPage() {
   }, [allIntros]);
 
   const filteredIntros = useMemo(() => {
-    const list = filter ? allIntros.filter((i) => i.status === filter) : allIntros;
+    let list = filter ? allIntros.filter((i) => i.status === filter) : allIntros;
 
-    // Sort by urgency: pending first, then contacted, connected, no_response
-    // Within each group: newest first
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.email.toLowerCase().includes(q) ||
+          (i.job_title || '').toLowerCase().includes(q) ||
+          (i.job_company || '').toLowerCase().includes(q) ||
+          (i.job_submitter_name || '').toLowerCase().includes(q) ||
+          (i.message || '').toLowerCase().includes(q),
+      );
+    }
+
+    // Sort
     return [...list].sort((a, b) => {
+      if (sortBy === 'stale') {
+        // Stale first (most days in status)
+        return (b.days_in_status || 0) - (a.days_in_status || 0);
+      }
+      if (sortBy === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      // Default: urgency sort (pending first) then newest
       const aIdx = STATUS_ORDER.indexOf(a.status);
       const bIdx = STATUS_ORDER.indexOf(b.status);
       if (aIdx !== bIdx) return aIdx - bIdx;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [allIntros, filter]);
+  }, [allIntros, filter, searchQuery, sortBy]);
 
   // ─── Actions ───
 
@@ -309,6 +332,49 @@ export default function IntrosPage() {
         activeFilter={filter}
         onFilter={(status) => setSearchParams(status ? { status } : {})}
       />
+
+      {/* Search & Sort */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="relative flex-1">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, job, company..."
+            className="w-full text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'stale')}
+          className="text-xs border border-gray-200 rounded-lg px-3 py-2 text-gray-600 bg-white"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="stale">Needs attention</option>
+        </select>
+      </div>
 
       {/* Error */}
       {error && (
@@ -545,81 +611,133 @@ function IntroCard({
 }) {
   return (
     <div
-      className={`bg-white rounded-xl border border-gray-200 border-l-4 ${CARD_BORDER[intro.status] || CARD_BORDER.pending}`}
+      className={`bg-white rounded-xl border border-gray-200 border-l-4 ${CARD_BORDER[intro.status] || CARD_BORDER.pending} ${intro.is_stale ? 'ring-1 ring-amber-200' : ''}`}
     >
       <div className="p-5 space-y-3">
-        {/* Row 1: Status badge + time */}
+        {/* Top row: Status + stale badge + time */}
         <div className="flex items-center justify-between">
-          <StatusBadge status={intro.status} />
+          <div className="flex items-center gap-2">
+            <StatusBadge status={intro.status} />
+            {intro.is_stale && (
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700">
+                ⚠ {intro.days_in_status}d — needs attention
+              </span>
+            )}
+          </div>
           <span className="text-[11px] text-gray-400">
             {getRelativeTimeLabel(intro.created_at)}
           </span>
         </div>
 
-        {/* Row 2: Name + Role */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900">
-            {intro.name}
-            <span className="font-normal text-gray-400"> → </span>
-            <span className="font-medium text-gray-700">{intro.job_title}</span>
-            <span className="text-gray-400"> at </span>
-            <span className="font-medium text-gray-700">{intro.job_company}</span>
-          </h3>
-          {intro.referrer_name && (
-            <p className="text-[11px] text-gray-400 mt-0.5">
-              via {intro.referrer_name}
-              {intro.referrer_company ? ` (${intro.referrer_company})` : ''}
+        {/* Relationship Grid: Requester → Job → Submitter */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* REQUESTER */}
+          <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+              Requester
             </p>
-          )}
+            <p className="text-sm font-semibold text-gray-900">{intro.name}</p>
+            <div className="flex flex-col gap-0.5">
+              <a
+                href={`mailto:${intro.email}`}
+                className="text-xs text-brand-500 hover:underline truncate"
+              >
+                {intro.email}
+              </a>
+              {intro.linkedin && (
+                <a
+                  href={intro.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  LinkedIn ↗
+                </a>
+              )}
+            </div>
+            {intro.referrer_name && (
+              <p className="text-[11px] text-gray-400">
+                via {intro.referrer_name}
+                {intro.referrer_company ? ` (${intro.referrer_company})` : ''}
+              </p>
+            )}
+          </div>
+
+          {/* JOB */}
+          <div className="bg-blue-50/50 rounded-lg p-3 space-y-1.5">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Job</p>
+            <p className="text-sm font-semibold text-gray-900">{intro.job_title}</p>
+            <p className="text-xs text-gray-600">{intro.job_company}</p>
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                  intro.job_status === 'active'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-100 text-gray-500'
+                }`}
+              >
+                {intro.job_status || 'unknown'}
+              </span>
+              {intro.job_apply_url && (
+                <a
+                  href={intro.job_apply_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-brand-500 hover:underline"
+                >
+                  View listing ↗
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* SUBMITTER / CONTACT */}
+          <div className="bg-purple-50/50 rounded-lg p-3 space-y-1.5">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+              Posted by
+            </p>
+            {intro.job_submitter_name ? (
+              <>
+                <p className="text-sm font-semibold text-gray-900">{intro.job_submitter_name}</p>
+                {intro.job_submitter_email && (
+                  <a
+                    href={`mailto:${intro.job_submitter_email}`}
+                    className="text-xs text-brand-500 hover:underline truncate block"
+                  >
+                    {intro.job_submitter_email}
+                  </a>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-gray-400 italic">No submitter info</p>
+            )}
+          </div>
         </div>
 
-        {/* Row 3: Message (if any) */}
+        {/* Message (if any) */}
         {intro.message && <MessageBlock text={intro.message} />}
 
-        {/* Row 4: Contact info */}
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <a href={`mailto:${intro.email}`} className="text-brand-500 hover:underline">
-            {intro.email}
-          </a>
-          {intro.linkedin && (
-            <>
-              <span className="text-gray-300">·</span>
-              <a
-                href={intro.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                LinkedIn ↗
-              </a>
-            </>
-          )}
-          {intro.job_submitter_name && (
-            <>
-              <span className="text-gray-300">·</span>
-              <span className="text-gray-400">
-                Posted by{' '}
-                <a
-                  href={`mailto:${intro.job_submitter_email}`}
-                  className="text-gray-600 hover:underline"
-                >
-                  {intro.job_submitter_name}
-                </a>
+        {/* Bottom bar: Actions + Meta */}
+        <div className="flex items-center justify-between gap-3 pt-1 border-t border-gray-100">
+          <div className="flex items-center gap-2 flex-wrap">
+            <PrimaryAction intro={intro} onStatusChange={onStatusChange} onFollowUp={onFollowUp} />
+            <SecondaryActions intro={intro} onStatusChange={onStatusChange} />
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-gray-400 shrink-0">
+            {intro.email_count > 0 && (
+              <span>
+                {intro.email_count} email{intro.email_count !== 1 ? 's' : ''}
               </span>
-            </>
-          )}
+            )}
+            {intro.last_email_at && <span>Last: {getRelativeTimeLabel(intro.last_email_at)}</span>}
+          </div>
         </div>
 
-        {/* Row 5: Actions */}
-        <div className="flex items-center gap-2 flex-wrap pt-1">
-          <PrimaryAction intro={intro} onStatusChange={onStatusChange} onFollowUp={onFollowUp} />
-          <SecondaryActions intro={intro} onStatusChange={onStatusChange} />
-        </div>
-
-        {/* Row 6: Email trail toggle */}
+        {/* Email trail toggle */}
         <button
           onClick={onToggleTrail}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors pt-1"
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
           <svg
             className={`h-3 w-3 transition-transform ${emailTrailExpanded ? 'rotate-90' : ''}`}

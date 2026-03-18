@@ -15,10 +15,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = getSupabase();
     const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
 
-    // Fetch warm intros
+    // Support counts_only mode for dashboard summary
+    if (req.query.counts_only === 'true') {
+      const { data: allIntros } = await supabase
+        .from('warm_intros')
+        .select('id, status, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      const intros = allIntros || [];
+      const now = Date.now();
+      const counts = { pending: 0, contacted: 0, connected: 0, no_response: 0 };
+      const stale: { id: string; status: string; days: number }[] = [];
+
+      for (const i of intros) {
+        const s = i.status as keyof typeof counts;
+        if (s in counts) counts[s]++;
+        const updatedAt = new Date(i.updated_at || i.created_at).getTime();
+        const days = Math.floor((now - updatedAt) / 86400000);
+        if ((s === 'pending' && days >= 2) || (s === 'contacted' && days >= 7)) {
+          stale.push({ id: i.id, status: s, days });
+        }
+      }
+
+      return res.status(200).json({ counts, stale, total: intros.length });
+    }
+
+    // Full fetch with enriched data
     let query = supabase
       .from('warm_intros')
-      .select('id, name, email, linkedin, message, status, created_at, job_id');
+      .select(
+        'id, name, email, linkedin, message, status, created_at, updated_at, job_id, referrer_name, referrer_company',
+      );
 
     if (statusFilter) {
       query = query.eq('status', statusFilter);
@@ -34,13 +62,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const intros = introsData || [];
 
-    // Fetch related jobs for context
+    // Fetch related jobs for context (include status and apply_url)
     const jobIds = [...new Set(intros.map((i) => i.job_id).filter(Boolean))];
     let jobMap: Record<
       string,
       {
         title: string;
         company: string;
+        status: string;
+        apply_url: string | null;
         submitter_email: string | null;
         submitter_name: string | null;
       }
@@ -49,33 +79,79 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (jobIds.length > 0) {
       const { data: jobsData } = await supabase
         .from(getJobsTable())
-        .select('id, title, company, submitter_email, submitter_name')
+        .select('id, title, company, status, apply_url, submitter_email, submitter_name')
         .in('id', jobIds);
 
       for (const job of jobsData || []) {
         jobMap[job.id] = {
           title: job.title,
           company: job.company,
+          status: job.status,
+          apply_url: job.apply_url || null,
           submitter_email: job.submitter_email || null,
           submitter_name: job.submitter_name || null,
         };
       }
     }
 
-    // Merge intro + job data
+    // Fetch email counts per intro (aggregated)
+    const introIds = intros.map((i) => i.id);
+    let emailMap: Record<string, { count: number; last_at: string | null; types: string[] }> = {};
+
+    if (introIds.length > 0) {
+      const { data: emailLogs } = await supabase
+        .from('email_logs')
+        .select('related_warm_intro_id, event_type, created_at')
+        .in('related_warm_intro_id', introIds)
+        .eq('status', 'sent')
+        .order('created_at', { ascending: false });
+
+      for (const log of emailLogs || []) {
+        const id = log.related_warm_intro_id;
+        if (!id) continue;
+        if (!emailMap[id]) {
+          emailMap[id] = { count: 0, last_at: null, types: [] };
+        }
+        emailMap[id].count++;
+        if (!emailMap[id].last_at) emailMap[id].last_at = log.created_at;
+        if (!emailMap[id].types.includes(log.event_type)) {
+          emailMap[id].types.push(log.event_type);
+        }
+      }
+    }
+
+    // Merge intro + job + email data
+    const now = Date.now();
     const result = intros.map((intro) => {
       const job = jobMap[intro.job_id] || null;
+      const emails = emailMap[intro.id] || { count: 0, last_at: null, types: [] };
+      const updatedAt = new Date(intro.updated_at || intro.created_at).getTime();
+      const daysInStatus = Math.floor((now - updatedAt) / 86400000);
+
       return {
         ...intro,
+        // Job context
         job_title: job?.title || 'Unknown',
         job_company: job?.company || 'Unknown',
+        job_status: job?.status || 'unknown',
+        job_apply_url: job?.apply_url || null,
         job_submitter_email: job?.submitter_email || null,
         job_submitter_name: job?.submitter_name || null,
+        // Email context
+        email_count: emails.count,
+        last_email_at: emails.last_at,
+        email_types: emails.types,
+        // Timing
+        days_in_status: daysInStatus,
+        is_stale:
+          (intro.status === 'pending' && daysInStatus >= 2) ||
+          (intro.status === 'contacted' && daysInStatus >= 7),
       };
     });
 
     return res.status(200).json({ intros: result });
-  } catch {
+  } catch (err) {
+    console.error('Admin Warm Intros API Error:', err);
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

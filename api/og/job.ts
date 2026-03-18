@@ -46,21 +46,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : `${job.title} role at ${job.company}${job.location ? ` in ${job.location}` : ''}. Community-reviewed on Fintech Commons.`;
     const url = `https://www.fintechcommons.com/job/${job.id}`;
 
+    const ogImage = job.company_logo_url || 'https://www.fintechcommons.com/og-image.png';
+    const isDefaultImage = !job.company_logo_url;
+
     const ogTags = [
       `<meta property="og:type" content="website" />`,
       `<meta property="og:title" content="${esc(title)}" />`,
       `<meta property="og:description" content="${esc(description)}" />`,
       `<meta property="og:url" content="${url}" />`,
       `<meta property="og:site_name" content="Fintech Commons" />`,
-      job.company_logo_url
-        ? `<meta property="og:image" content="${esc(job.company_logo_url)}" />`
-        : '',
-      `<meta name="twitter:card" content="summary" />`,
+      `<meta property="og:image" content="${esc(ogImage)}" />`,
+      isDefaultImage ? `<meta property="og:image:width" content="1200" />` : '',
+      isDefaultImage ? `<meta property="og:image:height" content="630" />` : '',
+      `<meta name="twitter:card" content="summary_large_image" />`,
       `<meta name="twitter:title" content="${esc(title)}" />`,
       `<meta name="twitter:description" content="${esc(description)}" />`,
-      job.company_logo_url
-        ? `<meta name="twitter:image" content="${esc(job.company_logo_url)}" />`
-        : '',
+      `<meta name="twitter:image" content="${esc(ogImage)}" />`,
       `<meta name="description" content="${esc(description)}" />`,
     ]
       .filter(Boolean)

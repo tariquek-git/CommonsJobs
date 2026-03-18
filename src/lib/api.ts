@@ -273,11 +273,22 @@ export interface WarmIntroRecord {
   referrer_company: string | null;
   status: string;
   created_at: string;
+  updated_at: string | null;
   job_id: string;
+  // Job context
   job_title: string;
   job_company: string;
+  job_status: string;
+  job_apply_url: string | null;
   job_submitter_email: string | null;
   job_submitter_name: string | null;
+  // Email context
+  email_count: number;
+  last_email_at: string | null;
+  email_types: string[];
+  // Timing
+  days_in_status: number;
+  is_stale: boolean;
 }
 
 export async function getWarmIntros(
