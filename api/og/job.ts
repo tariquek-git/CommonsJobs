@@ -29,7 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = getSupabase();
     const { data: job } = await supabase
       .from('jobs')
-      .select('id, title, company, location, country, summary, company_logo_url, company_url, warm_intro_ok, apply_url, employment_type, work_arrangement, salary_range, posted_date, description')
+      .select(
+        'id, title, company, location, country, summary, company_logo_url, company_url, warm_intro_ok, apply_url, employment_type, work_arrangement, salary_range, posted_date, description',
+      )
       .eq('id', id)
       .eq('status', 'active')
       .single();
@@ -50,13 +52,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<meta property="og:description" content="${esc(description)}" />`,
       `<meta property="og:url" content="${url}" />`,
       `<meta property="og:site_name" content="Fintech Commons" />`,
-      job.company_logo_url ? `<meta property="og:image" content="${esc(job.company_logo_url)}" />` : '',
+      job.company_logo_url
+        ? `<meta property="og:image" content="${esc(job.company_logo_url)}" />`
+        : '',
       `<meta name="twitter:card" content="summary" />`,
       `<meta name="twitter:title" content="${esc(title)}" />`,
       `<meta name="twitter:description" content="${esc(description)}" />`,
-      job.company_logo_url ? `<meta name="twitter:image" content="${esc(job.company_logo_url)}" />` : '',
+      job.company_logo_url
+        ? `<meta name="twitter:image" content="${esc(job.company_logo_url)}" />`
+        : '',
       `<meta name="description" content="${esc(description)}" />`,
-    ].filter(Boolean).join('\n    ');
+    ]
+      .filter(Boolean)
+      .join('\n    ');
 
     // Build JSON-LD for crawlers
     const jsonLd: Record<string, unknown> = {
@@ -65,15 +73,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       title: job.title,
       description: job.description || job.summary || `${job.title} at ${job.company}`,
       datePosted: job.posted_date,
-      hiringOrganization: { '@type': 'Organization', name: job.company, ...(job.company_url ? { sameAs: job.company_url } : {}), ...(job.company_logo_url ? { logo: job.company_logo_url } : {}) },
-      ...(job.location ? { jobLocation: { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: job.location, ...(job.country ? { addressCountry: job.country } : {}) } } } : {}),
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: job.company,
+        ...(job.company_url ? { sameAs: job.company_url } : {}),
+        ...(job.company_logo_url ? { logo: job.company_logo_url } : {}),
+      },
+      ...(job.location
+        ? {
+            jobLocation: {
+              '@type': 'Place',
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: job.location,
+                ...(job.country ? { addressCountry: job.country } : {}),
+              },
+            },
+          }
+        : {}),
       ...(job.apply_url ? { url: job.apply_url, directApply: true } : {}),
     };
     if (job.employment_type) {
-      const typeMap: Record<string, string> = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', 'Contract': 'CONTRACTOR', 'Internship': 'INTERN' };
+      const typeMap: Record<string, string> = {
+        'Full-time': 'FULL_TIME',
+        'Part-time': 'PART_TIME',
+        Contract: 'CONTRACTOR',
+        Internship: 'INTERN',
+      };
       jsonLd.employmentType = typeMap[job.employment_type] || job.employment_type;
     }
-    if (job.work_arrangement?.toLowerCase().includes('remote')) jsonLd.jobLocationType = 'TELECOMMUTE';
+    if (job.work_arrangement?.toLowerCase().includes('remote'))
+      jsonLd.jobLocationType = 'TELECOMMUTE';
 
     const jsonLdTag = `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
 
@@ -99,7 +129,8 @@ function getSpaHtml(): string {
     cachedHtml = readFileSync(join(process.cwd(), 'dist', 'index.html'), 'utf-8');
   } catch {
     // Fallback: minimal HTML shell
-    cachedHtml = '<!DOCTYPE html><html><head><title>Fintech Commons</title></head><body><div id="root"></div></body></html>';
+    cachedHtml =
+      '<!DOCTYPE html><html><head><title>Fintech Commons</title></head><body><div id="root"></div></body></html>';
   }
   return cachedHtml;
 }
@@ -107,6 +138,8 @@ function getSpaHtml(): string {
 function serveFallback(res: VercelResponse) {
   const html = getSpaHtml();
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  // Cache the SPA shell at CDN level — saves function invocations for real users
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
   return res.status(200).send(html);
 }
 

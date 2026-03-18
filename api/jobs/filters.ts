@@ -51,8 +51,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const tags =
       allTags.length > 10 ? allTags.filter((t) => t.count >= 2).slice(0, 20) : allTags.slice(0, 20);
 
-    // Cache for 5 minutes
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
+    // CDN cache: 10min server, serve stale up to 30min while revalidating
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1800');
 
     return res.status(200).json({ categories, tags });
   } catch {

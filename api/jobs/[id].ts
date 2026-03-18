@@ -35,6 +35,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Job not found', code: 'NOT_FOUND' });
     }
 
+    // CDN cache: 2min server, serve stale up to 10min while revalidating
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
     return res.status(200).json(data as Job);
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
