@@ -12,36 +12,6 @@ checkClientEnv();
 // Defer Sentry loading — load after first paint to keep critical path lean
 const sentryReady = import('./instrument').then(() => import('@sentry/react'));
 
-// Load Google Tag Manager dynamically (avoids Vite inline-script parse errors)
-(function () {
-  const w = window as unknown as Record<string, unknown>;
-  const d = document;
-  const l = 'dataLayer';
-  const i = 'GTM-5D8P73GF';
-  (w[l] as unknown[]) = (w[l] as unknown[]) || [];
-  (w[l] as unknown[]).push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-  const f = d.getElementsByTagName('script')[0];
-  const j = d.createElement('script');
-  j.async = true;
-  j.src = `https://www.googletagmanager.com/gtm.js?id=${i}`;
-  f.parentNode!.insertBefore(j, f);
-})();
-
-// Load Google Analytics (GA4) dynamically
-(function () {
-  const s = document.createElement('script');
-  s.async = true;
-  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-21QFE1XMX2';
-  document.head.appendChild(s);
-  const w = window as unknown as Record<string, unknown>;
-  (w.dataLayer as unknown[]) = (w.dataLayer as unknown[]) || [];
-  function gtag(...args: unknown[]) {
-    (w.dataLayer as unknown[]).push(args);
-  }
-  gtag('js', new Date());
-  gtag('config', 'G-21QFE1XMX2');
-})();
-
 import posthog from 'posthog-js';
 import { PostHogProvider, PostHogErrorBoundary } from '@posthog/react';
 

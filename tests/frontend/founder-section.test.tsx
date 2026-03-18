@@ -42,10 +42,9 @@ describe('FounderSection', () => {
     expect(toggleBtn.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('renders the pipeline steps', () => {
+  it('renders the submit link', () => {
     renderWithRouter(<FounderSection />);
-    const submits = screen.getAllByText('Submit');
-    expect(submits.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Submit a role')).toBeInTheDocument();
   });
 
   it('renders the main toggle heading', () => {
