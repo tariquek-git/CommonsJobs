@@ -2,25 +2,10 @@ import { useState } from 'react';
 import { subscribe } from '../lib/api';
 import { usePostHog } from '@posthog/react';
 
-const CATEGORIES = [
-  'Engineering',
-  'Data',
-  'Product',
-  'Design',
-  'Marketing',
-  'Finance',
-  'Compliance/Risk',
-  'Sales/BD',
-  'Operations',
-  'Leadership',
-];
-
 export default function JobAlertBar() {
   const posthog = usePostHog();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [showPrefs, setShowPrefs] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [type, setType] = useState<'candidate' | 'employer'>('candidate');
@@ -37,21 +22,17 @@ export default function JobAlertBar() {
         email: email.trim(),
         name: name.trim() || undefined,
         type,
-        categories: selectedCategories.length > 0 ? selectedCategories : undefined,
         frequency: 'instant',
       });
 
       posthog?.capture('job_alert_subscribed', {
         type,
-        categories: selectedCategories,
         has_name: !!name.trim(),
       });
 
       setResult({ ok: true, message: res.message });
       setEmail('');
       setName('');
-      setSelectedCategories([]);
-      setShowPrefs(false);
     } catch (err) {
       setResult({
         ok: false,
@@ -60,12 +41,6 @@ export default function JobAlertBar() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const toggleCategory = (cat: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
-    );
   };
 
   if (result?.ok) {
@@ -138,38 +113,6 @@ export default function JobAlertBar() {
             {submitting ? 'Subscribing...' : 'Subscribe'}
           </button>
         </div>
-
-        {/* Category preferences (candidate only) */}
-        {type === 'candidate' && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowPrefs(!showPrefs)}
-              className="text-xs text-brand-500 hover:text-brand-600 font-medium mx-auto block"
-            >
-              {showPrefs ? '− Hide preferences' : '+ Set category preferences'}
-            </button>
-
-            {showPrefs && (
-              <div className="flex flex-wrap gap-1.5 justify-center pt-1">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => toggleCategory(cat)}
-                    className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
-                      selectedCategories.includes(cat)
-                        ? 'bg-brand-500 text-white border-brand-500'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-brand-500/40'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
-        )}
 
         {result && !result.ok && (
           <p className="text-red-600 text-xs text-center">{result.message}</p>
