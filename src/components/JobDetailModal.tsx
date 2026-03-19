@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Job } from '../lib/types';
 import { formatDate, getRelativeTimeLabel } from '../lib/date';
 import { trackClick } from '../lib/api';
-import { shareJob, getUtmParams } from '../lib/utils';
+import { shareJob, getUtmParams, isSafeUrl } from '../lib/utils';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import WarmIntroModal from './WarmIntroModal';
 import CompanyLogo from './CompanyLogo';
@@ -107,7 +107,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
   if (!job) return null;
 
   const handleApply = () => {
-    if (job.apply_url) {
+    if (job.apply_url && isSafeUrl(job.apply_url)) {
       trackClick(job.id, getUtmParams());
       posthog?.capture('job_apply_clicked', {
         job_id: job.id,

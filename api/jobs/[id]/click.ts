@@ -17,6 +17,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Job ID required', code: 'BAD_REQUEST' });
     }
 
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(id)) {
+      return res.status(400).json({ error: 'Invalid job ID format', code: 'BAD_REQUEST' });
+    }
+
     const supabase = getSupabase();
 
     // Only track clicks for active jobs
@@ -37,7 +42,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Hash IP for privacy
-    const ip = getClientIP(req as unknown as Request);
     const ipHash = createHash('sha256').update(ip).digest('hex');
 
     const userAgent = (req.headers['user-agent'] as string) || null;

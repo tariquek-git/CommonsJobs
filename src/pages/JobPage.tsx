@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getJob, trackClick } from '../lib/api';
 import type { Job } from '../lib/types';
 import { usePostHog } from '@posthog/react';
+import { isSafeUrl } from '../lib/utils';
 import CompanyLogo from '../components/CompanyLogo';
 import WarmIntroModal from '../components/WarmIntroModal';
 
@@ -100,7 +101,7 @@ export default function JobPage() {
   }, []);
 
   const handleApply = () => {
-    if (job?.apply_url) {
+    if (job?.apply_url && isSafeUrl(job.apply_url)) {
       trackClick(job.id);
       posthog?.capture('job_apply_clicked', {
         job_id: job.id,

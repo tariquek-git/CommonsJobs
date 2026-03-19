@@ -21,6 +21,7 @@ export function mockRes() {
   const res = {
     _status: 0,
     _json: null as unknown,
+    _body: null as unknown,
     _headers: {} as Record<string, string>,
     status(code: number) {
       res._status = code;
@@ -28,6 +29,10 @@ export function mockRes() {
     },
     json(data: unknown) {
       res._json = data;
+      return res;
+    },
+    send(data: unknown) {
+      res._body = data;
       return res;
     },
     setHeader(key: string, value: string) {
@@ -38,6 +43,7 @@ export function mockRes() {
   return res as unknown as VercelResponse & {
     _status: number;
     _json: unknown;
+    _body: unknown;
     _headers: Record<string, string>;
   };
 }

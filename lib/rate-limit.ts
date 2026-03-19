@@ -2,6 +2,8 @@
 // On serverless each instance has its own store — provides burst protection
 // per instance. Acceptable for MVP traffic; upgrade to Redis/Upstash at scale.
 
+import { createHash } from 'crypto';
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -44,7 +46,9 @@ export function getClientIP(
     if (first) return first;
   }
 
-  return 'unknown';
+  // Fallback: hash user-agent to avoid all anonymous requests sharing one bucket
+  const ua = getHeader('user-agent') || '';
+  return 'anon_' + createHash('md5').update(ua).digest('hex').slice(0, 16);
 }
 
 export function checkRateLimit(
@@ -74,7 +78,7 @@ export function checkRateLimit(
 
 // Pre-configured rate limits for each endpoint type
 export const RATE_LIMITS = {
-  adminLogin: { limit: 5, windowMs: 5 * 60 * 1000 },
+  adminLogin: { limit: 3, windowMs: 15 * 60 * 1000 },
   submission: { limit: 5, windowMs: 60 * 60 * 1000 },
   warmIntro: { limit: 10, windowMs: 60 * 60 * 1000 },
   aiScrape: { limit: 10, windowMs: 10 * 60 * 1000 },

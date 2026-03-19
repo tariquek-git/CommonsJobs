@@ -92,7 +92,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         intros30d: warmIntrosResult.data?.length || 0,
       },
     });
-  } catch {
+  } catch (err) {
+    const { logger } = await import('../../lib/logger.js');
+    logger.error('Analytics aggregation error', { endpoint: 'admin/analytics', error: err });
     return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

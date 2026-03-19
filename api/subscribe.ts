@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase } from '../lib/supabase.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../lib/rate-limit.js';
 import { logger } from '../lib/logger.js';
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -130,6 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           location,
           frequency,
           active: true,
+          unsubscribe_token: randomBytes(32).toString('hex'),
           ip_hash: ipHash,
           referrer: (req.headers['referer'] as string) || null,
           updated_at: new Date().toISOString(),
