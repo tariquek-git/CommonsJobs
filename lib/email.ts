@@ -916,7 +916,276 @@ export async function sendNudgeRequester(opts: {
   });
 }
 
-// ─── 14. Post-intro follow-up: "How did it go?" ───
+// ─── 14. Outreach to hiring contact (with accept/decline buttons) ───
+
+export async function sendOutreachToContact(opts: {
+  contactName: string;
+  contactEmail: string;
+  requesterName: string;
+  requesterEmail: string;
+  requesterLinkedin?: string;
+  requesterMessage?: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+  responseToken: string;
+}): Promise<boolean> {
+  const contactFirst = opts.contactName.split(' ')[0];
+  const responseUrl = `${SITE_URL}/intro-response?token=${opts.responseToken}`;
+  const acceptUrl = `${responseUrl}&action=accepted`;
+  const declineUrl = `${responseUrl}&action=declined`;
+
+  const candidateLines: string[] = [];
+  if (opts.requesterLinkedin) {
+    candidateLines.push(
+      `<p style="margin:0 0 6px;"><strong>LinkedIn:</strong> <a href="${esc(opts.requesterLinkedin)}" style="color:#635BFF;">${esc(opts.requesterLinkedin)}</a></p>`,
+    );
+  }
+  if (opts.requesterMessage) {
+    candidateLines.push(
+      `<p style="margin:0 0 6px;"><strong>Their note:</strong> "${esc(opts.requesterMessage)}"</p>`,
+    );
+  }
+
+  return send({
+    to: opts.contactEmail,
+    subject: `Someone's interested in your ${opts.jobTitle} role — via Fintech Commons`,
+    heading: `${esc(contactFirst)}, someone wants an intro. 🤝`,
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.requesterName)}</strong> is interested in the <strong>${esc(opts.jobTitle)}</strong> role at <strong>${esc(opts.jobCompany)}</strong> and requested a warm intro through Fintech Commons.</p>
+      <p style="margin:0 0 12px;">I review every request personally — this isn't a mass apply. ${esc(opts.requesterName.split(' ')[0])} took the time to reach out the right way.</p>
+      ${candidateLines.length > 0 ? `<div style="margin:0 0 16px;padding:12px 16px;background:#F8FAFC;border-radius:8px;border:1px solid #E2E8F0;">${candidateLines.join('')}</div>` : ''}
+      <p style="margin:0 0 16px;">Want me to make the introduction?</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+        <tr>
+          <td style="padding-right:12px;">
+            <a href="${acceptUrl}" style="display:inline-block;background:#059669;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Yes, make the intro</a>
+          </td>
+          <td>
+            <a href="${declineUrl}" style="display:inline-block;background:#F1F5F9;color:#475569;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;border:1px solid #E2E8F0;">Not right now</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0;font-size:13px;color:#94A3B8;">You can also reply to this email and I'll handle it.</p>
+    `,
+    preheader: `${opts.requesterName} wants an intro for your ${opts.jobTitle} role`,
+    text: `Hi ${contactFirst},\n\n${opts.requesterName} is interested in the ${opts.jobTitle} role at ${opts.jobCompany} and requested a warm intro through Fintech Commons.\n\nI review every request personally — this isn't a mass apply.\n\n${opts.requesterLinkedin ? `LinkedIn: ${opts.requesterLinkedin}\n` : ''}${opts.requesterMessage ? `Their note: "${opts.requesterMessage}"\n` : ''}\nWant me to make the introduction?\n\nYes: ${acceptUrl}\nNo: ${declineUrl}\n\nOr just reply to this email.\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'warm_intro_outreach_contact',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 15. Contact nudge (Day 5 after contacted, no response) ───
+
+export async function sendContactNudge(opts: {
+  contactName: string;
+  contactEmail: string;
+  requesterName: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+  responseToken: string;
+}): Promise<boolean> {
+  const contactFirst = opts.contactName.split(' ')[0];
+  const responseUrl = `${SITE_URL}/intro-response?token=${opts.responseToken}`;
+  const acceptUrl = `${responseUrl}&action=accepted`;
+  const declineUrl = `${responseUrl}&action=declined`;
+
+  return send({
+    to: opts.contactEmail,
+    subject: `Quick follow-up — ${opts.requesterName} + ${opts.jobTitle} intro`,
+    heading: `Quick follow-up, ${esc(contactFirst)}.`,
+    body: `
+      <p style="margin:0 0 12px;">Following up on the intro request from <strong>${esc(opts.requesterName)}</strong> for the <strong>${esc(opts.jobTitle)}</strong> role.</p>
+      <p style="margin:0 0 16px;">Totally fine if the timing isn't right. A quick yes or no helps me keep ${esc(opts.requesterName.split(' ')[0])} in the loop.</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+        <tr>
+          <td style="padding-right:12px;">
+            <a href="${acceptUrl}" style="display:inline-block;background:#059669;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Yes, make the intro</a>
+          </td>
+          <td>
+            <a href="${declineUrl}" style="display:inline-block;background:#F1F5F9;color:#475569;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;border:1px solid #E2E8F0;">Not right now</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0;font-size:13px;color:#94A3B8;">Or reply here — I'll take care of it.</p>
+    `,
+    preheader: `Quick follow-up on the intro request for ${opts.jobTitle}`,
+    text: `Hi ${contactFirst},\n\nFollowing up on the intro request from ${opts.requesterName} for the ${opts.jobTitle} role.\n\nTotally fine if the timing isn't right. A quick yes or no helps me keep ${opts.requesterName.split(' ')[0]} in the loop.\n\nYes: ${acceptUrl}\nNo: ${declineUrl}\n\nOr reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'warm_intro_contact_nudge',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 16. Admin notification: contact accepted ───
+
+export async function notifyAdminIntroAccepted(opts: {
+  requesterName: string;
+  requesterEmail: string;
+  contactName: string;
+  contactNote?: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+}): Promise<boolean> {
+  const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL');
+  if (!adminEmail) return false;
+
+  return send({
+    to: adminEmail,
+    subject: `✅ Intro accepted — ${opts.contactName} said yes for ${opts.jobTitle}`,
+    heading: 'Contact said yes! ✅',
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.contactName)}</strong> accepted the intro request from <strong>${esc(opts.requesterName)}</strong> for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
+      ${opts.contactNote ? `<p style="margin:0 0 12px;padding:12px 16px;background:#F0FDF4;border-left:3px solid #059669;border-radius:0 6px 6px 0;font-size:14px;color:#166534;"><strong>Note:</strong> "${esc(opts.contactNote)}"</p>` : ''}
+      <p style="margin:0;">Time to send the introduction email. Both sides are expecting it.</p>
+    `,
+    preheader: `${opts.contactName} said yes — time to make the intro`,
+    cta: { label: 'Send Introduction', url: `${SITE_URL}/admin/intros` },
+    text: `${opts.contactName} accepted the intro for ${opts.requesterName} → ${opts.jobTitle} at ${opts.jobCompany}.\n\n${opts.contactNote ? `Note: "${opts.contactNote}"\n\n` : ''}Time to send the intro: ${SITE_URL}/admin/intros`,
+    from: FROM_NOREPLY,
+    eventType: 'warm_intro_accepted_admin',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 17. Admin notification: contact declined ───
+
+export async function notifyAdminIntroDeclined(opts: {
+  requesterName: string;
+  requesterEmail: string;
+  contactName: string;
+  contactNote?: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+}): Promise<boolean> {
+  const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL');
+  if (!adminEmail) return false;
+
+  return send({
+    to: adminEmail,
+    subject: `❌ Intro declined — ${opts.contactName} passed on ${opts.requesterName}`,
+    heading: 'Contact passed. ❌',
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.contactName)}</strong> declined the intro request from <strong>${esc(opts.requesterName)}</strong> for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
+      ${opts.contactNote ? `<p style="margin:0 0 12px;padding:12px 16px;background:#FEF2F2;border-left:3px solid #EF4444;border-radius:0 6px 6px 0;font-size:14px;color:#991B1B;"><strong>Note:</strong> "${esc(opts.contactNote)}"</p>` : ''}
+      <p style="margin:0;">The requester has been notified with a kind letdown.</p>
+    `,
+    preheader: `${opts.contactName} passed on ${opts.requesterName}'s intro request`,
+    cta: { label: 'View Intros', url: `${SITE_URL}/admin/intros` },
+    text: `${opts.contactName} declined the intro for ${opts.requesterName} → ${opts.jobTitle} at ${opts.jobCompany}.\n\n${opts.contactNote ? `Note: "${opts.contactNote}"\n\n` : ''}The requester has been notified.\n\n${SITE_URL}/admin/intros`,
+    from: FROM_NOREPLY,
+    eventType: 'warm_intro_declined_admin',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 18. Admin notification: contact wants more info ───
+
+export async function notifyAdminIntroMoreInfo(opts: {
+  requesterName: string;
+  requesterEmail: string;
+  contactName: string;
+  contactNote?: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+}): Promise<boolean> {
+  const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL');
+  if (!adminEmail) return false;
+
+  return send({
+    to: adminEmail,
+    subject: `ℹ️ More info needed — ${opts.contactName} re: ${opts.requesterName}`,
+    heading: 'Contact wants more info. ℹ️',
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.contactName)}</strong> wants more info before deciding on the intro from <strong>${esc(opts.requesterName)}</strong> for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
+      ${opts.contactNote ? `<p style="margin:0 0 12px;padding:12px 16px;background:#FFF7ED;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:14px;color:#92400E;"><strong>Their note:</strong> "${esc(opts.contactNote)}"</p>` : ''}
+      <p style="margin:0;">Reply to the contact directly to share additional details.</p>
+    `,
+    preheader: `${opts.contactName} needs more info about ${opts.requesterName}`,
+    cta: { label: 'View Request', url: `${SITE_URL}/admin/intros` },
+    text: `${opts.contactName} wants more info on ${opts.requesterName}'s intro for ${opts.jobTitle} at ${opts.jobCompany}.\n\n${opts.contactNote ? `Their note: "${opts.contactNote}"\n\n` : ''}Reply to the contact directly.\n\n${SITE_URL}/admin/intros`,
+    from: FROM_NOREPLY,
+    eventType: 'warm_intro_more_info_admin',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 19. Requester notification: contact accepted ───
+
+export async function sendIntroAccepted(opts: {
+  requesterName: string;
+  requesterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+}): Promise<boolean> {
+  const firstName = opts.requesterName.split(' ')[0];
+
+  return send({
+    to: opts.requesterEmail,
+    subject: `Great news 🎉 ${opts.jobCompany} is interested`,
+    heading: `${esc(firstName)}, they said yes! 🎉`,
+    body: `
+      <p style="margin:0 0 12px;">The hiring team at <strong>${esc(opts.jobCompany)}</strong> is open to connecting about the <strong>${esc(opts.jobTitle)}</strong> role.</p>
+      <p style="margin:0 0 12px;">I'm putting together the introduction now. You'll get an email with the next steps shortly.</p>
+      <p style="margin:0 0 16px;padding:12px 16px;background:#F0FDF4;border-left:3px solid #059669;border-radius:0 6px 6px 0;font-size:14px;color:#166534;">
+        <strong>Get ready:</strong> Have a quick 2-3 line intro about yourself ready. Keep it genuine, not a cover letter.
+      </p>
+      <p style="margin:0;">This is what warm intros are all about. 🚀</p>
+    `,
+    preheader: `${opts.jobCompany} wants to connect about the ${opts.jobTitle} role`,
+    text: `Hi ${firstName},\n\nThe hiring team at ${opts.jobCompany} is open to connecting about the ${opts.jobTitle} role.\n\nI'm putting together the introduction now. You'll get an email with the next steps shortly.\n\nGet ready: Have a quick 2-3 line intro about yourself ready. Keep it genuine, not a cover letter.\n\nThis is what warm intros are all about. 🚀\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'warm_intro_accepted_requester',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 20. Requester notification: contact declined ───
+
+export async function sendIntroDeclined(opts: {
+  requesterName: string;
+  requesterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  introId: string;
+}): Promise<boolean> {
+  const firstName = opts.requesterName.split(' ')[0];
+
+  return send({
+    to: opts.requesterEmail,
+    subject: `Update on your intro — ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Honest update, ${esc(firstName)}.`,
+    body: `
+      <p style="margin:0 0 12px;">I reached out to the team at <strong>${esc(opts.jobCompany)}</strong> about the <strong>${esc(opts.jobTitle)}</strong> role, but they're not moving forward with an intro right now.</p>
+      <p style="margin:0 0 12px;">Could be timing, could be headcount, could be a hundred things. Not a reflection on you.</p>
+      <p style="margin:0 0 12px;">The good news: there are other fintech roles on the board, and warm intros are always available. Keep going. 💪</p>
+    `,
+    preheader: `Update on your intro request for ${opts.jobTitle}`,
+    cta: { label: 'Browse Other Roles', url: SITE_URL },
+    text: `Hi ${firstName},\n\nI reached out to the team at ${opts.jobCompany} about the ${opts.jobTitle} role, but they're not moving forward with an intro right now.\n\nCould be timing, could be headcount, could be a hundred things. Not a reflection on you.\n\nThe good news: there are other fintech roles on the board, and warm intros are always available. Keep going. 💪\n\n${SITE_URL}\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'warm_intro_declined_requester',
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 21. Post-intro follow-up: "How did it go?" ───
 
 export async function sendIntroFollowUp(opts: {
   requesterName: string;

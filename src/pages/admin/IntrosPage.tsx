@@ -15,24 +15,34 @@ import { getRelativeTimeLabel } from '../../lib/date';
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
   contacted: 'Contacted',
-  connected: 'Connected',
+  accepted: 'Accepted',
+  connected: 'Introduced',
+  followed_up: 'Followed Up',
+  declined: 'Declined',
   no_response: 'No Response',
 };
 
-const STATUS_ORDER = ['pending', 'contacted', 'connected', 'no_response'];
+const STATUS_ORDER = [
+  'pending',
+  'contacted',
+  'accepted',
+  'connected',
+  'followed_up',
+  'declined',
+  'no_response',
+];
 
-const PIPELINE_CONFIG: Record<
-  string,
-  {
-    label: string;
-    subtitle: string;
-    color: string;
-    activeBg: string;
-    activeBorder: string;
-    textColor: string;
-    countColor: string;
-  }
-> = {
+interface PipelineCfg {
+  label: string;
+  subtitle: string;
+  color: string;
+  activeBg: string;
+  activeBorder: string;
+  textColor: string;
+  countColor: string;
+}
+
+const PIPELINE_CONFIG: Record<string, PipelineCfg> = {
   pending: {
     label: 'Pending',
     subtitle: 'Need your action',
@@ -44,21 +54,48 @@ const PIPELINE_CONFIG: Record<
   },
   contacted: {
     label: 'Contacted',
-    subtitle: 'Waiting on response',
+    subtitle: 'Waiting on hiring contact',
     color: 'border-gray-200 bg-white hover:border-blue-200',
     activeBg: 'bg-blue-50',
     activeBorder: 'border-blue-400',
     textColor: 'text-blue-600',
     countColor: 'text-blue-700',
   },
+  accepted: {
+    label: 'Accepted',
+    subtitle: 'Contact said yes — send intro',
+    color: 'border-gray-200 bg-white hover:border-teal-200',
+    activeBg: 'bg-teal-50',
+    activeBorder: 'border-teal-400',
+    textColor: 'text-teal-600',
+    countColor: 'text-teal-700',
+  },
   connected: {
     label: 'Introduced',
-    subtitle: 'Emails sent to both sides',
+    subtitle: 'Both sides connected',
     color: 'border-gray-200 bg-white hover:border-emerald-200',
     activeBg: 'bg-emerald-50',
     activeBorder: 'border-emerald-400',
     textColor: 'text-emerald-600',
     countColor: 'text-emerald-700',
+  },
+  followed_up: {
+    label: 'Followed Up',
+    subtitle: 'Check-in sent',
+    color: 'border-gray-200 bg-white hover:border-purple-200',
+    activeBg: 'bg-purple-50',
+    activeBorder: 'border-purple-400',
+    textColor: 'text-purple-600',
+    countColor: 'text-purple-700',
+  },
+  declined: {
+    label: 'Declined',
+    subtitle: 'Contact passed',
+    color: 'border-gray-200 bg-white hover:border-red-200',
+    activeBg: 'bg-red-50',
+    activeBorder: 'border-red-400',
+    textColor: 'text-red-500',
+    countColor: 'text-red-600',
   },
   no_response: {
     label: 'No Reply',
@@ -73,22 +110,31 @@ const PIPELINE_CONFIG: Record<
 
 const STATUS_CONTEXT: Record<string, string> = {
   pending: 'New request — reach out to the hiring contact',
-  contacted: "You've reached out — waiting to hear back",
+  contacted: 'Outreach sent — waiting for hiring contact to respond',
+  accepted: 'Contact said yes! Time to send the introduction',
   connected: 'Introduction emails sent to both sides',
+  followed_up: '"How did it go?" check-in sent',
+  declined: 'Contact passed — requester has been notified',
   no_response: "Closed — hiring contact didn't respond",
 };
 
 const CARD_BORDER: Record<string, string> = {
   pending: 'border-l-amber-400',
   contacted: 'border-l-blue-400',
+  accepted: 'border-l-teal-400',
   connected: 'border-l-emerald-400',
+  followed_up: 'border-l-purple-400',
+  declined: 'border-l-red-300',
   no_response: 'border-l-gray-300',
 };
 
 const BADGE_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700',
   contacted: 'bg-blue-50 text-blue-700',
+  accepted: 'bg-teal-50 text-teal-700',
   connected: 'bg-emerald-50 text-emerald-700',
+  followed_up: 'bg-purple-50 text-purple-700',
+  declined: 'bg-red-50 text-red-600',
   no_response: 'bg-gray-100 text-gray-500',
 };
 
@@ -111,12 +157,19 @@ function getEmailPreview(newStatus: string, intro: ConfirmModalState): string[] 
     case 'contacted':
       return [
         `Will email ${intro.introName}: "I'm reaching out to ${intro.jobCompany} on your behalf"`,
+        `Will email hiring contact: Outreach with accept/decline buttons`,
       ];
+    case 'accepted':
+      return ['No new emails — this status is set automatically when the contact clicks "Accept"'];
     case 'connected':
       return [
         `Will email ${intro.introName}: Introduction to the hiring contact`,
         `Will email the hiring contact: Introduction to ${intro.introName}`,
       ];
+    case 'followed_up':
+      return [`Will email ${intro.introName}: "How did it go with ${intro.jobCompany}?"`];
+    case 'declined':
+      return [`Will email ${intro.introName}: "They passed — here are other roles"`];
     case 'no_response':
       return [`Will email ${intro.introName}: "Sorry, no response from ${intro.jobCompany}"`];
     case 'pending':
@@ -177,9 +230,11 @@ export default function IntrosPage() {
   // ─── Computed data ───
 
   const counts = useMemo(() => {
-    const c = { pending: 0, contacted: 0, connected: 0, no_response: 0 };
+    const c: Record<string, number> = {};
+    for (const s of STATUS_ORDER) c[s] = 0;
     for (const intro of allIntros) {
-      if (intro.status in c) c[intro.status as keyof typeof c]++;
+      if (intro.status in c) c[intro.status]++;
+      else c[intro.status] = 1;
     }
     return c;
   }, [allIntros]);
@@ -569,38 +624,66 @@ function PipelineHeader({
         All ({total})
       </button>
 
-      {/* Pipeline segments */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {STATUS_ORDER.map((status, idx) => {
-          const cfg = PIPELINE_CONFIG[status];
-          const isActive = activeFilter === status;
-          const count = counts[status] || 0;
+      {/* Pipeline segments — top row: active flow, bottom row: terminal states */}
+      <div className="space-y-2">
+        {/* Active flow: pending → contacted → accepted → connected */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          {(['pending', 'contacted', 'accepted', 'connected'] as const).map((status, idx) => {
+            const cfg = PIPELINE_CONFIG[status];
+            const isActive = activeFilter === status;
+            const count = counts[status] || 0;
 
-          return (
-            <div key={status} className="relative flex items-center">
+            return (
+              <div key={status} className="relative flex items-center">
+                <button
+                  onClick={() => onFilter(isActive ? '' : status)}
+                  className={`w-full rounded-xl border-2 p-3 text-left transition-all ${
+                    isActive ? `${cfg.activeBg} ${cfg.activeBorder} shadow-sm` : cfg.color
+                  }`}
+                >
+                  <p
+                    className={`text-[11px] font-semibold uppercase tracking-wider ${cfg.textColor}`}
+                  >
+                    {cfg.label}
+                  </p>
+                  <p className={`text-2xl font-bold mt-1 ${cfg.countColor}`}>{count}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{cfg.subtitle}</p>
+                </button>
+                {idx < 3 && (
+                  <span className="hidden lg:block absolute -right-2 z-10 text-gray-300 text-sm">
+                    ›
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Terminal states: followed_up, declined, no_response */}
+        <div className="grid grid-cols-3 gap-2">
+          {(['followed_up', 'declined', 'no_response'] as const).map((status) => {
+            const cfg = PIPELINE_CONFIG[status];
+            const isActive = activeFilter === status;
+            const count = counts[status] || 0;
+
+            return (
               <button
+                key={status}
                 onClick={() => onFilter(isActive ? '' : status)}
-                className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
+                className={`rounded-xl border-2 p-3 text-left transition-all ${
                   isActive ? `${cfg.activeBg} ${cfg.activeBorder} shadow-sm` : cfg.color
                 }`}
               >
                 <p
-                  className={`text-[11px] font-semibold uppercase tracking-wider ${cfg.textColor}`}
+                  className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.textColor}`}
                 >
                   {cfg.label}
                 </p>
-                <p className={`text-2xl font-bold mt-1 ${cfg.countColor}`}>{count}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{cfg.subtitle}</p>
+                <p className={`text-xl font-bold mt-0.5 ${cfg.countColor}`}>{count}</p>
+                <p className="text-[10px] text-gray-400">{cfg.subtitle}</p>
               </button>
-              {/* Arrow between segments (desktop, not after last) */}
-              {idx < STATUS_ORDER.length - 1 && idx !== 2 && (
-                <span className="hidden lg:block absolute -right-2 z-10 text-gray-300 text-sm">
-                  ›
-                </span>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -844,32 +927,46 @@ function PrimaryAction({
           onClick={() => onStatusChange(intro, 'contacted')}
           className="text-xs px-3.5 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors flex flex-col items-center"
         >
-          <span>Mark as Contacted</span>
+          <span>Reach Out to Contact</span>
           <span className="text-[10px] font-normal opacity-80">
-            I've emailed the hiring contact
+            Sends outreach email with accept/decline buttons
           </span>
         </button>
       );
     case 'contacted':
       return (
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => onStatusChange(intro, 'connected')}
             className="text-xs px-3.5 py-2 rounded-lg font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors flex flex-col items-center"
           >
-            <span>Send Introduction Emails</span>
-            <span className="text-[10px] font-normal opacity-80">
-              Emails both the requester and hiring contact
-            </span>
+            <span>Send Introduction</span>
+            <span className="text-[10px] font-normal opacity-80">Skip accept — send intro now</span>
+          </button>
+          <button
+            onClick={() => onStatusChange(intro, 'declined')}
+            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex flex-col items-center"
+          >
+            <span>Mark Declined</span>
+            <span className="text-[10px] font-normal opacity-70">Contact passed</span>
           </button>
           <button
             onClick={() => onStatusChange(intro, 'no_response')}
-            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex flex-col items-center"
+            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-gray-50 text-gray-500 hover:bg-gray-100 transition-colors"
           >
-            <span>Mark No Response</span>
-            <span className="text-[10px] font-normal opacity-70">Hiring side didn't reply</span>
+            No Response
           </button>
         </div>
+      );
+    case 'accepted':
+      return (
+        <button
+          onClick={() => onStatusChange(intro, 'connected')}
+          className="text-xs px-3.5 py-2 rounded-lg font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors flex flex-col items-center"
+        >
+          <span>Send Introduction Emails</span>
+          <span className="text-[10px] font-normal opacity-80">Both sides get the intro email</span>
+        </button>
       );
     case 'connected':
       return (
@@ -879,9 +976,12 @@ function PrimaryAction({
           className="text-xs px-3.5 py-2 rounded-lg font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors flex flex-col items-center"
         >
           <span>Send Follow-up</span>
-          <span className="text-[10px] font-normal opacity-70">Check how the intro went</span>
+          <span className="text-[10px] font-normal opacity-70">"How did it go?"</span>
         </button>
       );
+    case 'followed_up':
+      return <span className="text-xs text-purple-500 italic">Check-in sent — awaiting reply</span>;
+    case 'declined':
     case 'no_response':
       return <span className="text-xs text-gray-400 italic">This intro is closed</span>;
     default:
@@ -903,8 +1003,17 @@ function SecondaryActions({
   if (intro.status === 'contacted') {
     options.push({ status: 'pending', label: '\u2190 Back to Pending' });
   }
-  if (intro.status === 'connected') {
+  if (intro.status === 'accepted') {
     options.push({ status: 'contacted', label: '\u2190 Back to Contacted' });
+  }
+  if (intro.status === 'connected') {
+    options.push({ status: 'accepted', label: '\u2190 Back to Accepted' });
+  }
+  if (intro.status === 'followed_up') {
+    options.push({ status: 'connected', label: '\u2190 Back to Connected' });
+  }
+  if (intro.status === 'declined') {
+    options.push({ status: 'contacted', label: '\u2190 Reopen' });
   }
   if (intro.status === 'no_response') {
     options.push({ status: 'contacted', label: '\u2190 Retry' });
@@ -951,11 +1060,22 @@ function EmailTrail({ logs, loading }: { logs?: EmailLog[]; loading: boolean }) 
 const EVENT_SHORT: Record<string, string> = {
   warm_intro_admin_notification: 'Admin notified',
   warm_intro_thank_you: 'Thank-you sent',
-  warm_intro_contacted: '"I\'m on it" sent',
-  warm_intro_connection_requester: 'Connection email → requester',
-  warm_intro_connection_contact: 'Connection email → hiring contact',
-  warm_intro_no_response: 'No response sent',
-  warm_intro_follow_up: 'Follow-up sent',
+  warm_intro_contacted: '"I\'m on it" → requester',
+  warm_intro_outreach_contact: 'Outreach → hiring contact',
+  warm_intro_contact_nudge: 'Nudge → hiring contact',
+  warm_intro_accepted_admin: 'Contact accepted → admin',
+  warm_intro_declined_admin: 'Contact declined → admin',
+  warm_intro_more_info_admin: 'More info needed → admin',
+  warm_intro_accepted_requester: '"They said yes!" → requester',
+  warm_intro_declined_requester: '"They passed" → requester',
+  warm_intro_connection_requester: 'Intro email → requester',
+  warm_intro_connection_contact: 'Intro email → hiring contact',
+  warm_intro_no_response: 'No response → requester',
+  warm_intro_follow_up: 'Follow-up → requester',
+  warm_intro_nudge_day5: 'Day 5 nudge → admin',
+  warm_intro_nudge_day10: 'Day 10 nudge → admin',
+  warm_intro_requester_update_day5: 'Day 5 update → requester',
+  warm_intro_requester_update_day10: 'Day 10 update → requester',
 };
 
 function EmailRow({ log }: { log: EmailLog }) {
@@ -1017,30 +1137,30 @@ function HowItWorks() {
       <p className="text-xs font-semibold text-blue-700 mb-3 uppercase tracking-wider">
         How Connection Requests Work
       </p>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="flex items-center gap-2">
           <span className="h-7 w-7 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">
             1
           </span>
-          <span className="text-sm text-gray-700">
-            Someone requests an introduction to a company
-          </span>
+          <span className="text-sm text-gray-700">Request comes in</span>
         </div>
-        <span className="hidden sm:block text-gray-300">→</span>
         <div className="flex items-center gap-2">
           <span className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
             2
           </span>
-          <span className="text-sm text-gray-700">You reach out to the hiring contact</span>
+          <span className="text-sm text-gray-700">You send outreach (with accept/decline)</span>
         </div>
-        <span className="hidden sm:block text-gray-300">→</span>
         <div className="flex items-center gap-2">
-          <span className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
+          <span className="h-7 w-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold shrink-0">
             3
           </span>
-          <span className="text-sm text-gray-700">
-            Introduction emails are sent to both parties
+          <span className="text-sm text-gray-700">Contact accepts</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
+            4
           </span>
+          <span className="text-sm text-gray-700">Both sides get intro emails</span>
         </div>
       </div>
     </div>
@@ -1053,7 +1173,10 @@ function EmptyState({ filter }: { filter: string }) {
   const messages: Record<string, string> = {
     pending: 'No new requests. Check back later.',
     contacted: 'No requests waiting on responses.',
+    accepted: 'No accepted requests waiting for intro.',
     connected: 'No completed introductions yet.',
+    followed_up: 'No follow-ups sent yet.',
+    declined: 'No declined requests. Nice.',
     no_response: 'No dead ends. Nice.',
   };
 
@@ -1071,30 +1194,43 @@ function EmptyState({ filter }: { filter: string }) {
 
 // ─── Step Tracker ───
 
-const STEP_FLOW = ['pending', 'contacted', 'connected'] as const;
+const STEP_FLOW = ['pending', 'contacted', 'accepted', 'connected'] as const;
 const STEP_COLORS: Record<string, { fill: string; ring: string }> = {
   pending: { fill: 'bg-amber-500', ring: 'ring-amber-200' },
   contacted: { fill: 'bg-blue-500', ring: 'ring-blue-200' },
+  accepted: { fill: 'bg-teal-500', ring: 'ring-teal-200' },
   connected: { fill: 'bg-emerald-500', ring: 'ring-emerald-200' },
+  followed_up: { fill: 'bg-purple-500', ring: 'ring-purple-200' },
+  declined: { fill: 'bg-red-400', ring: 'ring-red-200' },
   no_response: { fill: 'bg-gray-400', ring: 'ring-gray-200' },
 };
 
 function StepTracker({ currentStatus }: { currentStatus: string }) {
-  const isNoResponse = currentStatus === 'no_response';
-  const currentIdx = isNoResponse
-    ? 1
+  const isTerminal =
+    currentStatus === 'declined' ||
+    currentStatus === 'no_response' ||
+    currentStatus === 'followed_up';
+  const currentIdx = isTerminal
+    ? currentStatus === 'followed_up'
+      ? 4
+      : currentStatus === 'declined'
+        ? 1
+        : 1
     : STEP_FLOW.indexOf(currentStatus as (typeof STEP_FLOW)[number]);
 
   return (
     <div className="flex items-center gap-1">
       {STEP_FLOW.map((step, idx) => {
-        const isDone = !isNoResponse && idx < currentIdx;
-        const isCurrent = !isNoResponse && idx === currentIdx;
+        const isDone = !isTerminal
+          ? idx < currentIdx
+          : currentStatus === 'followed_up'
+            ? idx <= 3
+            : idx < (currentStatus === 'declined' ? 2 : 1);
+        const isCurrent = !isTerminal && idx === currentIdx;
         const colors = STEP_COLORS[step];
 
         return (
           <div key={step} className="flex items-center">
-            {/* Step circle */}
             <div className="flex flex-col items-center">
               <div
                 className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
@@ -1125,43 +1261,31 @@ function StepTracker({ currentStatus }: { currentStatus: string }) {
                 {PIPELINE_CONFIG[step]?.label}
               </span>
             </div>
-            {/* Connector line */}
             {idx < STEP_FLOW.length - 1 && (
               <div
-                className={`h-0.5 w-6 mx-1 mb-3 ${
-                  !isNoResponse && idx < currentIdx
-                    ? STEP_COLORS[STEP_FLOW[idx + 1]].fill
-                    : 'bg-gray-200'
-                }`}
+                className={`h-0.5 w-5 mx-0.5 mb-3 ${isDone ? STEP_COLORS[STEP_FLOW[idx + 1]].fill : 'bg-gray-200'}`}
               />
             )}
           </div>
         );
       })}
 
-      {/* No Response branch (off contacted) */}
-      <div className="flex items-center ml-1">
-        <div
-          className={`h-0.5 w-4 ${isNoResponse ? 'bg-gray-400' : 'bg-gray-200'} mb-3`}
-          style={{ borderTop: '1px dashed' }}
-        />
-        <div className="flex flex-col items-center">
-          <div
-            className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] ${
-              isNoResponse
-                ? 'bg-gray-400 text-white ring-2 ring-gray-200'
-                : 'bg-gray-100 text-gray-400'
-            }`}
-          >
-            ✕
+      {/* Terminal branch indicator */}
+      {isTerminal && (
+        <div className="flex items-center ml-1">
+          <div className="h-0.5 w-3 bg-gray-300 mb-3" style={{ borderTop: '1px dashed' }} />
+          <div className="flex flex-col items-center">
+            <div
+              className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] ${STEP_COLORS[currentStatus]?.fill || 'bg-gray-400'} text-white ring-2 ${STEP_COLORS[currentStatus]?.ring || 'ring-gray-200'}`}
+            >
+              {currentStatus === 'followed_up' ? '?' : '✕'}
+            </div>
+            <span className="text-[9px] mt-0.5 font-semibold text-gray-600">
+              {STATUS_LABELS[currentStatus]}
+            </span>
           </div>
-          <span
-            className={`text-[9px] mt-0.5 ${isNoResponse ? 'font-semibold text-gray-600' : 'text-gray-400'}`}
-          >
-            No Reply
-          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -1171,19 +1295,29 @@ function StepTracker({ currentStatus }: { currentStatus: string }) {
 function NextStepGuidance({ intro }: { intro: WarmIntroRecord }) {
   const submitter = intro.job_submitter_name || intro.job_company;
   const messages: Record<string, string> = {
-    pending: `Next: Contact ${submitter} about introducing ${intro.name}`,
-    contacted: 'Next: Wait for response, then send introduction emails or close',
-    connected: 'Done! Send a follow-up to see how it went',
+    pending: `Next: Reach out to ${submitter} about introducing ${intro.name}`,
+    contacted: `Waiting for ${submitter} to accept or decline (check email for their response)`,
+    accepted: `${submitter} said yes! Send the introduction emails now`,
+    connected: 'Both sides introduced. Send a follow-up in a few days',
+    followed_up: 'Check-in sent — waiting for reply',
+    declined: 'Contact passed. Requester has been notified.',
     no_response: 'This intro is closed',
   };
   const msg = messages[intro.status] || '';
   if (!msg) return null;
 
-  const isDone = intro.status === 'connected' || intro.status === 'no_response';
+  const isAction = intro.status === 'pending' || intro.status === 'accepted';
+  const isDone = ['connected', 'followed_up', 'declined', 'no_response'].includes(intro.status);
 
   return (
     <p
-      className={`text-xs px-2.5 py-1.5 rounded-md ${isDone ? 'bg-gray-50 text-gray-500' : 'bg-brand-50 text-brand-700 font-medium'}`}
+      className={`text-xs px-2.5 py-1.5 rounded-md ${
+        isAction
+          ? 'bg-brand-50 text-brand-700 font-medium'
+          : isDone
+            ? 'bg-gray-50 text-gray-500'
+            : 'bg-blue-50 text-blue-700'
+      }`}
     >
       {msg}
     </p>

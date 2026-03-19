@@ -18,16 +18,28 @@ export default apiHandler(
 
       const intros = allIntros || [];
       const now = Date.now();
-      const counts = { pending: 0, contacted: 0, connected: 0, no_response: 0 };
+      const counts: Record<string, number> = {
+        pending: 0,
+        contacted: 0,
+        accepted: 0,
+        connected: 0,
+        followed_up: 0,
+        declined: 0,
+        no_response: 0,
+      };
       const stale: { id: string; status: string; days: number }[] = [];
 
       for (const i of intros) {
-        const s = i.status as keyof typeof counts;
-        if (s in counts) counts[s]++;
+        if (i.status in counts) counts[i.status]++;
+        else counts[i.status] = 1;
         const updatedAt = new Date(i.created_at).getTime();
         const days = Math.floor((now - updatedAt) / 86400000);
-        if ((s === 'pending' && days >= 5) || (s === 'contacted' && days >= 5)) {
-          stale.push({ id: i.id, status: s, days });
+        if (
+          (i.status === 'pending' && days >= 5) ||
+          (i.status === 'contacted' && days >= 5) ||
+          (i.status === 'accepted' && days >= 2)
+        ) {
+          stale.push({ id: i.id, status: i.status, days });
         }
       }
 
@@ -140,10 +152,12 @@ export default apiHandler(
         days_in_status: daysInStatus,
         is_stale:
           (intro.status === 'pending' && daysInStatus >= 5) ||
-          (intro.status === 'contacted' && daysInStatus >= 5),
+          (intro.status === 'contacted' && daysInStatus >= 5) ||
+          (intro.status === 'accepted' && daysInStatus >= 2),
         needs_reminder:
           (intro.status === 'pending' && daysInStatus >= 10) ||
-          (intro.status === 'contacted' && daysInStatus >= 10),
+          (intro.status === 'contacted' && daysInStatus >= 10) ||
+          (intro.status === 'accepted' && daysInStatus >= 3),
       };
     });
 

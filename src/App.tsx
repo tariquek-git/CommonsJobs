@@ -8,6 +8,7 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const JobPage = lazy(() => import('./pages/JobPage'));
 const CompanyPage = lazy(() => import('./pages/CompanyPage'));
 const SubmitPage = lazy(() => import('./pages/SubmitPage'));
+const IntroResponsePage = lazy(() => import('./pages/IntroResponsePage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 // Lazy-load admin sub-pages
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/job/:id" element={<JobPage />} />
           <Route path="/company/:slug" element={<CompanyPage />} />
           <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/intro-response" element={<IntroResponsePage />} />
 
           {/* Admin routes — nested under AdminPage (handles auth + layout) */}
           <Route path="/admin" element={<AdminPage />}>

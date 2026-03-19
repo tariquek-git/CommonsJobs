@@ -1,34 +1,22 @@
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
-import { sendNudgeAdmin, sendNudgeRequester } from '../../lib/email.js';
+import {
+  sendNudgeAdmin,
+  sendNudgeRequester,
+  sendContactNudge,
+  sendIntroFollowUp,
+} from '../../lib/email.js';
 import { apiHandler } from '../../lib/api-handler.js';
 import { logger } from '../../lib/logger.js';
 
-async function sendNudge(
-  fn: (opts: {
-    introId: string;
-    requesterName: string;
-    requesterEmail: string;
-    jobTitle: string;
-    jobCompany: string;
-    jobId: string;
-    day: 5 | 10;
-  }) => Promise<boolean>,
-  opts: {
-    introId: string;
-    requesterName: string;
-    requesterEmail: string;
-    jobTitle: string;
-    jobCompany: string;
-    jobId: string;
-    day: 5 | 10;
-  },
+async function trySend(
+  fn: () => Promise<unknown>,
+  key: string,
   alreadySent: Set<string>,
-  eventType: string,
   counts: { sent: number; errors: number },
 ) {
-  if (alreadySent.has(`${opts.introId}:${eventType}`)) return;
+  if (alreadySent.has(key)) return;
   try {
-    await fn(opts);
+    await fn();
     counts.sent++;
   } catch {
     counts.errors++;
@@ -41,10 +29,11 @@ export default apiHandler(
     const supabase = getSupabase();
     const now = Date.now();
 
-    const { data: pendingIntros, error: introErr } = await supabase
+    // Fetch intros in actionable statuses
+    const { data: intros, error: introErr } = await supabase
       .from('warm_intros')
-      .select('id, name, email, job_id, created_at')
-      .eq('status', 'pending')
+      .select('id, name, email, job_id, status, created_at, status_updated_at, response_token')
+      .in('status', ['pending', 'contacted', 'connected'])
       .order('created_at', { ascending: true });
 
     if (introErr) {
@@ -52,12 +41,12 @@ export default apiHandler(
       return res.status(500).json({ error: 'Failed to query intros' });
     }
 
-    if (!pendingIntros || pendingIntros.length === 0) {
-      return res.status(200).json({ message: 'No pending intros', sent: 0 });
+    if (!intros || intros.length === 0) {
+      return res.status(200).json({ message: 'No actionable intros', sent: 0 });
     }
 
-    // Dedup: fetch already-sent nudge emails
-    const introIds = pendingIntros.map((i) => i.id);
+    // Dedup: fetch already-sent nudge/follow-up emails
+    const introIds = intros.map((i) => i.id);
     const { data: existingLogs } = await supabase
       .from('email_logs')
       .select('related_warm_intro_id, event_type')
@@ -67,6 +56,8 @@ export default apiHandler(
         'warm_intro_nudge_day10',
         'warm_intro_requester_update_day5',
         'warm_intro_requester_update_day10',
+        'warm_intro_contact_nudge',
+        'warm_intro_follow_up',
       ])
       .eq('status', 'sent');
 
@@ -78,80 +69,150 @@ export default apiHandler(
     );
 
     // Build job map
-    const jobIds = [...new Set(pendingIntros.map((i) => i.job_id).filter(Boolean))];
-    const jobMap: Record<string, { title: string; company: string }> = {};
+    const jobIds = [...new Set(intros.map((i) => i.job_id).filter(Boolean))];
+    const jobMap: Record<
+      string,
+      {
+        title: string;
+        company: string;
+        submitter_name: string | null;
+        submitter_email: string | null;
+      }
+    > = {};
     if (jobIds.length > 0) {
       const { data: jobs } = await supabase
         .from(getJobsTable())
-        .select('id, title, company')
+        .select('id, title, company, submitter_name, submitter_email')
         .in('id', jobIds);
       for (const job of jobs || []) {
-        jobMap[job.id] = { title: job.title, company: job.company };
+        jobMap[job.id] = {
+          title: job.title,
+          company: job.company,
+          submitter_name: job.submitter_name || null,
+          submitter_email: job.submitter_email || null,
+        };
       }
     }
 
     const counts = { sent: 0, errors: 0 };
 
-    for (const intro of pendingIntros) {
-      const daysOld = Math.floor((now - new Date(intro.created_at).getTime()) / 86400000);
+    for (const intro of intros) {
       const job = jobMap[intro.job_id];
       if (!job) continue;
 
-      const baseOpts = {
-        introId: intro.id,
-        requesterName: intro.name,
-        requesterEmail: intro.email,
-        jobTitle: job.title,
-        jobCompany: job.company,
-        jobId: intro.job_id,
-      };
+      const statusAge = Math.floor(
+        (now - new Date(intro.status_updated_at || intro.created_at).getTime()) / 86400000,
+      );
 
-      if (daysOld >= 5) {
-        await sendNudge(
-          sendNudgeAdmin,
-          { ...baseOpts, day: 5 },
-          alreadySent,
-          'warm_intro_nudge_day5',
-          counts,
-        );
-        await sendNudge(
-          sendNudgeRequester,
-          { ...baseOpts, day: 5 },
-          alreadySent,
-          'warm_intro_requester_update_day5',
-          counts,
-        );
+      // ── PENDING: nudge admin + requester at Day 5 and Day 10 ──
+      if (intro.status === 'pending') {
+        const baseOpts = {
+          introId: intro.id,
+          requesterName: intro.name,
+          requesterEmail: intro.email,
+          jobTitle: job.title,
+          jobCompany: job.company,
+          jobId: intro.job_id,
+        };
+
+        if (statusAge >= 5) {
+          await trySend(
+            () => sendNudgeAdmin({ ...baseOpts, day: 5 }),
+            `${intro.id}:warm_intro_nudge_day5`,
+            alreadySent,
+            counts,
+          );
+          await trySend(
+            () => sendNudgeRequester({ ...baseOpts, day: 5 }),
+            `${intro.id}:warm_intro_requester_update_day5`,
+            alreadySent,
+            counts,
+          );
+        }
+
+        if (statusAge >= 10) {
+          await trySend(
+            () => sendNudgeAdmin({ ...baseOpts, day: 10 }),
+            `${intro.id}:warm_intro_nudge_day10`,
+            alreadySent,
+            counts,
+          );
+          await trySend(
+            () => sendNudgeRequester({ ...baseOpts, day: 10 }),
+            `${intro.id}:warm_intro_requester_update_day10`,
+            alreadySent,
+            counts,
+          );
+        }
       }
 
-      if (daysOld >= 10) {
-        await sendNudge(
-          sendNudgeAdmin,
-          { ...baseOpts, day: 10 },
-          alreadySent,
-          'warm_intro_nudge_day10',
-          counts,
-        );
-        await sendNudge(
-          sendNudgeRequester,
-          { ...baseOpts, day: 10 },
-          alreadySent,
-          'warm_intro_requester_update_day10',
-          counts,
-        );
+      // ── CONTACTED: nudge hiring contact at Day 5 ──
+      if (intro.status === 'contacted' && statusAge >= 5) {
+        const contactName = job.submitter_name;
+        const contactEmail = job.submitter_email;
+
+        if (contactName && contactEmail && intro.response_token) {
+          await trySend(
+            () =>
+              sendContactNudge({
+                contactName,
+                contactEmail,
+                requesterName: intro.name,
+                jobTitle: job.title,
+                jobCompany: job.company,
+                jobId: intro.job_id,
+                introId: intro.id,
+                responseToken: intro.response_token,
+              }),
+            `${intro.id}:warm_intro_contact_nudge`,
+            alreadySent,
+            counts,
+          );
+        }
       }
 
+      // ── CONNECTED: auto follow-up at Day 7 ──
+      if (intro.status === 'connected' && statusAge >= 7) {
+        const contactName = job.submitter_name || job.company;
+
+        await trySend(
+          () =>
+            sendIntroFollowUp({
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              contactName,
+              jobTitle: job.title,
+              jobCompany: job.company,
+              jobId: intro.job_id,
+              introId: intro.id,
+            }),
+          `${intro.id}:warm_intro_follow_up`,
+          alreadySent,
+          counts,
+        );
+
+        // Also update status to followed_up
+        if (!alreadySent.has(`${intro.id}:warm_intro_follow_up`)) {
+          await supabase
+            .from('warm_intros')
+            .update({ status: 'followed_up', status_updated_at: new Date().toISOString() })
+            .eq('id', intro.id);
+        }
+      }
+
+      // Rate limit: pause every 10 sends
       if (counts.sent > 0 && counts.sent % 10 === 0) {
         await new Promise((r) => setTimeout(r, 1000));
       }
     }
 
     logger.info('Warm intro reminders cron completed', {
-      pending: pendingIntros.length,
+      total: intros.length,
       ...counts,
     });
 
     return res.status(200).json({
-      pending: pendingIntros.length,
+      total: intros.length,
       ...counts,
       timestamp: new Date().toISOString(),
     });

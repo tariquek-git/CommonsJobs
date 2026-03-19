@@ -124,8 +124,13 @@ ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS ip_hash    TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS user_agent TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer   TEXT;
 ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS status          TEXT DEFAULT 'pending';
-ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_name    TEXT;
-ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_company TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_name        TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS referrer_company     TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS response_token       UUID DEFAULT gen_random_uuid();
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS contact_responded_at TIMESTAMPTZ;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS contact_response     TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS contact_note         TEXT;
+ALTER TABLE warm_intros ADD COLUMN IF NOT EXISTS status_updated_at    TIMESTAMPTZ DEFAULT NOW();
 
 
 -- ============================================================
@@ -190,7 +195,7 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_warm_intros_status') THEN
     ALTER TABLE warm_intros ADD CONSTRAINT chk_warm_intros_status
-      CHECK (status IN ('pending', 'contacted', 'connected', 'no_response'));
+      CHECK (status IN ('pending', 'contacted', 'accepted', 'connected', 'followed_up', 'declined', 'no_response'));
   END IF;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

@@ -16,6 +16,40 @@ import type { Job } from '../lib/types';
 const TransactionFlowGlobe = lazy(() => import('../components/TransactionFlowGlobe'));
 const FounderSection = lazy(() => import('../components/FounderSection'));
 
+function AnimatedCount({ target }: { target: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current || target <= 0) return;
+    hasAnimated.current = true;
+    const duration = 1200;
+    const steps = Math.min(target, 30);
+    const stepTime = duration / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current++;
+      setCount(Math.round((current / steps) * target));
+      if (current >= steps) {
+        setCount(target);
+        clearInterval(timer);
+      }
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [target]);
+
+  return (
+    <span
+      ref={ref}
+      className="inline-block tabular-nums"
+      style={{ minWidth: `${String(target).length}ch` }}
+    >
+      {count}
+    </span>
+  );
+}
+
 export default function HomePage() {
   const posthog = usePostHog();
   const {
@@ -117,10 +151,10 @@ export default function HomePage() {
           </p>
 
           {/* Trust strip */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/50">
-            <span className="inline-flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm mt-1">
+            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3.5 py-1.5 text-white/80 font-medium">
               <svg
-                className="h-3.5 w-3.5 text-emerald-400"
+                className="h-4 w-4 text-emerald-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -134,9 +168,9 @@ export default function HomePage() {
               </svg>
               Human-reviewed
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3.5 py-1.5 text-white/80 font-medium">
               <svg
-                className="h-3.5 w-3.5 text-emerald-400"
+                className="h-4 w-4 text-emerald-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -150,9 +184,9 @@ export default function HomePage() {
               </svg>
               Warm intros
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3.5 py-1.5 text-white/80 font-medium">
               <svg
-                className="h-3.5 w-3.5 text-emerald-400"
+                className="h-4 w-4 text-emerald-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -166,9 +200,9 @@ export default function HomePage() {
               </svg>
               No ghost jobs
             </span>
-            {meta && (
-              <span className="text-white/30">
-                {meta.total} reviewed role{meta.total !== 1 ? 's' : ''}
+            {meta && meta.total > 0 && (
+              <span className="inline-flex items-center gap-2 bg-accent-pink/15 backdrop-blur-sm rounded-full px-3.5 py-1.5 text-accent-pink font-semibold">
+                <AnimatedCount target={meta.total} /> reviewed role{meta.total !== 1 ? 's' : ''}
               </span>
             )}
           </div>

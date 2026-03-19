@@ -2,7 +2,15 @@ import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
 import { apiHandler } from '../../../../lib/api-handler.js';
 import { logger } from '../../../../lib/logger.js';
 
-const VALID_STATUSES = ['pending', 'contacted', 'connected', 'no_response'];
+const VALID_STATUSES = [
+  'pending',
+  'contacted',
+  'accepted',
+  'connected',
+  'followed_up',
+  'declined',
+  'no_response',
+];
 
 type EmailResult = { type: string; status: 'sent' | 'failed' | 'skipped'; error?: string };
 
@@ -38,7 +46,7 @@ export default apiHandler(
     // Fetch intro details
     const { data: intro, error: introError } = await supabase
       .from('warm_intros')
-      .select('id, name, email, linkedin, message, job_id, status')
+      .select('id, name, email, linkedin, message, job_id, status, response_token')
       .eq('id', id)
       .single();
 
@@ -49,9 +57,10 @@ export default apiHandler(
     const previousStatus = intro.status;
 
     // Update status
+    const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('warm_intros')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status, status_updated_at: now })
       .eq('id', id)
       .select('id, status')
       .single();
@@ -96,14 +105,42 @@ export default apiHandler(
           introId: intro.id,
         };
 
-        if (status === 'contacted' && !alreadySent.has('warm_intro_contacted')) {
-          await trySendEmail(
-            () => email.sendIntroContacted(baseOpts),
-            'warm_intro_contacted',
-            emailResults,
-          );
+        // → contacted: notify requester + send outreach to hiring contact
+        if (status === 'contacted') {
+          if (!alreadySent.has('warm_intro_contacted')) {
+            await trySendEmail(
+              () => email.sendIntroContacted(baseOpts),
+              'warm_intro_contacted',
+              emailResults,
+            );
+          }
+
+          // Send branded outreach to hiring contact with accept/decline buttons
+          const cName = contact_name || job?.submitter_name;
+          const cEmail = contact_email || job?.submitter_email;
+          if (cName && cEmail && !alreadySent.has('warm_intro_outreach_contact')) {
+            await trySendEmail(
+              () =>
+                email.sendOutreachToContact({
+                  contactName: cName,
+                  contactEmail: cEmail,
+                  requesterName: intro.name,
+                  requesterEmail: intro.email,
+                  requesterLinkedin: intro.linkedin || undefined,
+                  requesterMessage: intro.message || undefined,
+                  jobTitle,
+                  jobCompany,
+                  jobId: intro.job_id,
+                  introId: intro.id,
+                  responseToken: intro.response_token,
+                }),
+              'warm_intro_outreach_contact',
+              emailResults,
+            );
+          }
         }
 
+        // → connected: send actual intro emails to both sides
         if (status === 'connected' && !alreadySent.has('warm_intro_connection_requester')) {
           const cName = contact_name || job?.submitter_name;
           const cEmail = contact_email || job?.submitter_email;
@@ -148,6 +185,16 @@ export default apiHandler(
           }
         }
 
+        // → declined: notify requester kindly
+        if (status === 'declined' && !alreadySent.has('warm_intro_declined_requester')) {
+          await trySendEmail(
+            () => email.sendIntroDeclined({ ...baseOpts, introId: intro.id }),
+            'warm_intro_declined_requester',
+            emailResults,
+          );
+        }
+
+        // → no_response: legacy fallback
         if (status === 'no_response' && !alreadySent.has('warm_intro_no_response')) {
           await trySendEmail(
             () => email.sendIntroNoResponse(baseOpts),

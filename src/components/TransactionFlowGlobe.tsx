@@ -19,7 +19,7 @@ const nodes = [
   { label: 'Regulators', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
   { label: 'Capital Markets', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
   { label: 'Insurance', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
-  { label: 'Brim', angle: 315, isCore: false, color: { r: 212, g: 168, b: 67 } },
+  { label: 'Brim', angle: 315, isCore: true, color: { r: 212, g: 168, b: 67 }, dominant: true },
 ];
 
 // --- Connections between sectors ---
@@ -33,15 +33,15 @@ const conns = [
   { from: 5, to: 6, type: 5 },
   { from: 6, to: 7, type: 6 },
   { from: 7, to: 0, type: 7 },
-  // Cross connections (how sectors interconnect)
+  // Cross connections — Brim (7) is the hub
+  { from: 7, to: 2, type: 7 }, // Brim ↔ Lending
+  { from: 7, to: 3, type: 7 }, // Brim ↔ Digital Assets
+  { from: 7, to: 4, type: 7 }, // Brim ↔ Regulators
+  { from: 7, to: 5, type: 7 }, // Brim ↔ Capital Markets
+  { from: 7, to: 6, type: 7 }, // Brim ↔ Insurance
   { from: 0, to: 2, type: 0 }, // Banking ↔ Lending
-  { from: 0, to: 4, type: 0 }, // Banking ↔ RegTech
-  { from: 1, to: 5, type: 1 }, // Payments ↔ Crypto
-  { from: 1, to: 7, type: 1 }, // Payments ↔ Infra
-  { from: 2, to: 6, type: 2 }, // Lending ↔ WealthTech
-  { from: 3, to: 4, type: 3 }, // InsurTech ↔ RegTech
-  { from: 5, to: 7, type: 5 }, // Crypto ↔ Infra
-  { from: 6, to: 0, type: 6 }, // WealthTech ↔ Banking
+  { from: 1, to: 5, type: 1 }, // Payments ↔ Capital Markets
+  { from: 3, to: 4, type: 3 }, // Digital Assets ↔ Regulators
 ];
 
 interface Particle {
@@ -236,42 +236,57 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       // Draw nodes
       nodes.forEach((n, idx) => {
         const pos = nodePos(idx, rotOff, cx, cy);
-        const br = (n.isCore ? 16 : 14) + Math.sin(time * 0.001 + idx * 0.9) * 2;
+        const dom = 'dominant' in n && (n as { dominant?: boolean }).dominant;
+        const nodeR = dom ? 14 : n.isCore ? 10 : 8;
+        const dotR = dom ? 5 : n.isCore ? 3.5 : 2.5;
+        const br = (dom ? 22 : n.isCore ? 16 : 14) + Math.sin(time * 0.001 + idx * 0.9) * 2;
         const px = r2(pos.x);
         const py = r2(pos.y);
         const { r, g: gv, b } = n.color;
 
+        // Outer glow (dominant only)
+        if (dom) {
+          const gp = 0.06 + Math.sin(time * 0.0015) * 0.03;
+          ctx.beginPath();
+          ctx.arc(px, py, 30, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${gv},${b},${gp.toFixed(3)})`;
+          ctx.fill();
+        }
+
         // Breathing ring
         ctx.beginPath();
         ctx.arc(px, py, br, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.15 : 0.08})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(${r},${gv},${b},${dom ? 0.25 : n.isCore ? 0.15 : 0.08})`;
+        ctx.lineWidth = dom ? 1.5 : 1;
         ctx.stroke();
 
         // Node circle
         ctx.beginPath();
-        ctx.arc(px, py, n.isCore ? 10 : 8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${gv},${b},0.08)`;
+        ctx.arc(px, py, nodeR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${gv},${b},${dom ? 0.15 : 0.08})`;
         ctx.fill();
-        ctx.strokeStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.4 : 0.25})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(${r},${gv},${b},${dom ? 0.6 : n.isCore ? 0.4 : 0.25})`;
+        ctx.lineWidth = dom ? 1.5 : 1;
         ctx.stroke();
 
         // Center dot
         ctx.beginPath();
-        ctx.arc(px, py, n.isCore ? 3.5 : 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${gv},${b},0.7)`;
+        ctx.arc(px, py, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${gv},${b},${dom ? 0.9 : 0.7})`;
         ctx.fill();
 
         // Labels
         const a = ((n.angle + rotOff) * Math.PI) / 180;
-        const lx = cx + Math.cos(a) * (R + 24);
-        const ly = cy + Math.sin(a) * (R + 24);
+        const labelDist = dom ? R + 30 : R + 24;
+        const lx = cx + Math.cos(a) * labelDist;
+        const ly = cy + Math.sin(a) * labelDist;
         const normA = (((n.angle + rotOff) % 360) + 360) % 360;
 
-        ctx.font = n.isCore
-          ? '600 9px "JetBrains Mono", monospace'
-          : '500 8px "JetBrains Mono", monospace';
+        ctx.font = dom
+          ? '700 11px "JetBrains Mono", monospace'
+          : n.isCore
+            ? '600 9px "JetBrains Mono", monospace'
+            : '500 8px "JetBrains Mono", monospace';
 
         if (normA > 80 && normA < 100) {
           ctx.textAlign = 'center';
@@ -285,7 +300,7 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
         const lyOffset = normA > 80 && normA < 100 ? 8 : normA > 260 && normA < 280 ? -2 : 0;
 
-        ctx.fillStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.6 : 0.45})`;
+        ctx.fillStyle = `rgba(${r},${gv},${b},${dom ? 0.85 : n.isCore ? 0.6 : 0.45})`;
         ctx.fillText(n.label, lx, ly + 3 + lyOffset);
       });
 

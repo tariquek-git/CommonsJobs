@@ -47,6 +47,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Invalid email address' });
   }
 
+  if (replyTo && !emailRegex.test(replyTo)) {
+    return res.status(400).json({ error: 'Invalid reply-to email address' });
+  }
+
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',

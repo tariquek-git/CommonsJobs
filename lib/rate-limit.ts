@@ -81,6 +81,7 @@ export const RATE_LIMITS = {
   adminLogin: { limit: 3, windowMs: 15 * 60 * 1000 },
   submission: { limit: 5, windowMs: 60 * 60 * 1000 },
   warmIntro: { limit: 10, windowMs: 60 * 60 * 1000 },
+  introResponse: { limit: 5, windowMs: 60 * 60 * 1000 },
   aiScrape: { limit: 10, windowMs: 10 * 60 * 1000 },
   search: { limit: 60, windowMs: 60 * 1000 },
   jobDetail: { limit: 100, windowMs: 60 * 1000 },
