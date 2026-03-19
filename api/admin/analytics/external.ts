@@ -1,6 +1,5 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireAdmin } from '../../../lib/auth.js';
 import { getEnv } from '../../../lib/env.js';
+import { apiHandler } from '../../../lib/api-handler.js';
 
 /**
  * GET /api/admin/analytics/external
@@ -260,16 +259,9 @@ async function fetchVercel(): Promise<VercelData | null> {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
-
-  if (!requireAdmin(req as unknown as Request)) {
-    return res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-  }
-
-  try {
+export default apiHandler(
+  { methods: ['GET'], auth: 'admin', name: 'admin/analytics/external' },
+  async (_req, res) => {
     // Fetch all providers in parallel — each returns null if not configured
     const [posthog, sentry, vercel] = await Promise.all([
       fetchPostHog(),
@@ -292,7 +284,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Cache for 2 minutes — these are expensive API calls
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=60');
     return res.status(200).json(result);
-  } catch {
-    return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
-  }
-}
+  },
+);
