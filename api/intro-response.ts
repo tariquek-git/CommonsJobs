@@ -24,6 +24,12 @@ export default apiHandler(
       return res.status(400).json({ error: 'Missing token', code: 'VALIDATION_ERROR' });
     }
 
+    if (note && typeof note === 'string' && note.length > 1000) {
+      return res
+        .status(400)
+        .json({ error: 'Note too long (max 1000 characters)', code: 'VALIDATION_ERROR' });
+    }
+
     const validActions = ['accepted', 'declined', 'more_info'];
     if (!action || !validActions.includes(action)) {
       return res.status(400).json({
@@ -68,20 +74,23 @@ export default apiHandler(
       });
     }
 
-    // Map action to new status
-    const newStatus = action === 'accepted' ? 'accepted' : 'declined';
-
-    // Update intro
+    // Map action to new status — more_info keeps status as 'contacted'
     const now = new Date().toISOString();
+    const statusUpdate: Record<string, unknown> = {
+      contact_response: action,
+      contact_responded_at: now,
+      contact_note: note?.trim() || null,
+    };
+
+    // Only change status for accept/decline — more_info stays as 'contacted'
+    if (action === 'accepted' || action === 'declined') {
+      statusUpdate.status = action === 'accepted' ? 'accepted' : 'declined';
+      statusUpdate.status_updated_at = now;
+    }
+
     const { error: updateError } = await supabase
       .from('warm_intros')
-      .update({
-        status: newStatus,
-        contact_response: action,
-        contact_responded_at: now,
-        contact_note: note?.trim() || null,
-        status_updated_at: now,
-      })
+      .update(statusUpdate)
       .eq('id', intro.id);
 
     if (updateError) {

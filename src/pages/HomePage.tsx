@@ -18,7 +18,6 @@ const FounderSection = lazy(() => import('../components/FounderSection'));
 
 function AnimatedCount({ target }: { target: number }) {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
 
   useEffect(() => {
@@ -40,11 +39,7 @@ function AnimatedCount({ target }: { target: number }) {
   }, [target]);
 
   return (
-    <span
-      ref={ref}
-      className="inline-block tabular-nums"
-      style={{ minWidth: `${String(target).length}ch` }}
-    >
+    <span className="inline-block tabular-nums" style={{ minWidth: `${String(target).length}ch` }}>
       {count}
     </span>
   );

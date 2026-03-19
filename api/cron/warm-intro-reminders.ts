@@ -13,13 +13,15 @@ async function trySend(
   key: string,
   alreadySent: Set<string>,
   counts: { sent: number; errors: number },
-) {
-  if (alreadySent.has(key)) return;
+): Promise<boolean> {
+  if (alreadySent.has(key)) return false;
   try {
     await fn();
     counts.sent++;
+    return true;
   } catch {
     counts.errors++;
+    return false;
   }
 }
 
@@ -175,7 +177,7 @@ export default apiHandler(
       if (intro.status === 'connected' && statusAge >= 7) {
         const contactName = job.submitter_name || job.company;
 
-        await trySend(
+        const followUpSent = await trySend(
           () =>
             sendIntroFollowUp({
               requesterName: intro.name,
@@ -191,8 +193,8 @@ export default apiHandler(
           counts,
         );
 
-        // Also update status to followed_up
-        if (!alreadySent.has(`${intro.id}:warm_intro_follow_up`)) {
+        // Only update status to followed_up if email actually sent
+        if (followUpSent) {
           await supabase
             .from('warm_intros')
             .update({ status: 'followed_up', status_updated_at: new Date().toISOString() })

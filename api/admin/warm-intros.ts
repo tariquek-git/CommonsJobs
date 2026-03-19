@@ -12,7 +12,7 @@ export default apiHandler(
     if (req.query.counts_only === 'true') {
       const { data: allIntros } = await supabase
         .from('warm_intros')
-        .select('id, status, created_at')
+        .select('id, status, created_at, status_updated_at')
         .order('created_at', { ascending: false })
         .limit(200);
 
@@ -32,7 +32,7 @@ export default apiHandler(
       for (const i of intros) {
         if (i.status in counts) counts[i.status]++;
         else counts[i.status] = 1;
-        const updatedAt = new Date(i.created_at).getTime();
+        const updatedAt = new Date(i.status_updated_at || i.created_at).getTime();
         const days = Math.floor((now - updatedAt) / 86400000);
         if (
           (i.status === 'pending' && days >= 5) ||
@@ -50,7 +50,7 @@ export default apiHandler(
     let query = supabase
       .from('warm_intros')
       .select(
-        'id, name, email, linkedin, message, status, created_at, job_id, referrer_name, referrer_company',
+        'id, name, email, linkedin, message, status, created_at, status_updated_at, job_id, referrer_name, referrer_company',
       );
 
     if (statusFilter) {
@@ -66,7 +66,6 @@ export default apiHandler(
       return res.status(500).json({
         error: 'Failed to fetch warm intros',
         code: 'QUERY_ERROR',
-        detail: introsError.message,
       });
     }
 
@@ -135,7 +134,7 @@ export default apiHandler(
     const result = intros.map((intro) => {
       const job = jobMap[intro.job_id] || null;
       const emails = emailMap[intro.id] || { count: 0, last_at: null, types: [] };
-      const updatedAt = new Date(intro.created_at).getTime();
+      const updatedAt = new Date(intro.status_updated_at || intro.created_at).getTime();
       const daysInStatus = Math.floor((now - updatedAt) / 86400000);
 
       return {

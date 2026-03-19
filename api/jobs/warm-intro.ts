@@ -25,6 +25,19 @@ export default apiHandler(
       return res.status(400).json({ error: 'Invalid email', code: 'VALIDATION_ERROR' });
     }
 
+    // Length limits to prevent abuse
+    if (name.length > 200 || email.length > 254) {
+      return res.status(400).json({ error: 'Input too long', code: 'VALIDATION_ERROR' });
+    }
+    if (message && message.length > 2000) {
+      return res
+        .status(400)
+        .json({ error: 'Message too long (max 2000 characters)', code: 'VALIDATION_ERROR' });
+    }
+    if (linkedin && linkedin.length > 500) {
+      return res.status(400).json({ error: 'LinkedIn URL too long', code: 'VALIDATION_ERROR' });
+    }
+
     const ip = getClientIP(req);
     const ipHash = createHash('sha256').update(ip).digest('hex');
     const userAgent = (req.headers['user-agent'] as string) || null;

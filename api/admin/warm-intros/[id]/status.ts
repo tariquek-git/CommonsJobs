@@ -118,7 +118,12 @@ export default apiHandler(
           // Send branded outreach to hiring contact with accept/decline buttons
           const cName = contact_name || job?.submitter_name;
           const cEmail = contact_email || job?.submitter_email;
-          if (cName && cEmail && !alreadySent.has('warm_intro_outreach_contact')) {
+          if (
+            cName &&
+            cEmail &&
+            intro.response_token &&
+            !alreadySent.has('warm_intro_outreach_contact')
+          ) {
             await trySendEmail(
               () =>
                 email.sendOutreachToContact({
