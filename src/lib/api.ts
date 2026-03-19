@@ -296,6 +296,7 @@ export interface WarmIntroRecord {
   // Timing
   days_in_status: number;
   is_stale: boolean;
+  needs_reminder: boolean;
 }
 
 export async function getWarmIntros(

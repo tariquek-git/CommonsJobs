@@ -200,7 +200,7 @@ export default function DashboardPage() {
           color="text-brand-600"
         />
         <StatCard
-          label="Warm Intros (30d)"
+          label="Connections (30d)"
           value={analytics?.totals.intros30d || 0}
           color="text-accent-pink"
         />
@@ -324,7 +324,7 @@ export default function DashboardPage() {
           <MiniChart
             data={analytics.introsByDay}
             color="rgb(255 59 139)"
-            label="Warm Intros — Last 30 Days"
+            label="Connections — Last 30 Days"
           />
         </div>
       )}
@@ -530,8 +530,8 @@ export default function DashboardPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Manage warm intros</p>
-                  <p className="text-xs text-gray-500">Pending intro requests</p>
+                  <p className="text-sm font-medium text-gray-900">Connection requests</p>
+                  <p className="text-xs text-gray-500">Pending introduction requests</p>
                 </div>
               </div>
               <svg

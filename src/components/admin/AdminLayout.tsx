@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   },
   {
     to: '/admin/intros',
-    label: 'Warm Intros',
+    label: 'Connections',
     icon: (
       <path
         strokeLinecap="round"

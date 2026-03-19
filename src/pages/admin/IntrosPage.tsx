@@ -25,6 +25,7 @@ const PIPELINE_CONFIG: Record<
   string,
   {
     label: string;
+    subtitle: string;
     color: string;
     activeBg: string;
     activeBorder: string;
@@ -34,6 +35,7 @@ const PIPELINE_CONFIG: Record<
 > = {
   pending: {
     label: 'Pending',
+    subtitle: 'Need your action',
     color: 'border-gray-200 bg-white hover:border-amber-200',
     activeBg: 'bg-amber-50',
     activeBorder: 'border-amber-400',
@@ -42,6 +44,7 @@ const PIPELINE_CONFIG: Record<
   },
   contacted: {
     label: 'Contacted',
+    subtitle: 'Waiting on response',
     color: 'border-gray-200 bg-white hover:border-blue-200',
     activeBg: 'bg-blue-50',
     activeBorder: 'border-blue-400',
@@ -49,7 +52,8 @@ const PIPELINE_CONFIG: Record<
     countColor: 'text-blue-700',
   },
   connected: {
-    label: 'Connected',
+    label: 'Introduced',
+    subtitle: 'Emails sent to both sides',
     color: 'border-gray-200 bg-white hover:border-emerald-200',
     activeBg: 'bg-emerald-50',
     activeBorder: 'border-emerald-400',
@@ -58,12 +62,20 @@ const PIPELINE_CONFIG: Record<
   },
   no_response: {
     label: 'No Reply',
+    subtitle: 'No response received',
     color: 'border-gray-200 bg-white hover:border-gray-300',
     activeBg: 'bg-gray-50',
     activeBorder: 'border-gray-400',
     textColor: 'text-gray-500',
     countColor: 'text-gray-600',
   },
+};
+
+const STATUS_CONTEXT: Record<string, string> = {
+  pending: 'New request — reach out to the hiring contact',
+  contacted: "You've reached out — waiting to hear back",
+  connected: 'Introduction emails sent to both sides',
+  no_response: "Closed — hiring contact didn't respond",
 };
 
 const CARD_BORDER: Record<string, string> = {
@@ -148,7 +160,7 @@ export default function IntrosPage() {
       const result = await getWarmIntros(token);
       setAllIntros(result.intros);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load warm intros');
+      setError(err instanceof Error ? err.message : 'Failed to load connection requests');
     } finally {
       setLoading(false);
     }
@@ -159,7 +171,7 @@ export default function IntrosPage() {
   }, [fetchIntros]);
 
   useEffect(() => {
-    document.title = 'Warm Intros | Admin';
+    document.title = 'Connection Requests | Admin';
   }, []);
 
   // ─── Computed data ───
@@ -312,7 +324,7 @@ export default function IntrosPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Warm Intros</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Connection Requests</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {allIntros.length} total request
             {allIntros.length !== 1 ? 's' : ''}
@@ -325,6 +337,9 @@ export default function IntrosPage() {
           Refresh
         </button>
       </div>
+
+      {/* How This Works */}
+      <HowItWorks />
 
       {/* Pipeline Header */}
       <PipelineHeader
@@ -575,6 +590,7 @@ function PipelineHeader({
                   {cfg.label}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${cfg.countColor}`}>{count}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{cfg.subtitle}</p>
               </button>
               {/* Arrow between segments (desktop, not after last) */}
               {idx < STATUS_ORDER.length - 1 && idx !== 2 && (
@@ -611,23 +627,41 @@ function IntroCard({
 }) {
   return (
     <div
-      className={`bg-white rounded-xl border border-gray-200 border-l-4 ${CARD_BORDER[intro.status] || CARD_BORDER.pending} ${intro.is_stale ? 'ring-1 ring-amber-200' : ''}`}
+      className={`bg-white rounded-xl border border-gray-200 border-l-4 ${CARD_BORDER[intro.status] || CARD_BORDER.pending} ${intro.needs_reminder ? 'ring-2 ring-red-200' : intro.is_stale ? 'ring-1 ring-amber-200' : ''}`}
     >
       <div className="p-5 space-y-3">
-        {/* Top row: Status + stale badge + time */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <StatusBadge status={intro.status} />
-            {intro.is_stale && (
-              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700">
-                ⚠ {intro.days_in_status}d — needs attention
-              </span>
-            )}
+        {/* Step tracker + context */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <StepTracker currentStatus={intro.status} />
+            <p className="text-xs text-gray-500 italic">{STATUS_CONTEXT[intro.status]}</p>
           </div>
-          <span className="text-[11px] text-gray-400">
-            {getRelativeTimeLabel(intro.created_at)}
-          </span>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="text-[11px] text-gray-400">
+              {getRelativeTimeLabel(intro.created_at)}
+            </span>
+            {intro.needs_reminder ? (
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-red-100 text-red-700">
+                {intro.days_in_status}d — this person is still waiting on you
+              </span>
+            ) : intro.is_stale ? (
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700">
+                {intro.days_in_status}d — time to follow up
+              </span>
+            ) : null}
+          </div>
         </div>
+
+        {/* Human-story headline */}
+        <p className="text-sm font-medium text-gray-800">
+          <span className="font-semibold">{intro.name}</span>
+          {' wants to be introduced to '}
+          <span className="font-semibold">{intro.job_company}</span>
+          {intro.job_title ? ` for the ${intro.job_title} role` : ''}
+        </p>
+
+        {/* Next step guidance */}
+        <NextStepGuidance intro={intro} />
 
         {/* Relationship Grid: Requester → Job → Submitter */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -808,9 +842,12 @@ function PrimaryAction({
       return (
         <button
           onClick={() => onStatusChange(intro, 'contacted')}
-          className="text-xs px-3.5 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+          className="text-xs px-3.5 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors flex flex-col items-center"
         >
-          I reached out →
+          <span>Mark as Contacted</span>
+          <span className="text-[10px] font-normal opacity-80">
+            I've emailed the hiring contact
+          </span>
         </button>
       );
     case 'contacted':
@@ -818,15 +855,19 @@ function PrimaryAction({
         <div className="flex gap-2">
           <button
             onClick={() => onStatusChange(intro, 'connected')}
-            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors flex flex-col items-center"
           >
-            Make intro →
+            <span>Send Introduction Emails</span>
+            <span className="text-[10px] font-normal opacity-80">
+              Emails both the requester and hiring contact
+            </span>
           </button>
           <button
             onClick={() => onStatusChange(intro, 'no_response')}
-            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            className="text-xs px-3.5 py-2 rounded-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex flex-col items-center"
           >
-            No response
+            <span>Mark No Response</span>
+            <span className="text-[10px] font-normal opacity-70">Hiring side didn't reply</span>
           </button>
         </div>
       );
@@ -835,15 +876,14 @@ function PrimaryAction({
         <button
           id={`followup-${intro.id}`}
           onClick={() => onFollowUp(intro.id)}
-          className="text-xs px-3.5 py-2 rounded-lg font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+          className="text-xs px-3.5 py-2 rounded-lg font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors flex flex-col items-center"
         >
-          Send follow-up
+          <span>Send Follow-up</span>
+          <span className="text-[10px] font-normal opacity-70">Check how the intro went</span>
         </button>
       );
     case 'no_response':
-      return (
-        <span className="text-xs text-gray-400 italic">Closed — no response from hiring side</span>
-      );
+      return <span className="text-xs text-gray-400 italic">This intro is closed</span>;
     default:
       return null;
   }
@@ -861,13 +901,13 @@ function SecondaryActions({
   const options: { status: string; label: string }[] = [];
 
   if (intro.status === 'contacted') {
-    options.push({ status: 'pending', label: 'Revert to pending' });
+    options.push({ status: 'pending', label: '\u2190 Back to Pending' });
   }
   if (intro.status === 'connected') {
-    options.push({ status: 'contacted', label: 'Revert to contacted' });
+    options.push({ status: 'contacted', label: '\u2190 Back to Contacted' });
   }
   if (intro.status === 'no_response') {
-    options.push({ status: 'contacted', label: 'Try again' });
+    options.push({ status: 'contacted', label: '\u2190 Retry' });
   }
 
   if (options.length === 0) return null;
@@ -912,8 +952,8 @@ const EVENT_SHORT: Record<string, string> = {
   warm_intro_admin_notification: 'Admin notified',
   warm_intro_thank_you: 'Thank-you sent',
   warm_intro_contacted: '"I\'m on it" sent',
-  warm_intro_connection_requester: 'Intro → requester',
-  warm_intro_connection_contact: 'Intro → hiring contact',
+  warm_intro_connection_requester: 'Connection email → requester',
+  warm_intro_connection_contact: 'Connection email → hiring contact',
   warm_intro_no_response: 'No response sent',
   warm_intro_follow_up: 'Follow-up sent',
 };
@@ -943,13 +983,77 @@ function EmailRow({ log }: { log: EmailLog }) {
   );
 }
 
+// ─── How It Works ───
+
+function HowItWorks() {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('fc_intros_how_dismissed') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  if (dismissed) return null;
+
+  const dismiss = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem('fc_intros_how_dismissed', '1');
+    } catch {
+      // non-critical
+    }
+  };
+
+  return (
+    <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50/60 p-4 relative">
+      <button
+        onClick={dismiss}
+        className="absolute top-3 right-3 text-blue-400 hover:text-blue-600 text-xs"
+        aria-label="Dismiss"
+      >
+        ✕
+      </button>
+      <p className="text-xs font-semibold text-blue-700 mb-3 uppercase tracking-wider">
+        How Connection Requests Work
+      </p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-2">
+          <span className="h-7 w-7 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">
+            1
+          </span>
+          <span className="text-sm text-gray-700">
+            Someone requests an introduction to a company
+          </span>
+        </div>
+        <span className="hidden sm:block text-gray-300">→</span>
+        <div className="flex items-center gap-2">
+          <span className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+            2
+          </span>
+          <span className="text-sm text-gray-700">You reach out to the hiring contact</span>
+        </div>
+        <span className="hidden sm:block text-gray-300">→</span>
+        <div className="flex items-center gap-2">
+          <span className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
+            3
+          </span>
+          <span className="text-sm text-gray-700">
+            Introduction emails are sent to both parties
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Empty State ───
 
 function EmptyState({ filter }: { filter: string }) {
   const messages: Record<string, string> = {
     pending: 'No new requests. Check back later.',
-    contacted: 'No intros waiting on responses.',
-    connected: 'No completed intros yet.',
+    contacted: 'No requests waiting on responses.',
+    connected: 'No completed introductions yet.',
     no_response: 'No dead ends. Nice.',
   };
 
@@ -959,8 +1063,129 @@ function EmptyState({ filter }: { filter: string }) {
       <p className="text-sm text-gray-500">
         {filter
           ? messages[filter] || 'No intro requests with this status.'
-          : 'No warm intro requests yet.'}
+          : 'No connection requests yet.'}
       </p>
     </div>
+  );
+}
+
+// ─── Step Tracker ───
+
+const STEP_FLOW = ['pending', 'contacted', 'connected'] as const;
+const STEP_COLORS: Record<string, { fill: string; ring: string }> = {
+  pending: { fill: 'bg-amber-500', ring: 'ring-amber-200' },
+  contacted: { fill: 'bg-blue-500', ring: 'ring-blue-200' },
+  connected: { fill: 'bg-emerald-500', ring: 'ring-emerald-200' },
+  no_response: { fill: 'bg-gray-400', ring: 'ring-gray-200' },
+};
+
+function StepTracker({ currentStatus }: { currentStatus: string }) {
+  const isNoResponse = currentStatus === 'no_response';
+  const currentIdx = isNoResponse
+    ? 1
+    : STEP_FLOW.indexOf(currentStatus as (typeof STEP_FLOW)[number]);
+
+  return (
+    <div className="flex items-center gap-1">
+      {STEP_FLOW.map((step, idx) => {
+        const isDone = !isNoResponse && idx < currentIdx;
+        const isCurrent = !isNoResponse && idx === currentIdx;
+        const colors = STEP_COLORS[step];
+
+        return (
+          <div key={step} className="flex items-center">
+            {/* Step circle */}
+            <div className="flex flex-col items-center">
+              <div
+                className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                  isDone
+                    ? `${colors.fill} text-white`
+                    : isCurrent
+                      ? `${colors.fill} text-white ring-2 ${colors.ring}`
+                      : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {isDone ? (
+                  <svg
+                    className="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  idx + 1
+                )}
+              </div>
+              <span
+                className={`text-[9px] mt-0.5 ${isCurrent ? 'font-semibold text-gray-700' : 'text-gray-400'}`}
+              >
+                {PIPELINE_CONFIG[step]?.label}
+              </span>
+            </div>
+            {/* Connector line */}
+            {idx < STEP_FLOW.length - 1 && (
+              <div
+                className={`h-0.5 w-6 mx-1 mb-3 ${
+                  !isNoResponse && idx < currentIdx
+                    ? STEP_COLORS[STEP_FLOW[idx + 1]].fill
+                    : 'bg-gray-200'
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+
+      {/* No Response branch (off contacted) */}
+      <div className="flex items-center ml-1">
+        <div
+          className={`h-0.5 w-4 ${isNoResponse ? 'bg-gray-400' : 'bg-gray-200'} mb-3`}
+          style={{ borderTop: '1px dashed' }}
+        />
+        <div className="flex flex-col items-center">
+          <div
+            className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] ${
+              isNoResponse
+                ? 'bg-gray-400 text-white ring-2 ring-gray-200'
+                : 'bg-gray-100 text-gray-400'
+            }`}
+          >
+            ✕
+          </div>
+          <span
+            className={`text-[9px] mt-0.5 ${isNoResponse ? 'font-semibold text-gray-600' : 'text-gray-400'}`}
+          >
+            No Reply
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Next Step Guidance ───
+
+function NextStepGuidance({ intro }: { intro: WarmIntroRecord }) {
+  const submitter = intro.job_submitter_name || intro.job_company;
+  const messages: Record<string, string> = {
+    pending: `Next: Contact ${submitter} about introducing ${intro.name}`,
+    contacted: 'Next: Wait for response, then send introduction emails or close',
+    connected: 'Done! Send a follow-up to see how it went',
+    no_response: 'This intro is closed',
+  };
+  const msg = messages[intro.status] || '';
+  if (!msg) return null;
+
+  const isDone = intro.status === 'connected' || intro.status === 'no_response';
+
+  return (
+    <p
+      className={`text-xs px-2.5 py-1.5 rounded-md ${isDone ? 'bg-gray-50 text-gray-500' : 'bg-brand-50 text-brand-700 font-medium'}`}
+    >
+      {msg}
+    </p>
   );
 }

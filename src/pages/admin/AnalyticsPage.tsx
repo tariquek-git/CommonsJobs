@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Warm Intros
+                Connections
               </p>
               <p className="text-3xl font-bold text-accent-pink mt-1">
                 {filteredData.totals.intros30d}
@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
             <MiniChart
               data={filteredData.introsByDay}
               color="rgb(255 59 139)"
-              label="Warm Intros"
+              label="Connections"
             />
           </div>
 

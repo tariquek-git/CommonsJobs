@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (s in counts) counts[s]++;
         const updatedAt = new Date(i.created_at).getTime();
         const days = Math.floor((now - updatedAt) / 86400000);
-        if ((s === 'pending' && days >= 2) || (s === 'contacted' && days >= 7)) {
+        if ((s === 'pending' && days >= 10) || (s === 'contacted' && days >= 10)) {
           stale.push({ id: i.id, status: s, days });
         }
       }
@@ -59,13 +59,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (introsError) {
       logger.error('Warm intros query failed', { error: introsError });
-      return res
-        .status(500)
-        .json({
-          error: 'Failed to fetch warm intros',
-          code: 'QUERY_ERROR',
-          detail: introsError.message,
-        });
+      return res.status(500).json({
+        error: 'Failed to fetch warm intros',
+        code: 'QUERY_ERROR',
+        detail: introsError.message,
+      });
     }
 
     const intros = introsData || [];
@@ -152,8 +150,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Timing
         days_in_status: daysInStatus,
         is_stale:
-          (intro.status === 'pending' && daysInStatus >= 2) ||
-          (intro.status === 'contacted' && daysInStatus >= 7),
+          (intro.status === 'pending' && daysInStatus >= 10) ||
+          (intro.status === 'contacted' && daysInStatus >= 10),
+        needs_reminder:
+          (intro.status === 'pending' && daysInStatus >= 15) ||
+          (intro.status === 'contacted' && daysInStatus >= 15),
       };
     });
 
