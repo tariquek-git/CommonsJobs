@@ -1,6 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase } from '../lib/supabase.js';
-import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../lib/rate-limit.js';
+import { getClientIP, RATE_LIMITS, rateLimitOrReject } from '../lib/rate-limit.js';
+import { apiHandler } from '../lib/api-handler.js';
 import { logger } from '../lib/logger.js';
 import { createHash, randomBytes } from 'crypto';
 
@@ -21,14 +21,8 @@ const VALID_CATEGORIES = [
 
 const VALID_ARRANGEMENTS = ['Remote', 'Hybrid', 'On-site'];
 
-/**
- * POST /api/subscribe — Subscribe to job alerts
- * Body: { email, name?, type?, categories?, tags?, work_arrangement?, location?, frequency? }
- *
- * GET /api/subscribe?token=xxx&action=unsubscribe — Unsubscribe
- */
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Unsubscribe via GET
+export default apiHandler({ methods: ['GET', 'POST'], name: 'subscribe' }, async (req, res) => {
+  // GET — Unsubscribe via token link
   if (req.method === 'GET') {
     const { token, action } = req.query;
     if (action === 'unsubscribe' && typeof token === 'string' && token.length >= 16) {
@@ -55,112 +49,97 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Invalid request' });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+  // POST — Subscribe to job alerts (rate limited)
   const ip = getClientIP(req);
   if (rateLimitOrReject(ip, RATE_LIMITS.submission, res)) return;
 
-  try {
-    const body = req.body as {
-      email?: string;
-      name?: string;
-      type?: string;
-      categories?: string[];
-      tags?: string[];
-      work_arrangement?: string;
-      location?: string;
-      frequency?: string;
-    };
+  const body = req.body as {
+    email?: string;
+    name?: string;
+    type?: string;
+    categories?: string[];
+    tags?: string[];
+    work_arrangement?: string;
+    location?: string;
+    frequency?: string;
+  };
 
-    // Validate email
-    if (!body.email || typeof body.email !== 'string' || !EMAIL_RE.test(body.email.trim())) {
-      return res.status(400).json({ error: 'Valid email is required', code: 'BAD_REQUEST' });
-    }
-
-    const email = body.email.trim().toLowerCase();
-    const name = body.name && typeof body.name === 'string' ? body.name.trim().slice(0, 100) : null;
-    const type = body.type === 'employer' ? 'employer' : 'candidate';
-
-    // Validate categories
-    const categories =
-      Array.isArray(body.categories) && body.categories.length > 0
-        ? body.categories.filter((c) => VALID_CATEGORIES.includes(c)).slice(0, 5)
-        : [];
-
-    // Validate tags
-    const tags =
-      Array.isArray(body.tags) && body.tags.length > 0
-        ? body.tags
-            .filter((t) => typeof t === 'string' && t.length > 0 && t.length <= 50)
-            .map((t) => t.toLowerCase().trim())
-            .slice(0, 10)
-        : [];
-
-    // Validate work_arrangement
-    const work_arrangement =
-      typeof body.work_arrangement === 'string' &&
-      VALID_ARRANGEMENTS.includes(body.work_arrangement)
-        ? body.work_arrangement
-        : null;
-
-    const location =
-      typeof body.location === 'string' && body.location.trim().length > 0
-        ? body.location.trim().slice(0, 100)
-        : null;
-
-    const frequency = body.frequency === 'weekly' ? 'weekly' : 'instant';
-
-    const ipHash = createHash('sha256').update(ip).digest('hex');
-
-    const supabase = getSupabase();
-
-    // Upsert: if email exists, update preferences
-    const { data, error } = await supabase
-      .from('job_subscribers')
-      .upsert(
-        {
-          email,
-          name,
-          type,
-          categories,
-          tags,
-          work_arrangement,
-          location,
-          frequency,
-          active: true,
-          unsubscribe_token: randomBytes(32).toString('hex'),
-          ip_hash: ipHash,
-          referrer: (req.headers['referer'] as string) || null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'email' },
-      )
-      .select('id')
-      .single();
-
-    if (error) {
-      logger.error('Subscribe insert failed', { error, email });
-      return res.status(500).json({ error: 'Subscription failed', code: 'STORAGE_ERROR' });
-    }
-
-    logger.info('New subscriber', { email, type, categories, frequency });
-
-    return res.status(200).json({
-      subscribed: true,
-      message:
-        type === 'employer'
-          ? "You're subscribed. We'll keep you posted on Fintech Commons updates."
-          : categories.length > 0
-            ? `You'll get alerts for new ${categories.join(', ')} roles.`
-            : "You'll get alerts for all new roles.",
-    });
-  } catch (err) {
-    logger.error('Subscribe error', { error: err });
-    return res.status(500).json({ error: 'Internal server error' });
+  if (!body.email || typeof body.email !== 'string' || !EMAIL_RE.test(body.email.trim())) {
+    return res.status(400).json({ error: 'Valid email is required', code: 'BAD_REQUEST' });
   }
-}
+
+  const email = body.email.trim().toLowerCase();
+  const name = body.name && typeof body.name === 'string' ? body.name.trim().slice(0, 100) : null;
+  const type = body.type === 'employer' ? 'employer' : 'candidate';
+
+  const categories =
+    Array.isArray(body.categories) && body.categories.length > 0
+      ? body.categories.filter((c) => VALID_CATEGORIES.includes(c)).slice(0, 5)
+      : [];
+
+  const tags =
+    Array.isArray(body.tags) && body.tags.length > 0
+      ? body.tags
+          .filter((t) => typeof t === 'string' && t.length > 0 && t.length <= 50)
+          .map((t) => t.toLowerCase().trim())
+          .slice(0, 10)
+      : [];
+
+  const work_arrangement =
+    typeof body.work_arrangement === 'string' && VALID_ARRANGEMENTS.includes(body.work_arrangement)
+      ? body.work_arrangement
+      : null;
+
+  const location =
+    typeof body.location === 'string' && body.location.trim().length > 0
+      ? body.location.trim().slice(0, 100)
+      : null;
+
+  const frequency = body.frequency === 'weekly' ? 'weekly' : 'instant';
+  const ipHash = createHash('sha256').update(ip).digest('hex');
+
+  const supabase = getSupabase();
+
+  const { error } = await supabase
+    .from('job_subscribers')
+    .upsert(
+      {
+        email,
+        name,
+        type,
+        categories,
+        tags,
+        work_arrangement,
+        location,
+        frequency,
+        active: true,
+        unsubscribe_token: randomBytes(32).toString('hex'),
+        ip_hash: ipHash,
+        referrer: (req.headers['referer'] as string) || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'email' },
+    )
+    .select('id')
+    .single();
+
+  if (error) {
+    logger.error('Subscribe insert failed', { error, email });
+    return res.status(500).json({ error: 'Subscription failed', code: 'STORAGE_ERROR' });
+  }
+
+  logger.info('New subscriber', { email, type, categories, frequency });
+
+  return res.status(200).json({
+    subscribed: true,
+    message:
+      type === 'employer'
+        ? "You're subscribed. We'll keep you posted on Fintech Commons updates."
+        : categories.length > 0
+          ? `You'll get alerts for new ${categories.join(', ')} roles.`
+          : "You'll get alerts for all new roles.",
+  });
+});
 
 function unsubscribeHtml(success: boolean): string {
   return `<!DOCTYPE html>

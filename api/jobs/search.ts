@@ -1,17 +1,11 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import type { SearchRequest, SearchResponse, Job } from '../../shared/types.js';
-import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { getSupabase, getJobsTable } from '../../lib/supabase.js';
+import { RATE_LIMITS } from '../../lib/rate-limit.js';
+import { apiHandler } from '../../lib/api-handler.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
-
-  const ip = getClientIP(req);
-  if (rateLimitOrReject(ip, RATE_LIMITS.search, res)) return;
-
-  try {
+export default apiHandler(
+  { methods: ['POST'], rateLimit: RATE_LIMITS.search, name: 'jobs/search' },
+  async (req, res) => {
     const body = req.body as SearchRequest;
     const sort = body.sort || 'newest';
     const page = Math.max(1, body.page || 1);
@@ -21,7 +15,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = getSupabase();
     const table = getJobsTable();
 
-    // Community feed: direct sources, active only
     let query = supabase
       .from(table)
       .select(
@@ -33,16 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (body.location) {
       query = query.ilike('location', `%${body.location}%`);
     }
-
     if (body.tags && body.tags.length > 0) {
       query = query.overlaps('tags', body.tags);
     }
-
     if (body.category) {
       query = query.eq('category', body.category);
     }
 
-    // Pinned jobs first, then featured, then sort by date
     query = query.order('pinned', { ascending: false, nullsFirst: false });
     query = query.order('featured', { ascending: false, nullsFirst: false });
     query = query.order('posted_date', { ascending: sort === 'oldest' });
@@ -74,18 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const response: SearchResponse = {
       jobs: (data || []) as unknown as Job[],
-      meta: {
-        total: count || 0,
-        page,
-        limit,
-      },
+      meta: { total: count || 0, page, limit },
     };
 
     return res.status(200).json(response);
-  } catch (err) {
-    return res.status(500).json({
-      error: 'Internal server error',
-      code: 'INTERNAL_ERROR',
-    });
-  }
-}
+  },
+);

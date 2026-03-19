@@ -467,6 +467,35 @@ export async function sendJobApproved(opts: {
   });
 }
 
+// ─── 6b. Job not listed: notify submitter ───
+
+export async function sendJobRejected(opts: {
+  submitterName: string;
+  submitterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+}): Promise<boolean> {
+  const firstName = opts.submitterName.split(' ')[0];
+
+  return send({
+    to: opts.submitterEmail,
+    subject: `Update on your submission — ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Thanks for submitting, ${esc(firstName)}.`,
+    body: `
+      <p style="margin:0 0 12px;">I reviewed your submission for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
+      <p style="margin:0 0 12px;">After looking it over, it's not a fit for the board right now. This isn't about the role or the company — I keep the board focused on a specific type of fintech opportunity, and not every submission makes the cut.</p>
+      <p style="margin:0 0 12px;">If circumstances change or you have another role that might be a better fit, feel free to resubmit. No hard feelings.</p>
+      <p style="margin:0;">Questions? Reply here.</p>
+    `,
+    preheader: `Update on your submission for ${opts.jobTitle} at ${opts.jobCompany}`,
+    cta: { label: 'Browse the Board', url: SITE_URL },
+    text: `Hi ${firstName},\n\nI reviewed your submission for ${opts.jobTitle} at ${opts.jobCompany}.\n\nAfter looking it over, it's not a fit for the board right now. This isn't about the role or the company — I keep the board focused on a specific type of fintech opportunity, and not every submission makes the cut.\n\nIf circumstances change or you have another role that might be a better fit, feel free to resubmit. No hard feelings.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'job_rejected_notification',
+    jobId: opts.jobId,
+  });
+}
+
 // ─── 7. Warm intro — no response follow-up ───
 
 export async function sendIntroNoResponse(opts: {

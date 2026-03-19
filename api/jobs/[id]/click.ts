@@ -1,17 +1,12 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable, getClicksTable } from '../../../lib/supabase.js';
-import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../../lib/rate-limit.js';
+import { getClientIP, RATE_LIMITS } from '../../../lib/rate-limit.js';
+import { apiHandler } from '../../../lib/api-handler.js';
+import { logger } from '../../../lib/logger.js';
 import { createHash } from 'crypto';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
-
-  const ip = getClientIP(req as unknown as Request);
-  if (rateLimitOrReject(ip, RATE_LIMITS.click, res)) return;
-
-  try {
+export default apiHandler(
+  { methods: ['POST'], rateLimit: RATE_LIMITS.click, name: 'jobs/[id]/click' },
+  async (req, res) => {
     const { id } = req.query;
     if (!id || typeof id !== 'string') {
       return res.status(400).json({ error: 'Job ID required', code: 'BAD_REQUEST' });
@@ -24,7 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const supabase = getSupabase();
 
-    // Only track clicks for active jobs
     const { data: job, error: jobError } = await supabase
       .from(getJobsTable())
       .select('id, status')
@@ -41,13 +35,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ error: 'Click tracking only for active jobs', code: 'FORBIDDEN' });
     }
 
-    // Hash IP for privacy
+    const ip = getClientIP(req);
     const ipHash = createHash('sha256').update(ip).digest('hex');
-
     const userAgent = (req.headers['user-agent'] as string) || null;
     const referrer = (req.headers['referer'] as string) || null;
 
-    // Parse UTM params from request body
     const body = req.body || {};
     const utmSource = typeof body.utm_source === 'string' ? body.utm_source.slice(0, 100) : null;
     const utmMedium = typeof body.utm_medium === 'string' ? body.utm_medium.slice(0, 100) : null;
@@ -65,19 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (clickError) {
-      const { logger } = await import('../../../lib/logger.js');
       logger.error('Click tracking error', { endpoint: 'click', jobId: id, error: clickError });
-      // Don't fail the request - click tracking is non-critical
     }
 
-    return res.status(200).json({ tracked: true });
-  } catch (err) {
-    // Click tracking should never block - log and return success
-    import('../../../lib/logger.js')
-      .then(({ logger }) => {
-        logger.warn('Click tracking exception', { endpoint: 'click', error: err });
-      })
-      .catch(() => {});
-    return res.status(200).json({ tracked: false });
-  }
-}
+    return res.status(200).json({ tracked: !clickError });
+  },
+);

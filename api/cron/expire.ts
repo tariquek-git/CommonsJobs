@@ -1,18 +1,10 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
+import { apiHandler } from '../../lib/api-handler.js';
+import { logger } from '../../lib/logger.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Verify the request is from Vercel Cron (CRON_SECRET must match)
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return res.status(500).json({ error: 'CRON_SECRET not configured' });
-  }
-  const authHeader = req.headers.authorization;
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
+export default apiHandler(
+  { methods: ['GET', 'POST'], auth: 'cron', name: 'cron/expire' },
+  async (_req, res) => {
     const supabase = getSupabase();
     const now = new Date().toISOString();
 
@@ -25,7 +17,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select('id');
 
     if (error) {
-      const { logger } = await import('../../lib/logger.js');
       logger.error('Expire cron query error', { endpoint: 'cron/expire', error });
       return res.status(500).json({ error: 'Failed to expire jobs' });
     }
@@ -34,9 +25,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       expired: data?.length || 0,
       timestamp: now,
     });
-  } catch (err) {
-    const { logger } = await import('../../lib/logger.js');
-    logger.error('Expire cron handler error', { endpoint: 'cron/expire', error: err });
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-}
+  },
+);

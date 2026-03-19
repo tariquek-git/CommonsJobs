@@ -1,8 +1,8 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { validateSubmission, sanitizeSubmission } from '../../shared/validation.js';
 import type { SubmissionPayload, SubmissionResponse } from '../../shared/types.js';
-import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { getClientIP, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { apiHandler } from '../../lib/api-handler.js';
 import { logger } from '../../lib/logger.js';
 import { createHash } from 'crypto';
 
@@ -28,26 +28,18 @@ function normalizeUrl(url: unknown): unknown {
   return u;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
-
-  const ip = getClientIP(req);
-  if (rateLimitOrReject(ip, RATE_LIMITS.submission, res)) return;
-
-  try {
+export default apiHandler(
+  { methods: ['POST'], rateLimit: RATE_LIMITS.submission, name: 'jobs/submissions' },
+  async (req, res) => {
     // Normalize URLs before validation
     if (req.body && typeof req.body === 'object') {
       req.body.apply_url = normalizeUrl(req.body.apply_url);
       req.body.company_url = normalizeUrl(req.body.company_url);
     }
 
-    // Validate
     const validation = validateSubmission(req.body);
 
     if (!validation.valid) {
-      // Spam detection: silently accept but don't save
       if (validation.errors.includes('__spam__')) {
         return res.status(200).json({
           success: true,
@@ -63,11 +55,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Sanitize
     const payload = sanitizeSubmission(req.body as SubmissionPayload);
     const submissionRef = generateRefId();
 
-    // Attempt to resolve company logo from domain
     let companyLogoUrl: string | null = null;
     if (payload.company_url) {
       try {
@@ -78,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Capture analytics metadata
+    const ip = getClientIP(req);
     const ipHash = createHash('sha256').update(ip).digest('hex');
     const userAgent = (req.headers['user-agent'] as string) || null;
     const referrer = (req.headers['referer'] as string) || null;
@@ -120,7 +110,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
-      const { logger } = await import('../../lib/logger.js');
       logger.error('Submission insert error', { endpoint: 'submissions', error });
       return res.status(500).json({ error: 'Failed to save submission', code: 'STORAGE_ERROR' });
     }
@@ -128,7 +117,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Send emails (non-blocking)
     import('../../lib/email.js')
       .then((email) => {
-        // 1. Notify admin
         email
           .notifyAdminNewSubmission({
             title: payload.title,
@@ -142,10 +130,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             jobId: inserted?.id,
           })
           .catch((err: unknown) => {
-            logger.warn('Admin notification email failed', { endpoint: 'submissions', error: err });
+            logger.warn('Admin notification email failed', { error: err });
           });
 
-        // 2. Send confirmation to submitter
         if (payload.submitter_email) {
           email
             .sendSubmissionConfirmation({
@@ -157,15 +144,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               jobId: inserted?.id,
             })
             .catch((err: unknown) => {
-              logger.warn('Submission confirmation email failed', {
-                endpoint: 'submissions',
-                error: err,
-              });
+              logger.warn('Submission confirmation email failed', { error: err });
             });
         }
       })
       .catch((err: unknown) => {
-        logger.warn('Email module import failed', { endpoint: 'submissions', error: err });
+        logger.warn('Email module import failed', { error: err });
       });
 
     return res.status(201).json({
@@ -173,9 +157,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       submission_ref: submissionRef,
       message: 'Job submitted for review. It will appear publicly once approved.',
     } satisfies SubmissionResponse);
-  } catch (err) {
-    const { logger } = await import('../../lib/logger.js');
-    logger.error('Submission handler error', { endpoint: 'submissions', error: err });
-    return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
-  }
-}
+  },
+);

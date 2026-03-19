@@ -1,24 +1,46 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { sendNudgeAdmin, sendNudgeRequester } from '../../lib/email.js';
+import { apiHandler } from '../../lib/api-handler.js';
 import { logger } from '../../lib/logger.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Verify cron secret
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return res.status(500).json({ error: 'CRON_SECRET not configured' });
-  }
-  const authHeader = req.headers.authorization;
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+async function sendNudge(
+  fn: (opts: {
+    introId: string;
+    requesterName: string;
+    requesterEmail: string;
+    jobTitle: string;
+    jobCompany: string;
+    jobId: string;
+    day: 5 | 10;
+  }) => Promise<boolean>,
+  opts: {
+    introId: string;
+    requesterName: string;
+    requesterEmail: string;
+    jobTitle: string;
+    jobCompany: string;
+    jobId: string;
+    day: 5 | 10;
+  },
+  alreadySent: Set<string>,
+  eventType: string,
+  counts: { sent: number; errors: number },
+) {
+  if (alreadySent.has(`${opts.introId}:${eventType}`)) return;
   try {
+    await fn(opts);
+    counts.sent++;
+  } catch {
+    counts.errors++;
+  }
+}
+
+export default apiHandler(
+  { methods: ['GET', 'POST'], auth: 'cron', name: 'cron/warm-intro-reminders' },
+  async (_req, res) => {
     const supabase = getSupabase();
     const now = Date.now();
 
-    // Fetch all pending intros (only pending — if admin already contacted, no nudge needed)
     const { data: pendingIntros, error: introErr } = await supabase
       .from('warm_intros')
       .select('id, name, email, job_id, created_at')
@@ -34,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ message: 'No pending intros', sent: 0 });
     }
 
-    // Fetch existing nudge emails to avoid duplicates
+    // Dedup: fetch already-sent nudge emails
     const introIds = pendingIntros.map((i) => i.id);
     const { data: existingLogs } = await supabase
       .from('email_logs')
@@ -48,7 +70,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ])
       .eq('status', 'sent');
 
-    // Build set of already-sent nudges: "introId:eventType"
     const alreadySent = new Set(
       (existingLogs || []).map(
         (l: { related_warm_intro_id: string; event_type: string }) =>
@@ -56,23 +77,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ),
     );
 
-    // Fetch job details for all intros
+    // Build job map
     const jobIds = [...new Set(pendingIntros.map((i) => i.job_id).filter(Boolean))];
-    let jobMap: Record<string, { title: string; company: string }> = {};
-
+    const jobMap: Record<string, { title: string; company: string }> = {};
     if (jobIds.length > 0) {
       const { data: jobs } = await supabase
         .from(getJobsTable())
         .select('id, title, company')
         .in('id', jobIds);
-
       for (const job of jobs || []) {
         jobMap[job.id] = { title: job.title, company: job.company };
       }
     }
 
-    let sentCount = 0;
-    let errorCount = 0;
+    const counts = { sent: 0, errors: 0 };
 
     for (const intro of pendingIntros) {
       const daysOld = Math.floor((now - new Date(intro.created_at).getTime()) / 86400000);
@@ -88,85 +106,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         jobId: intro.job_id,
       };
 
-      // Day 5 nudges
-      if (daysOld >= 5 && daysOld < 10) {
-        if (!alreadySent.has(`${intro.id}:warm_intro_nudge_day5`)) {
-          try {
-            await sendNudgeAdmin({ ...baseOpts, day: 5 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
-        if (!alreadySent.has(`${intro.id}:warm_intro_requester_update_day5`)) {
-          try {
-            await sendNudgeRequester({ ...baseOpts, day: 5 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
+      if (daysOld >= 5) {
+        await sendNudge(
+          sendNudgeAdmin,
+          { ...baseOpts, day: 5 },
+          alreadySent,
+          'warm_intro_nudge_day5',
+          counts,
+        );
+        await sendNudge(
+          sendNudgeRequester,
+          { ...baseOpts, day: 5 },
+          alreadySent,
+          'warm_intro_requester_update_day5',
+          counts,
+        );
       }
 
-      // Day 10 nudges
       if (daysOld >= 10) {
-        // Send day 5 first if somehow missed
-        if (!alreadySent.has(`${intro.id}:warm_intro_nudge_day5`)) {
-          try {
-            await sendNudgeAdmin({ ...baseOpts, day: 5 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
-        if (!alreadySent.has(`${intro.id}:warm_intro_requester_update_day5`)) {
-          try {
-            await sendNudgeRequester({ ...baseOpts, day: 5 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
-
-        // Then day 10
-        if (!alreadySent.has(`${intro.id}:warm_intro_nudge_day10`)) {
-          try {
-            await sendNudgeAdmin({ ...baseOpts, day: 10 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
-        if (!alreadySent.has(`${intro.id}:warm_intro_requester_update_day10`)) {
-          try {
-            await sendNudgeRequester({ ...baseOpts, day: 10 });
-            sentCount++;
-          } catch {
-            errorCount++;
-          }
-        }
+        await sendNudge(
+          sendNudgeAdmin,
+          { ...baseOpts, day: 10 },
+          alreadySent,
+          'warm_intro_nudge_day10',
+          counts,
+        );
+        await sendNudge(
+          sendNudgeRequester,
+          { ...baseOpts, day: 10 },
+          alreadySent,
+          'warm_intro_requester_update_day10',
+          counts,
+        );
       }
 
-      // Rate limit: pause every 10 emails
-      if (sentCount > 0 && sentCount % 10 === 0) {
+      if (counts.sent > 0 && counts.sent % 10 === 0) {
         await new Promise((r) => setTimeout(r, 1000));
       }
     }
 
     logger.info('Warm intro reminders cron completed', {
       pending: pendingIntros.length,
-      sent: sentCount,
-      errors: errorCount,
+      ...counts,
     });
 
     return res.status(200).json({
       pending: pendingIntros.length,
-      sent: sentCount,
-      errors: errorCount,
+      ...counts,
       timestamp: new Date().toISOString(),
     });
-  } catch (err) {
-    logger.error('Warm intro reminders cron error', { error: err });
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-}
+  },
+);

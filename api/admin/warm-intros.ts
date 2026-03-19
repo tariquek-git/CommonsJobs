@@ -1,18 +1,10 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireAdmin } from '../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { logger } from '../../lib/logger.js';
+import { apiHandler } from '../../lib/api-handler.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
-
-  if (!requireAdmin(req as unknown as Request)) {
-    return res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-  }
-
-  try {
+export default apiHandler(
+  { methods: ['GET'], auth: 'admin', name: 'admin/warm-intros' },
+  async (req, res) => {
     const supabase = getSupabase();
     const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
 
@@ -68,9 +60,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const intros = introsData || [];
 
-    // Fetch related jobs for context (include status and apply_url)
+    // Fetch related jobs for context
     const jobIds = [...new Set(intros.map((i) => i.job_id).filter(Boolean))];
-    let jobMap: Record<
+    const jobMap: Record<
       string,
       {
         title: string;
@@ -100,9 +92,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Fetch email counts per intro (aggregated)
+    // Fetch email counts per intro
     const introIds = intros.map((i) => i.id);
-    let emailMap: Record<string, { count: number; last_at: string | null; types: string[] }> = {};
+    const emailMap: Record<string, { count: number; last_at: string | null; types: string[] }> = {};
 
     if (introIds.length > 0) {
       const { data: emailLogs } = await supabase
@@ -136,18 +128,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       return {
         ...intro,
-        // Job context
         job_title: job?.title || 'Unknown',
         job_company: job?.company || 'Unknown',
         job_status: job?.status || 'unknown',
         job_apply_url: job?.apply_url || null,
         job_submitter_email: job?.submitter_email || null,
         job_submitter_name: job?.submitter_name || null,
-        // Email context
         email_count: emails.count,
         last_email_at: emails.last_at,
         email_types: emails.types,
-        // Timing
         days_in_status: daysInStatus,
         is_stale:
           (intro.status === 'pending' && daysInStatus >= 5) ||
@@ -159,8 +148,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     return res.status(200).json({ intros: result });
-  } catch (err) {
-    logger.error('Admin Warm Intros API Error', { error: err });
-    return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
-  }
-}
+  },
+);

@@ -1,39 +1,26 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireAdmin } from '../../../lib/auth.js';
 import { getSupabase, getJobsTable } from '../../../lib/supabase.js';
+import { apiHandler } from '../../../lib/api-handler.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET' && req.method !== 'PATCH') {
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
+export default apiHandler(
+  { methods: ['GET', 'PATCH'], auth: 'admin', name: 'admin/jobs/[id]' },
+  async (req, res) => {
+    const { id } = req.query;
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ error: 'Job ID required', code: 'BAD_REQUEST' });
+    }
 
-  if (!requireAdmin(req as unknown as Request)) {
-    return res.status(401).json({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-  }
-
-  const { id } = req.query;
-  if (!id || typeof id !== 'string') {
-    return res.status(400).json({ error: 'Job ID required', code: 'BAD_REQUEST' });
-  }
-
-  // GET — fetch a single job by ID
-  if (req.method === 'GET') {
-    try {
+    // GET — fetch a single job by ID
+    if (req.method === 'GET') {
       const supabase = getSupabase();
       const { data, error } = await supabase.from(getJobsTable()).select('*').eq('id', id).single();
 
       if (error || !data) {
         return res.status(404).json({ error: 'Job not found', code: 'NOT_FOUND' });
       }
-
       return res.status(200).json(data);
-    } catch {
-      return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
     }
-  }
 
-  // PATCH — update a job
-  try {
+    // PATCH — update a job
     const allowedFields = [
       'title',
       'company',
@@ -60,7 +47,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const updates: Record<string, unknown> = {};
     const body = req.body as Record<string, unknown>;
 
-    // Type validation for structured fields
     const VALID_STATUSES = ['pending', 'active', 'rejected', 'archived', 'expired'];
     const typeChecks: Record<string, (v: unknown) => boolean> = {
       tags: (v) => Array.isArray(v),
@@ -106,7 +92,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     return res.status(200).json(data);
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
-  }
-}
+  },
+);
