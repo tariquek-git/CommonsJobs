@@ -70,7 +70,7 @@ export default function JobAlertBar() {
 
   if (result?.ok) {
     return (
-      <div className="bg-gradient-to-r from-navy-900/5 to-brand-500/5 border border-brand-500/20 rounded-xl p-6 text-center">
+      <div className="relative overflow-hidden bg-gradient-to-r from-navy-900/5 to-brand-500/5 border-2 border-brand-500/30 rounded-xl p-6 text-center shadow-sm">
         <p className="text-navy-900 font-semibold text-lg">You're in. 🎉</p>
         <p className="text-gray-600 text-sm mt-1">{result.message}</p>
       </div>
@@ -78,7 +78,8 @@ export default function JobAlertBar() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-navy-900/5 to-brand-500/5 border border-brand-500/20 rounded-xl p-6">
+    <div className="relative overflow-hidden bg-gradient-to-r from-navy-900/5 to-brand-500/5 border-2 border-brand-500/30 rounded-xl p-6 shadow-sm">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 via-accent-pink to-accent-orange" />
       <div className="text-center mb-4">
         <h3 className="text-navy-900 font-bold text-lg">Get alerts for new roles</h3>
         <p className="text-gray-500 text-sm mt-1">

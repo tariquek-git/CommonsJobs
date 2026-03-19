@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePostHog } from '@posthog/react';
 
 const STORAGE_KEY = 'feedback_banner_dismissed';
+const VISIT_COUNT_KEY = 'fc_visit_count';
 
 interface FeedbackBannerProps {
   onDismiss: () => void;
@@ -9,7 +10,13 @@ interface FeedbackBannerProps {
 
 export default function FeedbackBanner({ onDismiss }: FeedbackBannerProps) {
   const posthog = usePostHog();
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(STORAGE_KEY) === '1');
+  const [dismissed, setDismissed] = useState(() => {
+    if (localStorage.getItem(STORAGE_KEY) === '1') return true;
+    // Only show to returning visitors (2nd+ visit)
+    const visits = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10) + 1;
+    localStorage.setItem(VISIT_COUNT_KEY, String(visits));
+    return visits < 2;
+  });
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

@@ -246,7 +246,7 @@ export default function HomePage() {
         </div>
 
         {/* Job alerts subscribe bar */}
-        <div className="mt-8">
+        <div id="job-alert-section" className="mt-8">
           <JobAlertBar />
         </div>
       </main>

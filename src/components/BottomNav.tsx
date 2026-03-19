@@ -72,7 +72,7 @@ export default function BottomNav() {
           <span className="text-[10px] font-medium leading-tight">Tarique</span>
         </button>
 
-        {/* Where I work */}
+        {/* About Brim */}
         <button
           onClick={() => window.dispatchEvent(new Event('open-about'))}
           className="flex flex-col items-center gap-0.5 text-gray-600 active:scale-95 transition-transform min-w-[56px]"
@@ -87,10 +87,10 @@ export default function BottomNav() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0V8.999a3 3 0 013-3h12a3 3 0 013 3v.35M12 6.75h.008v.008H12V6.75z"
+              d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"
             />
           </svg>
-          <span className="text-[10px] font-medium leading-tight">Where I work</span>
+          <span className="text-[10px] font-medium leading-tight">About Brim</span>
         </button>
       </div>
     </nav>

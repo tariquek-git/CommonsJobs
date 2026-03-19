@@ -39,9 +39,9 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
   if (error) {
     return (
       <div className="surface-elevated p-8 text-center">
-        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 mb-3">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 mb-3">
           <svg
-            className="h-6 w-6 text-amber-500"
+            className="h-6 w-6 text-brand-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -50,13 +50,13 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
             />
           </svg>
         </div>
-        <p className="text-gray-900 font-semibold">Having trouble loading roles</p>
+        <p className="text-gray-900 font-semibold">Hang tight — grabbing the latest roles...</p>
         <p className="text-gray-500 text-sm mt-1">
-          This usually resolves in a few seconds. Give it another shot.
+          This usually clears up in a moment. Give it another try.
         </p>
         <button onClick={() => window.location.reload()} className="btn-primary mt-4 text-sm">
           <svg
@@ -96,13 +96,23 @@ export default function JobGrid({ jobs, loading, error, onSelectJob }: JobGridPr
             />
           </svg>
         </div>
-        <p className="text-gray-600 text-lg font-semibold">No roles found</p>
+        <p className="text-gray-600 text-lg font-semibold">No matches yet</p>
         <p className="text-gray-500 text-sm mt-1">
-          Check back soon or submit a role to get started.
+          Try broadening your filters, or subscribe below to get notified when new roles land.
         </p>
-        <Link to="/submit" className="btn-primary mt-4 text-sm">
-          Submit a Role
-        </Link>
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <Link to="/submit" className="btn-secondary text-sm">
+            Submit a Role
+          </Link>
+          <button
+            onClick={() =>
+              document.getElementById('job-alert-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
+            className="btn-primary text-sm"
+          >
+            Subscribe to Alerts
+          </button>
+        </div>
       </div>
     );
   }
