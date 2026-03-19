@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.query.counts_only === 'true') {
       const { data: allIntros } = await supabase
         .from('warm_intros')
-        .select('id, status, created_at, updated_at')
+        .select('id, status, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
 
@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       for (const i of intros) {
         const s = i.status as keyof typeof counts;
         if (s in counts) counts[s]++;
-        const updatedAt = new Date(i.updated_at || i.created_at).getTime();
+        const updatedAt = new Date(i.created_at).getTime();
         const days = Math.floor((now - updatedAt) / 86400000);
         if ((s === 'pending' && days >= 2) || (s === 'contacted' && days >= 7)) {
           stale.push({ id: i.id, status: s, days });
@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let query = supabase
       .from('warm_intros')
       .select(
-        'id, name, email, linkedin, message, status, created_at, updated_at, job_id, referrer_name, referrer_company',
+        'id, name, email, linkedin, message, status, created_at, job_id, referrer_name, referrer_company',
       );
 
     if (statusFilter) {
@@ -58,7 +58,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .limit(200);
 
     if (introsError) {
-      return res.status(500).json({ error: 'Failed to fetch warm intros', code: 'QUERY_ERROR' });
+      logger.error('Warm intros query failed', { error: introsError });
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to fetch warm intros',
+          code: 'QUERY_ERROR',
+          detail: introsError.message,
+        });
     }
 
     const intros = introsData || [];
@@ -126,7 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const result = intros.map((intro) => {
       const job = jobMap[intro.job_id] || null;
       const emails = emailMap[intro.id] || { count: 0, last_at: null, types: [] };
-      const updatedAt = new Date(intro.updated_at || intro.created_at).getTime();
+      const updatedAt = new Date(intro.created_at).getTime();
       const daysInStatus = Math.floor((now - updatedAt) / 86400000);
 
       return {
