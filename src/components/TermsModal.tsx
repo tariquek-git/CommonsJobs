@@ -149,7 +149,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             <p>
               Fintech Commons is open source under the{' '}
               <a
-                href="https://github.com/tariquek-git/CommonJobs-MVP/blob/main/LICENSE"
+                href="https://github.com/tariquek-git/fintech-commons/blob/main/LICENSE"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-500 hover:text-brand-600 font-medium underline underline-offset-2"

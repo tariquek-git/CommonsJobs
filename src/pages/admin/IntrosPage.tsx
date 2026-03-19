@@ -642,11 +642,11 @@ function IntroCard({
             </span>
             {intro.needs_reminder ? (
               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-red-100 text-red-700">
-                {intro.days_in_status}d — this person is still waiting on you
+                {intro.days_in_status}d — auto-reminder sent, needs action
               </span>
             ) : intro.is_stale ? (
               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700">
-                {intro.days_in_status}d — time to follow up
+                {intro.days_in_status}d — nudge email sent
               </span>
             ) : null}
           </div>

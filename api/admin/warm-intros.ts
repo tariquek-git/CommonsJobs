@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (s in counts) counts[s]++;
         const updatedAt = new Date(i.created_at).getTime();
         const days = Math.floor((now - updatedAt) / 86400000);
-        if ((s === 'pending' && days >= 10) || (s === 'contacted' && days >= 10)) {
+        if ((s === 'pending' && days >= 5) || (s === 'contacted' && days >= 5)) {
           stale.push({ id: i.id, status: s, days });
         }
       }
@@ -150,11 +150,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Timing
         days_in_status: daysInStatus,
         is_stale:
+          (intro.status === 'pending' && daysInStatus >= 5) ||
+          (intro.status === 'contacted' && daysInStatus >= 5),
+        needs_reminder:
           (intro.status === 'pending' && daysInStatus >= 10) ||
           (intro.status === 'contacted' && daysInStatus >= 10),
-        needs_reminder:
-          (intro.status === 'pending' && daysInStatus >= 15) ||
-          (intro.status === 'contacted' && daysInStatus >= 15),
       };
     });
 

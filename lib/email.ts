@@ -717,7 +717,96 @@ function doesJobMatchSubscriber(
   return true;
 }
 
-// ─── 12. Post-intro follow-up: "How did it go?" ───
+// ─── 12. Automated nudge: admin reminder (Day 5 / Day 10) ───
+
+export async function sendNudgeAdmin(opts: {
+  introId: string;
+  requesterName: string;
+  requesterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  day: 5 | 10;
+}): Promise<boolean> {
+  const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL');
+  if (!adminEmail) return false;
+
+  const isDay5 = opts.day === 5;
+  const eventType = isDay5 ? 'warm_intro_nudge_day5' : 'warm_intro_nudge_day10';
+
+  return send({
+    to: adminEmail,
+    subject: isDay5
+      ? `⏰ Pending ${opts.day}d — ${opts.requesterName} wants an intro at ${opts.jobCompany}`
+      : `🔴 Still pending ${opts.day}d — ${opts.requesterName}'s request at ${opts.jobCompany}`,
+    heading: isDay5 ? 'Time to reach out. ⏰' : 'This one needs your attention. 🔴',
+    body: `
+      <p style="margin:0 0 12px;"><strong>${esc(opts.requesterName)}</strong> requested a warm intro for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> ${opts.day} days ago.</p>
+      <p style="margin:0 0 12px;padding:12px 16px;background:#FFF7ED;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:14px;color:#92400E;">
+        ${isDay5 ? "They're waiting. A quick outreach goes a long way." : "It's been 10 days. Close this out or reach out today."}
+      </p>
+      <p style="margin:0 0 6px;"><strong>Requester:</strong> ${esc(opts.requesterName)} &lt;${esc(opts.requesterEmail)}&gt;</p>
+    `,
+    preheader: `${opts.requesterName}'s intro request has been pending ${opts.day} days`,
+    cta: { label: 'Open Connection Requests', url: `${SITE_URL}/admin/intros` },
+    text: `${opts.requesterName} requested a warm intro for ${opts.jobTitle} at ${opts.jobCompany} ${opts.day} days ago.\n\n${isDay5 ? "They're waiting. A quick outreach goes a long way." : "It's been 10 days. Close this out or reach out today."}\n\nRequester: ${opts.requesterName} (${opts.requesterEmail})\n\n${SITE_URL}/admin/intros`,
+    from: FROM_NOREPLY,
+    eventType,
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 13. Automated nudge: requester status update (Day 5 / Day 10) ───
+
+export async function sendNudgeRequester(opts: {
+  introId: string;
+  requesterName: string;
+  requesterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  day: 5 | 10;
+}): Promise<boolean> {
+  const firstName = opts.requesterName.split(' ')[0];
+  const isDay5 = opts.day === 5;
+  const eventType = isDay5
+    ? 'warm_intro_requester_update_day5'
+    : 'warm_intro_requester_update_day10';
+
+  return send({
+    to: opts.requesterEmail,
+    subject: isDay5
+      ? `Still on it 👋 ${opts.jobTitle} at ${opts.jobCompany}`
+      : `Update on your intro — ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: isDay5
+      ? `Hey ${esc(firstName)}, still working on it. 👋`
+      : `Quick update, ${esc(firstName)}. 📋`,
+    body: isDay5
+      ? `
+      <p style="margin:0 0 12px;">Your intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> is still in my queue. Haven't forgotten about you. 🙌</p>
+      <p style="margin:0 0 12px;">I'm reaching out to the right people. These things take a bit sometimes — hiring teams have their own pace.</p>
+      <p style="margin:0;">Hang tight. I'll update you as soon as there's movement.</p>
+    `
+      : `
+      <p style="margin:0 0 12px;">It's been a bit on your intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>. I want to be upfront with you.</p>
+      <p style="margin:0 0 12px;">I've been following up, but the hiring side hasn't responded yet. Not a reflection on you — sometimes the timing just doesn't line up.</p>
+      <p style="margin:0 0 12px;">I'll keep this open a few more days. In the meantime, check out other roles. There might be something even better. 💪</p>
+    `,
+    preheader: isDay5
+      ? `Your intro request is being worked on`
+      : `Update on your ${opts.jobCompany} intro request`,
+    cta: { label: 'Browse More Roles', url: SITE_URL },
+    text: isDay5
+      ? `Hi ${firstName},\n\nYour intro request for ${opts.jobTitle} at ${opts.jobCompany} is still in my queue. Haven't forgotten about you.\n\nI'm reaching out to the right people. These things take a bit sometimes.\n\nHang tight. I'll update you as soon as there's movement.\n\nCheers,\nTarique\nFintech Commons`
+      : `Hi ${firstName},\n\nIt's been a bit on your intro request for ${opts.jobTitle} at ${opts.jobCompany}. I want to be upfront with you.\n\nI've been following up, but the hiring side hasn't responded yet. Not a reflection on you — sometimes the timing just doesn't line up.\n\nI'll keep this open a few more days. In the meantime, check out other roles.\n\n${SITE_URL}\n\nCheers,\nTarique\nFintech Commons`,
+    eventType,
+    jobId: opts.jobId,
+    introId: opts.introId,
+  });
+}
+
+// ─── 14. Post-intro follow-up: "How did it go?" ───
 
 export async function sendIntroFollowUp(opts: {
   requesterName: string;
