@@ -47,13 +47,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? { status: 'ok' }
       : { status: 'error', detail: `Missing: ${missingVars.join(', ')}` };
 
-  // Check analytics env vars (optional but useful)
-  const analyticsVars = [
-    'POSTHOG_PERSONAL_API_KEY',
-    'POSTHOG_PROJECT_ID',
-    'SENTRY_ORG',
-    'SENTRY_PROJECT',
-  ];
+  // Check analytics env vars (only runtime-relevant ones)
+  // Note: SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN are build-time only (source map upload)
+  // and are NOT available at runtime in Vercel serverless functions — don't check them here.
+  // Client-side analytics (PostHog token, Sentry DSN, GA4 ID) are embedded at build time via VITE_ prefix.
+  const analyticsVars = ['POSTHOG_PERSONAL_API_KEY', 'POSTHOG_PROJECT_ID'];
   const missingAnalytics = analyticsVars.filter((v) => !getEnv(v));
   checks.analytics =
     missingAnalytics.length === 0

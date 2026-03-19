@@ -167,10 +167,22 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           {external && (
             <div className="hidden lg:flex items-center gap-1.5">
-              <ProviderBadge name="PostHog" configured={external.configured.posthog} />
-              <ProviderBadge name="Sentry" configured={external.configured.sentry} />
-              <ProviderBadge name="Vercel" configured={external.configured.vercel} />
-              <ProviderBadge name="GA4" configured={external.configured.ga4} />
+              {external.configured.posthog && (
+                <ProviderBadge name="PostHog" configured={!!external.posthog} />
+              )}
+              {external.configured.sentry && (
+                <ProviderBadge name="Sentry" configured={!!external.sentry} />
+              )}
+              {external.configured.vercel && (
+                <ProviderBadge name="Vercel" configured={!!external.vercel} />
+              )}
+              {external.configured.ga4 && <ProviderBadge name="GA4" configured={true} />}
+              {!external.configured.posthog &&
+                !external.configured.sentry &&
+                !external.configured.vercel &&
+                !external.configured.ga4 && (
+                  <span className="text-[10px] text-gray-400">No analytics APIs configured</span>
+                )}
             </div>
           )}
           <button
@@ -307,8 +319,10 @@ export default function DashboardPage() {
                 </svg>
               }
             />
+          ) : external.configured.sentry ? (
+            <StatCard label="Errors" value="—" sub="Sentry API error" color="text-amber-500" />
           ) : (
-            <StatCard label="Errors" value="—" sub="Sentry not configured" color="text-gray-400" />
+            <StatCard label="Errors" value="—" sub="Client-side only" color="text-gray-300" />
           )}
         </div>
       )}
