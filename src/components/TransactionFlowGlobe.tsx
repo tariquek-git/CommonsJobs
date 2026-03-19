@@ -5,8 +5,8 @@ interface TransactionFlowGlobeProps {
 }
 
 // --- Constants ---
-const S = 440;
-const R = 150;
+const S = 480;
+const R = 170;
 const ROTATION_SPEED = 0.0012;
 const SPAWN_INTERVAL = 16;
 const MOUSE_EASE = 0.05;

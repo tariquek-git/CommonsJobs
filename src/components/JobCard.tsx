@@ -196,29 +196,41 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            {job.location && (
-              <span className="inline-flex items-center gap-1 text-sm text-gray-600">
-                <svg
-                  className="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z"
-                  />
-                </svg>
-                {job.location}
-              </span>
-            )}
+            {(() => {
+              const loc = job.location;
+              const arr = job.work_arrangement;
+              const isRemote = arr?.toLowerCase() === 'remote';
+              const isHybrid = arr?.toLowerCase() === 'hybrid';
+              const locationIsRemote = loc?.toLowerCase() === 'remote';
+
+              // Show location pin (skip if location is just "Remote" and arrangement is already Remote)
+              if (loc && !(locationIsRemote && isRemote)) {
+                return (
+                  <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z"
+                      />
+                    </svg>
+                    {loc}
+                  </span>
+                );
+              }
+              return null;
+            })()}
             {job.salary_range && (
               <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200/60">
                 {job.salary_range}
@@ -231,7 +243,11 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
             )}
             {job.work_arrangement && (
               <span className="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200/60">
-                {job.work_arrangement}
+                {job.work_arrangement === 'Hybrid' &&
+                job.location &&
+                job.location.toLowerCase() !== 'remote'
+                  ? `Hybrid · ${job.location}`
+                  : job.work_arrangement}
               </span>
             )}
           </div>

@@ -469,7 +469,89 @@ export async function sendJobApproved(opts: {
 
 // ─── 6b. Job not listed: notify submitter ───
 
+export type RejectionReason =
+  | 'not_fintech'
+  | 'missing_details'
+  | 'duplicate'
+  | 'stale_listing'
+  | 'recruiter_spam'
+  | 'resubmit_with_fixes'
+  | 'custom';
+
+const REJECTION_MESSAGES: Record<RejectionReason, { heading: string; body: string }> = {
+  not_fintech: {
+    heading: 'Not quite the right fit',
+    body: "I keep the board focused on fintech and banking roles specifically. This one didn't quite fit that scope, but it's not a reflection on the role itself.",
+  },
+  missing_details: {
+    heading: 'Needs a bit more info',
+    body: 'The submission was missing some key details — things like a proper job description, salary range, or company info. Could you resubmit with those filled in? Makes a big difference for candidates.',
+  },
+  duplicate: {
+    heading: 'Already on the board',
+    body: 'Looks like this role (or a very similar one) is already listed. No need to resubmit — candidates can find it on the board.',
+  },
+  stale_listing: {
+    heading: 'Listing seems outdated',
+    body: "This role appears to be from a while back or may no longer be open. If it's still active, feel free to resubmit with an updated posting date.",
+  },
+  recruiter_spam: {
+    heading: "Doesn't meet our standards",
+    body: "Every role on Fintech Commons is personally reviewed. This submission didn't meet the bar — it felt more like a mass posting than a real opportunity. We prioritize quality over quantity.",
+  },
+  resubmit_with_fixes: {
+    heading: 'Almost there — resubmit with a few tweaks',
+    body: 'This role has potential, but it needs some work before I can list it. Check the notes below and resubmit when ready.',
+  },
+  custom: {
+    heading: 'Update on your submission',
+    body: '',
+  },
+};
+
 export async function sendJobRejected(opts: {
+  submitterName: string;
+  submitterEmail: string;
+  jobTitle: string;
+  jobCompany: string;
+  jobId: string;
+  reason?: RejectionReason;
+  customMessage?: string;
+}): Promise<boolean> {
+  const firstName = opts.submitterName.split(' ')[0];
+  const reason = opts.reason || 'not_fintech';
+  const template = REJECTION_MESSAGES[reason];
+
+  const reasonBody =
+    reason === 'custom' && opts.customMessage ? esc(opts.customMessage) : template.body;
+
+  const customBlock =
+    opts.customMessage && reason !== 'custom'
+      ? `<p style="margin:0 0 12px;padding:12px 16px;background:#FFF7ED;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:14px;color:#92400E;">${esc(opts.customMessage)}</p>`
+      : '';
+
+  return send({
+    to: opts.submitterEmail,
+    subject: `Update on your submission — ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `${esc(firstName)}, ${template.heading.toLowerCase()}`,
+    body: `
+      <p style="margin:0 0 12px;">I reviewed your submission for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
+      <p style="margin:0 0 12px;">${reasonBody}</p>
+      ${customBlock}
+      <p style="margin:0 0 12px;">If you have another role or want to resubmit, the door's always open. No hard feelings.</p>
+      <p style="margin:0;">Questions? Reply here — it comes straight to me.</p>
+    `,
+    preheader: `Update on your submission for ${opts.jobTitle} at ${opts.jobCompany}`,
+    cta: { label: 'Submit Another Role', url: `${SITE_URL}/submit` },
+    text: `Hi ${firstName},\n\nI reviewed your submission for ${opts.jobTitle} at ${opts.jobCompany}.\n\n${reasonBody}\n\n${opts.customMessage && reason !== 'custom' ? `Note: ${opts.customMessage}\n\n` : ''}If you have another role or want to resubmit, the door's always open.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'job_rejected_notification',
+    jobId: opts.jobId,
+  });
+}
+
+// ─── 6c. Job expired: notify submitter ───
+
+export async function sendJobExpired(opts: {
   submitterName: string;
   submitterEmail: string;
   jobTitle: string;
@@ -480,18 +562,17 @@ export async function sendJobRejected(opts: {
 
   return send({
     to: opts.submitterEmail,
-    subject: `Update on your submission — ${opts.jobTitle} at ${opts.jobCompany}`,
-    heading: `Thanks for submitting, ${esc(firstName)}.`,
+    subject: `Your listing expired — ${opts.jobTitle} at ${opts.jobCompany}`,
+    heading: `Heads up, ${esc(firstName)}.`,
     body: `
-      <p style="margin:0 0 12px;">I reviewed your submission for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>.</p>
-      <p style="margin:0 0 12px;">After looking it over, it's not a fit for the board right now. This isn't about the role or the company — I keep the board focused on a specific type of fintech opportunity, and not every submission makes the cut.</p>
-      <p style="margin:0 0 12px;">If circumstances change or you have another role that might be a better fit, feel free to resubmit. No hard feelings.</p>
-      <p style="margin:0;">Questions? Reply here.</p>
+      <p style="margin:0 0 12px;">Your listing for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> has expired after 30 days and is no longer visible on the board.</p>
+      <p style="margin:0 0 12px;">If the role is still open, you can resubmit it — takes 30 seconds. I'll re-review and get it back up.</p>
+      <p style="margin:0;">If it's been filled, congrats! Let me know how it went. 🎉</p>
     `,
-    preheader: `Update on your submission for ${opts.jobTitle} at ${opts.jobCompany}`,
-    cta: { label: 'Browse the Board', url: SITE_URL },
-    text: `Hi ${firstName},\n\nI reviewed your submission for ${opts.jobTitle} at ${opts.jobCompany}.\n\nAfter looking it over, it's not a fit for the board right now. This isn't about the role or the company — I keep the board focused on a specific type of fintech opportunity, and not every submission makes the cut.\n\nIf circumstances change or you have another role that might be a better fit, feel free to resubmit. No hard feelings.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
-    eventType: 'job_rejected_notification',
+    preheader: `Your ${opts.jobTitle} listing has expired`,
+    cta: { label: 'Resubmit Role', url: `${SITE_URL}/submit` },
+    text: `Hi ${firstName},\n\nYour listing for ${opts.jobTitle} at ${opts.jobCompany} has expired after 30 days.\n\nIf the role is still open, you can resubmit it at ${SITE_URL}/submit\n\nIf it's been filled, congrats!\n\nCheers,\nTarique\nFintech Commons`,
+    eventType: 'job_expired_notification',
     jobId: opts.jobId,
   });
 }

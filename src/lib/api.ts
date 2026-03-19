@@ -193,11 +193,16 @@ export async function getAdminJobs(
   });
 }
 
-export async function updateJobStatus(token: string, jobId: string, status: string): Promise<Job> {
+export async function updateJobStatus(
+  token: string,
+  jobId: string,
+  status: string,
+  opts?: { rejection_reason?: string; rejection_message?: string },
+): Promise<Job> {
   return request(`/admin/jobs/${jobId}/status`, {
     method: 'PATCH',
     headers: authHeaders(token),
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, ...opts }),
   });
 }
 

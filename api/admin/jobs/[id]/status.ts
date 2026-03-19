@@ -1,5 +1,10 @@
 import { getSupabase, getJobsTable } from '../../../../lib/supabase.js';
-import { sendJobApproved, notifyMatchingSubscribers } from '../../../../lib/email.js';
+import {
+  sendJobApproved,
+  sendJobRejected,
+  notifyMatchingSubscribers,
+} from '../../../../lib/email.js';
+import type { RejectionReason } from '../../../../lib/email.js';
 import { apiHandler } from '../../../../lib/api-handler.js';
 import { logger } from '../../../../lib/logger.js';
 import { humanizeJobPost } from '../../../../lib/ai.js';
@@ -15,7 +20,11 @@ export default apiHandler(
       return res.status(400).json({ error: 'Job ID required', code: 'BAD_REQUEST' });
     }
 
-    const { status } = req.body as { status: JobStatus };
+    const { status, rejection_reason, rejection_message } = req.body as {
+      status: JobStatus;
+      rejection_reason?: RejectionReason;
+      rejection_message?: string;
+    };
     if (!status || !VALID_STATUSES.includes(status)) {
       return res.status(400).json({
         error: `Status must be one of: ${VALID_STATUSES.join(', ')}`,
@@ -124,6 +133,34 @@ export default apiHandler(
       }).catch((err: unknown) => {
         logger.warn('Job alert notification failed', { jobId: id, error: err });
       });
+    }
+
+    // When job is rejected: notify submitter with reason
+    if (status === 'rejected') {
+      const rejectedJob = data as Job;
+      if (rejectedJob.submitter_email) {
+        const { data: existingRejection } = await supabase
+          .from('email_logs')
+          .select('id')
+          .eq('related_job_id', id)
+          .eq('event_type', 'job_rejected_notification')
+          .eq('status', 'sent')
+          .limit(1);
+
+        if (!existingRejection?.length) {
+          sendJobRejected({
+            submitterName: rejectedJob.submitter_name || 'there',
+            submitterEmail: rejectedJob.submitter_email,
+            jobTitle: rejectedJob.title,
+            jobCompany: rejectedJob.company,
+            jobId: rejectedJob.id,
+            reason: rejection_reason,
+            customMessage: rejection_message,
+          }).catch((err: unknown) => {
+            logger.warn('Job rejection email failed', { jobId: id, error: err });
+          });
+        }
+      }
     }
 
     return res.status(200).json(data);

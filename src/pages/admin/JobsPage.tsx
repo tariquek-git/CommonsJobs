@@ -53,6 +53,11 @@ export default function JobsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
 
+  // Rejection modal state
+  const [rejectModal, setRejectModal] = useState<{ jobId: string; title: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('not_fintech');
+  const [rejectMessage, setRejectMessage] = useState('');
+
   const fetchJobs = useCallback(async () => {
     if (!token) return;
     setLoading(true);
@@ -75,16 +80,48 @@ export default function JobsPage() {
     document.title = 'Jobs | Admin';
   }, []);
 
-  const changeStatus = async (jobId: string, status: string) => {
+  const changeStatus = async (
+    jobId: string,
+    status: string,
+    opts?: { rejection_reason?: string; rejection_message?: string },
+  ) => {
     if (!token) return;
+
+    // For rejections, show modal instead of confirm
+    if (status === 'rejected' && !opts) {
+      const job = jobs.find((j) => j.id === jobId);
+      setRejectModal({ jobId, title: job?.title || 'this job' });
+      setRejectReason('not_fintech');
+      setRejectMessage('');
+      return;
+    }
+
     const job = jobs.find((j) => j.id === jobId);
-    const label = status === 'active' ? 'approve' : status === 'rejected' ? 'reject' : 'archive';
-    if (!window.confirm(`Are you sure you want to ${label} "${job?.title || 'this job'}"?`)) return;
+    const label = status === 'active' ? 'approve' : 'archive';
+    if (
+      !opts &&
+      !window.confirm(`Are you sure you want to ${label} "${job?.title || 'this job'}"?`)
+    )
+      return;
     try {
-      await updateJobStatus(token, jobId, status);
+      await updateJobStatus(token, jobId, status, opts);
       fetchJobs();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update status');
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectModal || !token) return;
+    setRejectModal(null);
+    try {
+      await updateJobStatus(token, rejectModal.jobId, 'rejected', {
+        rejection_reason: rejectReason,
+        rejection_message: rejectMessage.trim() || undefined,
+      });
+      fetchJobs();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reject job');
     }
   };
 
@@ -376,6 +413,70 @@ export default function JobsPage() {
             />
             <span className="text-xs text-gray-500">{displayJobs.length} jobs</span>
           </div>
+
+          {/* Rejection reason modal */}
+          {rejectModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/40" onClick={() => setRejectModal(null)} />
+              <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Reject "{rejectModal.title}"
+                </h2>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">Reason</label>
+                  <select
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="not_fintech">Not a fintech role</option>
+                    <option value="missing_details">Missing details — needs more info</option>
+                    <option value="duplicate">Duplicate listing</option>
+                    <option value="stale_listing">Stale / outdated listing</option>
+                    <option value="recruiter_spam">Recruiter spam</option>
+                    <option value="resubmit_with_fixes">Almost there — resubmit with fixes</option>
+                    <option value="custom">Custom message</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    {rejectReason === 'custom'
+                      ? 'Message to submitter *'
+                      : 'Additional note (optional)'}
+                  </label>
+                  <textarea
+                    value={rejectMessage}
+                    onChange={(e) => setRejectMessage(e.target.value)}
+                    placeholder={
+                      rejectReason === 'resubmit_with_fixes'
+                        ? 'e.g., Please add a salary range and full job description...'
+                        : 'Optional note to the submitter...'
+                    }
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
+                  />
+                </div>
+                <p className="text-xs text-gray-400">
+                  An email will be sent to the submitter with this reason.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setRejectModal(null)}
+                    className="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={rejectReason === 'custom' && !rejectMessage.trim()}
+                    className="text-sm px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Reject & Send Email
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bulk action confirmation modal */}
           {confirmAction && (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { usePostHog } from '@posthog/react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -35,14 +35,31 @@ export default function HomePage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const [inputValue, setInputValue] = useState(query);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const setQuery = (q: string) => {
-    setSearchParams((prev) => {
-      if (q) prev.set('q', q);
-      else prev.delete('q');
-      return prev;
-    });
+  const setQuery = useCallback(
+    (q: string) => {
+      setSearchParams((prev) => {
+        if (q) prev.set('q', q);
+        else prev.delete('q');
+        return prev;
+      });
+    },
+    [setSearchParams],
+  );
+
+  // Debounce search input → URL param update
+  const handleSearchInput = (value: string) => {
+    setInputValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setQuery(value), 300);
   };
+
+  // Sync inputValue when query changes externally (e.g., clear filters)
+  useEffect(() => {
+    setInputValue(query);
+  }, [query]);
 
   const filteredJobs = useMemo(() => {
     if (!query.trim()) return jobs;
@@ -84,7 +101,7 @@ export default function HomePage() {
         />
 
         {/* Animated globe — desktop only (saves mobile CPU) */}
-        <div className="absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-[380px] h-[380px] opacity-60 pointer-events-none hidden lg:block">
+        <div className="absolute right-0 lg:right-8 top-4 lg:top-8 w-[480px] h-[480px] opacity-60 hidden lg:block">
           <Suspense fallback={null}>
             <TransactionFlowGlobe />
           </Suspense>
@@ -198,14 +215,17 @@ export default function HomePage() {
           </svg>
           <input
             type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={inputValue}
+            onChange={(e) => handleSearchInput(e.target.value)}
             placeholder="Search by title, company, location, or keyword…"
             className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all shadow-sm"
           />
-          {query && (
+          {inputValue && (
             <button
-              onClick={() => setQuery('')}
+              onClick={() => {
+                setInputValue('');
+                setQuery('');
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Clear search"
             >
