@@ -7,11 +7,9 @@ const mockRange = vi.fn().mockResolvedValue({
   count: 1,
   error: null,
 });
-const mockOrder = vi
-  .fn()
-  .mockReturnValue({
-    order: vi.fn().mockReturnValue({ order: vi.fn().mockReturnValue({ range: mockRange }) }),
-  });
+const mockOrder = vi.fn().mockReturnValue({
+  order: vi.fn().mockReturnValue({ order: vi.fn().mockReturnValue({ range: mockRange }) }),
+});
 const mockEq = vi.fn().mockReturnValue({
   ilike: vi.fn().mockReturnValue({ overlaps: vi.fn().mockReturnValue({ order: mockOrder }) }),
   overlaps: vi.fn().mockReturnValue({ order: mockOrder }),
