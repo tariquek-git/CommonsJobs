@@ -26,7 +26,6 @@ export default function JobAlertBar() {
       });
 
       posthog?.capture('job_alert_subscribed', {
-        type,
         has_name: !!name.trim(),
       });
 
@@ -58,12 +57,11 @@ export default function JobAlertBar() {
       <div className="text-center mb-4">
         <h3 className="text-navy-900 font-bold text-lg">Get alerts for new roles</h3>
         <p className="text-gray-500 text-sm mt-1">
-          Be the first to know when a role matching your interests goes live.
+          Be the first to know when a new fintech role goes live.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Type toggle */}
         <div className="flex justify-center gap-2 text-sm">
           <button
             type="button"
