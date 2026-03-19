@@ -15,11 +15,11 @@ const nodes = [
   { label: 'Banking', angle: 0, isCore: true, color: { r: 99, g: 91, b: 255 } },
   { label: 'Payments', angle: 45, isCore: true, color: { r: 255, g: 59, b: 139 } },
   { label: 'Lending', angle: 90, isCore: false, color: { r: 93, g: 202, b: 165 } },
-  { label: 'Fintech', angle: 135, isCore: false, color: { r: 133, g: 183, b: 235 } },
-  { label: 'Fintech', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
-  { label: 'Fintech', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
-  { label: 'Fintech', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
-  { label: 'Brim', angle: 315, isCore: true, color: { r: 212, g: 168, b: 67 } },
+  { label: 'Digital Assets', angle: 135, isCore: false, color: { r: 133, g: 183, b: 235 } },
+  { label: 'Regulators', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
+  { label: 'Capital Markets', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
+  { label: 'Insurance', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
+  { label: 'Brim', angle: 315, isCore: false, color: { r: 212, g: 168, b: 67 } },
 ];
 
 // --- Connections between sectors ---
