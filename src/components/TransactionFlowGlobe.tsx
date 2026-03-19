@@ -8,18 +8,18 @@ interface TransactionFlowGlobeProps {
 const S = 480;
 const R = 175;
 const ROTATION_SPEED = 0.0008;
-const SPAWN_INTERVAL = 12;
+const SPAWN_INTERVAL = 40;
 
 // --- Fintech ecosystem nodes ---
 const nodes = [
   { label: 'Banking', angle: 0, isCore: true, color: { r: 99, g: 91, b: 255 } },
   { label: 'Payments', angle: 45, isCore: true, color: { r: 255, g: 59, b: 139 } },
   { label: 'Lending', angle: 90, isCore: false, color: { r: 93, g: 202, b: 165 } },
-  { label: 'InsurTech', angle: 135, isCore: false, color: { r: 133, g: 183, b: 235 } },
-  { label: 'RegTech', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
-  { label: 'Crypto', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
-  { label: 'WealthTech', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
-  { label: 'Infra', angle: 315, isCore: true, color: { r: 212, g: 168, b: 67 } },
+  { label: 'Fintech', angle: 135, isCore: false, color: { r: 133, g: 183, b: 235 } },
+  { label: 'Fintech', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
+  { label: 'Fintech', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
+  { label: 'Fintech', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
+  { label: 'Brim', angle: 315, isCore: true, color: { r: 212, g: 168, b: 67 } },
 ];
 
 // --- Connections between sectors ---
@@ -74,12 +74,12 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
     const particles = particlesRef.current;
 
-    // Seed initial particles
-    for (let i = 0; i < 10; i++) {
+    // Seed initial particles (sparse)
+    for (let i = 0; i < 4; i++) {
       particles.push({
         conn: Math.floor(Math.random() * conns.length),
         t: Math.random() * 0.8,
-        sp: 0.002 + Math.random() * 0.003,
+        sp: 0.0015 + Math.random() * 0.002,
         sz: 1.5 + Math.random() * 1.5,
       });
     }
@@ -118,7 +118,7 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       particles.push({
         conn: Math.floor(Math.random() * conns.length),
         t: 0,
-        sp: 0.002 + Math.random() * 0.003,
+        sp: 0.0015 + Math.random() * 0.002,
         sz: 1.5 + Math.random() * 1.5,
       });
     }
