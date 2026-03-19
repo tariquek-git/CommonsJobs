@@ -4,59 +4,45 @@ interface TransactionFlowGlobeProps {
   className?: string;
 }
 
-// --- Constants ---
+// --- Canvas size ---
 const S = 480;
-const R = 170;
-const ROTATION_SPEED = 0.0012;
-const SPAWN_INTERVAL = 16;
-const MOUSE_EASE = 0.05;
-const MOUSE_MAX_OFFSET = 18;
+const R = 175;
+const ROTATION_SPEED = 0.0008;
+const SPAWN_INTERVAL = 12;
 
-// --- Node definitions ---
+// --- Fintech ecosystem nodes ---
 const nodes = [
-  { label: 'Brim', angle: -90, isBrim: true },
-  { label: 'Cardholder', angle: -30, isBrim: false },
-  { label: 'Merchant', angle: 30, isBrim: false },
-  { label: 'Acquirer', angle: 90, isBrim: false },
-  { label: 'Network', angle: 150, isBrim: false },
-  { label: 'Brim', angle: 210, isBrim: true },
-  { label: 'Settlement', angle: 270, isBrim: false },
+  { label: 'Banking', angle: 0, isCore: true, color: { r: 99, g: 91, b: 255 } },
+  { label: 'Payments', angle: 45, isCore: true, color: { r: 255, g: 59, b: 139 } },
+  { label: 'Lending', angle: 90, isCore: false, color: { r: 93, g: 202, b: 165 } },
+  { label: 'InsurTech', angle: 135, isCore: false, color: { r: 133, g: 183, b: 235 } },
+  { label: 'RegTech', angle: 180, isCore: false, color: { r: 237, g: 147, b: 177 } },
+  { label: 'Crypto', angle: 225, isCore: false, color: { r: 255, g: 107, b: 0 } },
+  { label: 'WealthTech', angle: 270, isCore: false, color: { r: 168, g: 130, b: 255 } },
+  { label: 'Infra', angle: 315, isCore: true, color: { r: 212, g: 168, b: 67 } },
 ];
 
-// --- Connection definitions ---
+// --- Connections between sectors ---
 const conns = [
-  // Auth flow (gold)
-  { from: 0, to: 1, type: 'platform' as const },
-  { from: 1, to: 2, type: 'auth' as const },
-  { from: 2, to: 3, type: 'auth' as const },
-  { from: 3, to: 4, type: 'auth' as const },
-  { from: 4, to: 5, type: 'auth' as const },
-  { from: 5, to: 0, type: 'platform' as const },
-  // Response flow (teal)
-  { from: 0, to: 5, type: 'response' as const },
-  { from: 5, to: 4, type: 'response' as const },
-  { from: 4, to: 3, type: 'response' as const },
-  { from: 3, to: 2, type: 'response' as const },
-  { from: 2, to: 1, type: 'response' as const },
-  // Clearing flow (blue)
-  { from: 3, to: 6, type: 'clearing' as const },
-  { from: 5, to: 6, type: 'clearing' as const },
-  // Settlement flow (pink)
-  { from: 6, to: 3, type: 'settlement' as const },
-  { from: 6, to: 5, type: 'settlement' as const },
-  // Cross paths
-  { from: 0, to: 4, type: 'platform' as const },
-  { from: 1, to: 5, type: 'auth' as const },
+  // Core ring
+  { from: 0, to: 1, type: 0 },
+  { from: 1, to: 2, type: 1 },
+  { from: 2, to: 3, type: 2 },
+  { from: 3, to: 4, type: 3 },
+  { from: 4, to: 5, type: 4 },
+  { from: 5, to: 6, type: 5 },
+  { from: 6, to: 7, type: 6 },
+  { from: 7, to: 0, type: 7 },
+  // Cross connections (how sectors interconnect)
+  { from: 0, to: 2, type: 0 }, // Banking ↔ Lending
+  { from: 0, to: 4, type: 0 }, // Banking ↔ RegTech
+  { from: 1, to: 5, type: 1 }, // Payments ↔ Crypto
+  { from: 1, to: 7, type: 1 }, // Payments ↔ Infra
+  { from: 2, to: 6, type: 2 }, // Lending ↔ WealthTech
+  { from: 3, to: 4, type: 3 }, // InsurTech ↔ RegTech
+  { from: 5, to: 7, type: 5 }, // Crypto ↔ Infra
+  { from: 6, to: 0, type: 6 }, // WealthTech ↔ Banking
 ];
-
-// --- Flow colors ---
-const colors: Record<string, { r: number; g: number; b: number }> = {
-  auth: { r: 212, g: 168, b: 67 },
-  response: { r: 93, g: 202, b: 165 },
-  clearing: { r: 133, g: 183, b: 235 },
-  settlement: { r: 237, g: 147, b: 177 },
-  platform: { r: 212, g: 168, b: 67 },
-};
 
 interface Particle {
   conn: number;
@@ -70,8 +56,6 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
   const animRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
   const tickRef = useRef(0);
-  const mouseTargetRef = useRef({ x: 0, y: 0 });
-  const mouseCurrentRef = useRef({ x: 0, y: 0 });
   const isVisibleRef = useRef(true);
 
   useEffect(() => {
@@ -91,16 +75,15 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
     const particles = particlesRef.current;
 
     // Seed initial particles
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       particles.push({
         conn: Math.floor(Math.random() * conns.length),
         t: Math.random() * 0.8,
-        sp: 0.003 + Math.random() * 0.004,
+        sp: 0.002 + Math.random() * 0.003,
         sz: 1.5 + Math.random() * 1.5,
       });
     }
 
-    // Round to half-pixel for crisp lines
     const r2 = (v: number) => Math.round(v * 2) / 2;
 
     function nodePos(idx: number, rotOff: number, cx: number, cy: number) {
@@ -121,8 +104,8 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       const toCy = cy - my;
       const toLen = Math.sqrt(toCx * toCx + toCy * toCy);
       if (toLen > 0) {
-        mx += (toCx / toLen) * dist * 0.12;
-        my += (toCy / toLen) * dist * 0.12;
+        mx += (toCx / toLen) * dist * 0.15;
+        my += (toCy / toLen) * dist * 0.15;
       }
       const mt = 1 - t;
       return {
@@ -132,11 +115,10 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
     }
 
     function spawn() {
-      const ci = Math.floor(Math.random() * conns.length);
       particles.push({
-        conn: ci,
+        conn: Math.floor(Math.random() * conns.length),
         t: 0,
-        sp: 0.003 + Math.random() * 0.004,
+        sp: 0.002 + Math.random() * 0.003,
         sz: 1.5 + Math.random() * 1.5,
       });
     }
@@ -149,37 +131,29 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
       g!.clearRect(0, 0, S, S);
 
-      // Mouse follow lerp
-      const mt = mouseTargetRef.current;
-      const mc = mouseCurrentRef.current;
-      mc.x += (mt.x - mc.x) * MOUSE_EASE;
-      mc.y += (mt.y - mc.y) * MOUSE_EASE;
-
-      const cx = S / 2 + mc.x * MOUSE_MAX_OFFSET;
-      const cy = S / 2 + mc.y * MOUSE_MAX_OFFSET;
+      const cx = S / 2;
+      const cy = S / 2;
       const rotOff = time * ROTATION_SPEED;
-
       const ctx = g!;
-
-      // Orbital rings — rounded center for crisp rendering
       const rcx = r2(cx);
       const rcy = r2(cy);
 
+      // Orbital rings
       ctx.beginPath();
-      ctx.arc(rcx, rcy, R + 30, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(rcx, rcy, R, 0, Math.PI * 2);
+      ctx.arc(rcx, rcy, R + 20, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(255,255,255,0.04)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(rcx, rcy, R * 0.5, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.arc(rcx, rcy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(rcx, rcy, R * 0.45, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -196,14 +170,14 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
         const toCy = cy - my;
         const toLen = Math.sqrt(toCx * toCx + toCy * toCy);
         if (toLen > 0) {
-          mx += (toCx / toLen) * dist * 0.12;
-          my += (toCy / toLen) * dist * 0.12;
+          mx += (toCx / toLen) * dist * 0.15;
+          my += (toCy / toLen) * dist * 0.15;
         }
-        const cl = colors[conn.type];
+        const cl = nodes[conn.from].color;
         ctx.beginPath();
         ctx.moveTo(p1.x, p1.y);
         ctx.quadraticCurveTo(mx, my, p2.x, p2.y);
-        ctx.strokeStyle = `rgba(${cl.r},${cl.g},${cl.b},0.14)`;
+        ctx.strokeStyle = `rgba(${cl.r},${cl.g},${cl.b},0.12)`;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -222,29 +196,29 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
         }
         const conn = conns[p.conn];
         const pos = pathPt(conn.from, conn.to, p.t, rotOff, cx, cy);
-        const cl = colors[conn.type];
+        const cl = nodes[conn.from].color;
         const rgb = `${cl.r},${cl.g},${cl.b}`;
 
         // Trail
-        for (let tr = 1; tr <= 5; tr++) {
-          const tt = Math.max(0, p.t - tr * 0.014);
+        for (let tr = 1; tr <= 4; tr++) {
+          const tt = Math.max(0, p.t - tr * 0.012);
           const tp = pathPt(conn.from, conn.to, tt, rotOff, cx, cy);
           ctx.beginPath();
-          ctx.arc(tp.x, tp.y, p.sz * 0.45, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${rgb},${(0.25 * (1 - tr / 5)).toFixed(3)})`;
+          ctx.arc(tp.x, tp.y, p.sz * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${rgb},${(0.2 * (1 - tr / 4)).toFixed(3)})`;
           ctx.fill();
         }
 
         // Glow
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, p.sz + 5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${rgb},0.15)`;
+        ctx.arc(pos.x, pos.y, p.sz + 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${rgb},0.12)`;
         ctx.fill();
 
         // Dot
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, p.sz, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${rgb},0.85)`;
+        ctx.fillStyle = `rgba(${rgb},0.8)`;
         ctx.fill();
 
         // Arrival pulse
@@ -252,8 +226,8 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
           const ep = nodePos(conn.to, rotOff, cx, cy);
           const pulse = (p.t - 0.9) / 0.1;
           ctx.beginPath();
-          ctx.arc(ep.x, ep.y, 12 + pulse * 10, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(${rgb},${(0.25 * (1 - pulse)).toFixed(3)})`;
+          ctx.arc(ep.x, ep.y, 10 + pulse * 8, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${rgb},${(0.2 * (1 - pulse)).toFixed(3)})`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
         }
@@ -262,65 +236,41 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
       // Draw nodes
       nodes.forEach((n, idx) => {
         const pos = nodePos(idx, rotOff, cx, cy);
-        const br = 15 + Math.sin(time * 0.001 + idx * 1.1) * 2;
-
+        const br = (n.isCore ? 16 : 14) + Math.sin(time * 0.001 + idx * 0.9) * 2;
         const px = r2(pos.x);
         const py = r2(pos.y);
+        const { r, g: gv, b } = n.color;
 
-        if (n.isBrim) {
-          // Breathing ring
-          ctx.beginPath();
-          ctx.arc(px, py, br, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(212,168,67,0.12)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
+        // Breathing ring
+        ctx.beginPath();
+        ctx.arc(px, py, br, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.15 : 0.08})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-          // Node circle
-          ctx.beginPath();
-          ctx.arc(px, py, 10, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,255,255,0.12)';
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(212,168,67,0.4)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
+        // Node circle
+        ctx.beginPath();
+        ctx.arc(px, py, n.isCore ? 10 : 8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${gv},${b},0.08)`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.4 : 0.25})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-          // Center dot
-          ctx.beginPath();
-          ctx.arc(px, py, 3, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(212,168,67,0.7)';
-          ctx.fill();
-        } else {
-          // Breathing ring
-          ctx.beginPath();
-          ctx.arc(px, py, br, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Node circle
-          ctx.beginPath();
-          ctx.arc(px, py, 9, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,255,255,0.12)';
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Center dot
-          ctx.beginPath();
-          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(212,168,67,0.7)';
-          ctx.fill();
-        }
+        // Center dot
+        ctx.beginPath();
+        ctx.arc(px, py, n.isCore ? 3.5 : 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${gv},${b},0.7)`;
+        ctx.fill();
 
         // Labels
         const a = ((n.angle + rotOff) * Math.PI) / 180;
-        const lx = cx + Math.cos(a) * (R + 22);
-        const ly = cy + Math.sin(a) * (R + 22);
+        const lx = cx + Math.cos(a) * (R + 24);
+        const ly = cy + Math.sin(a) * (R + 24);
         const normA = (((n.angle + rotOff) % 360) + 360) % 360;
 
-        ctx.font = n.isBrim
-          ? '600 8.5px "JetBrains Mono", monospace'
+        ctx.font = n.isCore
+          ? '600 9px "JetBrains Mono", monospace'
           : '500 8px "JetBrains Mono", monospace';
 
         if (normA > 80 && normA < 100) {
@@ -335,36 +285,23 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
         const lyOffset = normA > 80 && normA < 100 ? 8 : normA > 260 && normA < 280 ? -2 : 0;
 
-        ctx.fillStyle = n.isBrim ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.45)';
+        ctx.fillStyle = `rgba(${r},${gv},${b},${n.isCore ? 0.6 : 0.45})`;
         ctx.fillText(n.label, lx, ly + 3 + lyOffset);
       });
 
-      // Center hub
+      // Center hub glow
+      const hubPulse = 0.04 + Math.sin(time * 0.002) * 0.02;
       ctx.beginPath();
-      ctx.arc(rcx, rcy, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.arc(rcx, rcy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(99,91,255,${hubPulse})`;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(rcx, rcy, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
       ctx.fill();
 
       animRef.current = requestAnimationFrame(draw);
     }
-
-    // Mouse event handlers
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      mouseTargetRef.current = {
-        x: Math.max(-1, Math.min(1, x)),
-        y: Math.max(-1, Math.min(1, y)),
-      };
-    };
-
-    const handleMouseLeave = () => {
-      mouseTargetRef.current = { x: 0, y: 0 };
-    };
-
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
 
     // Pause when not visible
     const observer = new IntersectionObserver(
@@ -379,8 +316,6 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
 
     return () => {
       cancelAnimationFrame(animRef.current);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
       observer.disconnect();
       particlesRef.current = [];
       tickRef.current = 0;
@@ -396,7 +331,6 @@ export default function TransactionFlowGlobe({ className }: TransactionFlowGlobe
         height: S,
         maxWidth: '100%',
         aspectRatio: '1',
-        pointerEvents: 'auto',
       }}
     />
   );
