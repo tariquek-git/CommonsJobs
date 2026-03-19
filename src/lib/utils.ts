@@ -20,7 +20,7 @@ export function isSafeUrl(url: string): boolean {
 export async function shareJob(job: Job): Promise<'native' | 'clipboard' | null> {
   const url = `${window.location.origin}/job/${job.id}?utm_source=share`;
   const title = `${job.title} at ${job.company}`;
-  const text = `Check out this role on Fintech Commons`;
+  const text = `${job.title} at ${job.company} — real talk, warm intros available`;
 
   // Only use native share on mobile/touch devices where it's actually useful
   const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
