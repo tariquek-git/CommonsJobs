@@ -12,7 +12,24 @@ const FIELD_SECTIONS = [
       { key: 'company', label: 'Company', type: 'text' as const, required: true },
       { key: 'location', label: 'Location', type: 'text' as const },
       { key: 'country', label: 'Country', type: 'text' as const },
-      { key: 'category', label: 'Category', type: 'text' as const },
+      {
+        key: 'category',
+        label: 'Category',
+        type: 'select' as const,
+        options: [
+          '',
+          'Engineering',
+          'Product',
+          'Design',
+          'Data',
+          'Operations',
+          'Sales/BD',
+          'Marketing',
+          'Finance',
+          'Compliance/Risk',
+          'Leadership',
+        ],
+      },
     ],
   },
   {
@@ -21,7 +38,7 @@ const FIELD_SECTIONS = [
       { key: 'salary_range', label: 'Salary Range', type: 'text' as const },
       { key: 'employment_type', label: 'Employment Type', type: 'text' as const },
       { key: 'work_arrangement', label: 'Work Arrangement', type: 'text' as const },
-      { key: 'expires_at', label: 'Expires At (ISO date)', type: 'text' as const },
+      { key: 'expires_at', label: 'Expires At', type: 'date' as const },
     ],
   },
   {
@@ -203,6 +220,8 @@ export default function JobEditorPage() {
 
   const handleStatusChange = async (status: string) => {
     if (!token || !job) return;
+    const label = status === 'active' ? 'approve' : status === 'rejected' ? 'reject' : 'archive';
+    if (!window.confirm(`Are you sure you want to ${label} "${job.title}"?`)) return;
     try {
       await updateJobStatus(token, job.id, status);
       fetchJob();
@@ -344,6 +363,30 @@ export default function JobEditorPage() {
                     value={form[field.key] as string}
                     onChange={(e) => updateField(field.key, e.target.value)}
                     rows={5}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                  />
+                ) : field.type === 'select' ? (
+                  <select
+                    value={form[field.key] as string}
+                    onChange={(e) => updateField(field.key, e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
+                  >
+                    {('options' in field ? (field.options as string[]) : []).map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt || '— Select —'}
+                      </option>
+                    ))}
+                  </select>
+                ) : field.type === 'date' ? (
+                  <input
+                    type="date"
+                    value={(form[field.key] as string).slice(0, 10)}
+                    onChange={(e) =>
+                      updateField(
+                        field.key,
+                        e.target.value ? new Date(e.target.value).toISOString() : '',
+                      )
+                    }
                     className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300"
                   />
                 ) : (

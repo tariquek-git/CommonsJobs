@@ -1,19 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
-import { getRuntime } from '../../lib/api';
+import { getRuntime, getAdminHealth } from '../../lib/api';
 import type { RuntimeInfo } from '../../lib/types';
 
 export default function SettingsPage() {
   const { token } = useAdminAuth();
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
+  const [health, setHealth] = useState<Record<string, { status: string; detail?: string }> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   const fetchRuntime = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const info = await getRuntime(token);
+      const [info, h] = await Promise.all([getRuntime(token), getAdminHealth(token)]);
       setRuntime(info);
+      setHealth(h.checks);
     } catch {
       // non-critical
     } finally {
@@ -103,7 +107,18 @@ export default function SettingsPage() {
         </div>
         <div className="p-5">
           <div className="flex flex-wrap gap-2">
-            {['Engineering', 'Product', 'Operations', 'Sales/BD', 'Remote'].map((cat) => (
+            {[
+              'Engineering',
+              'Product',
+              'Design',
+              'Data',
+              'Operations',
+              'Sales/BD',
+              'Marketing',
+              'Finance',
+              'Compliance/Risk',
+              'Leadership',
+            ].map((cat) => (
               <span
                 key={cat}
                 className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-sm text-gray-700"
@@ -126,51 +141,42 @@ export default function SettingsPage() {
           <h3 className="text-sm font-semibold text-gray-700">Integrations</h3>
         </div>
         <div className="p-5 space-y-4">
-          <div className="flex items-center justify-between py-2 border-b border-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-900">PostHog</p>
-              <p className="text-xs text-gray-500">Event tracking and session replay</p>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Active
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Sentry</p>
-              <p className="text-xs text-gray-500">Error tracking and performance monitoring</p>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Active
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Resend</p>
-              <p className="text-xs text-gray-500">Transactional email</p>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-              Needs API Key
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-900">PostHog API</p>
-              <p className="text-xs text-gray-500">Server-side analytics queries</p>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-              Not configured
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Google Analytics</p>
-              <p className="text-xs text-gray-500">GA4 Data API integration</p>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-              Not configured
-            </span>
-          </div>
+          {[
+            { key: 'supabase', name: 'Supabase', desc: 'Database and storage' },
+            { key: 'resend', name: 'Resend', desc: 'Transactional email' },
+            { key: 'environment', name: 'Core Environment', desc: 'Required API keys and secrets' },
+            { key: 'analytics', name: 'Analytics APIs', desc: 'PostHog, Sentry, GA4 server-side' },
+          ].map((integration, i) => {
+            const check = health?.[integration.key];
+            const isOk = check?.status === 'ok';
+            return (
+              <div
+                key={integration.key}
+                className={`flex items-center justify-between py-2 ${i < 3 ? 'border-b border-gray-50' : ''}`}
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{integration.name}</p>
+                  <p className="text-xs text-gray-500">{integration.desc}</p>
+                </div>
+                {!health ? (
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-400 border border-gray-200">
+                    Checking...
+                  </span>
+                ) : isOk ? (
+                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Active
+                  </span>
+                ) : (
+                  <span
+                    className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200"
+                    title={check?.detail}
+                  >
+                    {check?.detail?.slice(0, 30) || 'Issue'}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

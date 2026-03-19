@@ -77,6 +77,9 @@ export default function JobsPage() {
 
   const changeStatus = async (jobId: string, status: string) => {
     if (!token) return;
+    const job = jobs.find((j) => j.id === jobId);
+    const label = status === 'active' ? 'approve' : status === 'rejected' ? 'reject' : 'archive';
+    if (!window.confirm(`Are you sure you want to ${label} "${job?.title || 'this job'}"?`)) return;
     try {
       await updateJobStatus(token, jobId, status);
       fetchJobs();
@@ -95,12 +98,31 @@ export default function JobsPage() {
     }
   };
 
-  const handleBulkAction = async (status: string) => {
-    if (!token || selectedIds.size === 0) return;
+  const [confirmAction, setConfirmAction] = useState<{
+    status: string;
+    jobIds: string[];
+    titles: string[];
+  } | null>(null);
+
+  const handleBulkAction = (status: string) => {
+    if (selectedIds.size === 0) return;
+    const affected = displayJobs.filter((j) => selectedIds.has(j.id));
+    setConfirmAction({
+      status,
+      jobIds: affected.map((j) => j.id),
+      titles: affected.map((j) => `${j.title} (${j.company})`),
+    });
+  };
+
+  const executeBulkAction = async () => {
+    if (!token || !confirmAction) return;
     setBulkLoading(true);
     try {
-      await Promise.all(Array.from(selectedIds).map((id) => updateJobStatus(token, id, status)));
+      await Promise.all(
+        confirmAction.jobIds.map((id) => updateJobStatus(token, id, confirmAction.status)),
+      );
       setSelectedIds(new Set());
+      setConfirmAction(null);
       fetchJobs();
     } finally {
       setBulkLoading(false);
@@ -354,6 +376,64 @@ export default function JobsPage() {
             />
             <span className="text-xs text-gray-500">{displayJobs.length} jobs</span>
           </div>
+
+          {/* Bulk action confirmation modal */}
+          {confirmAction && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setConfirmAction(null)}
+              />
+              <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Confirm Bulk{' '}
+                  {confirmAction.status === 'active'
+                    ? 'Approve'
+                    : confirmAction.status === 'rejected'
+                      ? 'Reject'
+                      : 'Archive'}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  This will{' '}
+                  {confirmAction.status === 'active'
+                    ? 'approve'
+                    : confirmAction.status === 'rejected'
+                      ? 'reject'
+                      : 'archive'}{' '}
+                  <strong>{confirmAction.jobIds.length}</strong> job
+                  {confirmAction.jobIds.length > 1 ? 's' : ''}:
+                </p>
+                <ul className="text-xs text-gray-500 max-h-40 overflow-y-auto space-y-1">
+                  {confirmAction.titles.map((t, i) => (
+                    <li key={i} className="truncate">
+                      • {t}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => setConfirmAction(null)}
+                    className="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={executeBulkAction}
+                    disabled={bulkLoading}
+                    className={`text-sm px-4 py-2 rounded-lg text-white disabled:opacity-50 ${
+                      confirmAction.status === 'rejected'
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : confirmAction.status === 'active'
+                          ? 'bg-emerald-600 hover:bg-emerald-700'
+                          : 'bg-gray-600 hover:bg-gray-700'
+                    }`}
+                  >
+                    {bulkLoading ? 'Processing...' : 'Confirm'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {displayJobs.map((job) => (
             <div

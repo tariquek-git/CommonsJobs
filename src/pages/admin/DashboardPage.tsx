@@ -104,6 +104,8 @@ export default function DashboardPage() {
   const [external, setExternal] = useState<ExternalAnalytics | null>(null);
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [externalLoading, setExternalLoading] = useState(true);
+  const [externalError, setExternalError] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!token) return;
@@ -118,11 +120,15 @@ export default function DashboardPage() {
       setLoading(false);
     }
     // Fetch external analytics separately (slower, non-blocking)
+    setExternalLoading(true);
+    setExternalError(false);
     try {
       const ext = await getExternalAnalytics(token);
       setExternal(ext);
     } catch {
-      // non-critical
+      setExternalError(true);
+    } finally {
+      setExternalLoading(false);
     }
   }, [token]);
 
@@ -201,7 +207,30 @@ export default function DashboardPage() {
       </div>
 
       {/* External analytics — PostHog traffic */}
-      {external?.posthog && (
+      {externalLoading && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+              <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
+              <div className="h-6 w-12 bg-gray-200 rounded" />
+            </div>
+          ))}
+        </div>
+      )}
+      {externalError && !externalLoading && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+          <p className="text-sm text-amber-700">
+            External analytics unavailable — PostHog/Sentry/Vercel APIs didn't respond.
+          </p>
+          <button
+            onClick={fetchData}
+            className="text-xs px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {external?.posthog && !externalLoading && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Pageviews (7d)"

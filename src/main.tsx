@@ -1,3 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -24,6 +32,19 @@ posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
     maskTextSelector: '[data-ph-mask]',
   },
 });
+
+// Detect admin/owner traffic and opt out of tracking
+const isAdmin =
+  window.location.pathname.startsWith('/admin') || !!sessionStorage.getItem('admin_token');
+if (isAdmin) {
+  posthog.opt_out_capturing(); // Don't track admin visits
+  // Also exclude from GA4
+  if (typeof window.gtag === 'function') {
+    window.gtag('set', { traffic_type: 'internal' });
+  }
+} else {
+  posthog.opt_in_capturing(); // Ensure opted in for real users
+}
 
 // Register super properties on every event
 const params = new URLSearchParams(window.location.search);

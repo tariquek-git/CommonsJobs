@@ -174,6 +174,13 @@ export async function getRuntime(token: string): Promise<RuntimeInfo> {
   });
 }
 
+export async function getAdminHealth(token: string): Promise<{
+  status: string;
+  checks: Record<string, { status: string; detail?: string }>;
+}> {
+  return request('/admin/health', { headers: authHeaders(token) });
+}
+
 export async function getAdminJobs(
   token: string,
   status?: string,
