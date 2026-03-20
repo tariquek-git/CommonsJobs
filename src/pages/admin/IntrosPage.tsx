@@ -154,13 +154,20 @@ interface ConfirmModalState {
 
 function getEmailPreview(newStatus: string, intro: ConfirmModalState): string[] {
   switch (newStatus) {
-    case 'contacted':
-      return [
+    case 'contacted': {
+      const lines = [
         `Will email ${intro.introName}: "I'm reaching out to ${intro.jobCompany} on your behalf"`,
         `Will email hiring contact: Outreach with accept/decline buttons`,
       ];
+      if (intro.currentStatus === 'declined' || intro.currentStatus === 'no_response') {
+        lines.push('Note: If these emails were already sent, dedup will silently skip them');
+      }
+      return lines;
+    }
     case 'accepted':
-      return ['No new emails — this status is set automatically when the contact clicks "Accept"'];
+      return [
+        'Note: When a contact clicks "Accept", intros are sent automatically and status moves to Introduced. This status only appears if auto-connect failed (e.g. no contact email on file).',
+      ];
     case 'connected':
       return [
         `Will email ${intro.introName}: Introduction to the hiring contact`,
@@ -173,6 +180,12 @@ function getEmailPreview(newStatus: string, intro: ConfirmModalState): string[] 
     case 'no_response':
       return [`Will email ${intro.introName}: "Sorry, no response from ${intro.jobCompany}"`];
     case 'pending':
+      if (intro.currentStatus !== 'pending') {
+        return [
+          'No new emails — reverting to pending',
+          'Note: Previously sent emails will not re-send if you move forward again (dedup prevents duplicates)',
+        ];
+      }
       return ['No emails sent — reverting to pending'];
     default:
       return [];
@@ -198,6 +211,17 @@ export default function IntrosPage() {
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactRole, setContactRole] = useState('');
+
+  // Follow-up modal (replaces window.confirm)
+  const [followUpModal, setFollowUpModal] = useState<{
+    id: string;
+    name: string;
+    company: string;
+  } | null>(null);
+  const [followUpLoading, setFollowUpLoading] = useState(false);
+
+  // Toast for email send results
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Email logs
   const [emailLogs, setEmailLogs] = useState<Record<string, EmailLog[]>>({});
@@ -313,12 +337,46 @@ export default function IntrosPage() {
               contact_role: contactRole.trim() || undefined,
             }
           : undefined;
-      await updateWarmIntroStatus(token, confirmModal.introId, confirmModal.newStatus, extra);
+      const result = await updateWarmIntroStatus(
+        token,
+        confirmModal.introId,
+        confirmModal.newStatus,
+        extra,
+      );
       setAllIntros((prev) =>
         prev.map((intro) =>
           intro.id === confirmModal.introId ? { ...intro, status: confirmModal.newStatus } : intro,
         ),
       );
+      // Show toast based on actual email results from API
+      const emails = result.emails || [];
+      const sent = emails.filter((e) => e.status === 'sent').length;
+      const skipped = emails.filter((e) => e.status === 'skipped');
+      const failed = emails.filter((e) => e.status === 'failed');
+
+      if (failed.length > 0) {
+        setToast({
+          message: `Status updated but ${failed.length} email${failed.length !== 1 ? 's' : ''} failed: ${failed.map((e) => e.error || e.type).join(', ')}`,
+          type: 'error',
+        });
+        setTimeout(() => setToast(null), 6000);
+      } else if (skipped.length > 0 && skipped.some((e) => !e.error?.includes('dedup'))) {
+        const warnings = skipped.filter((e) => !e.error?.includes('dedup'));
+        setToast({
+          message: `Status updated — ${warnings[0]?.error || 'An email was skipped'}`,
+          type: 'error',
+        });
+        setTimeout(() => setToast(null), 6000);
+      } else {
+        setToast({
+          message:
+            sent > 0
+              ? `Status updated — ${sent} email${sent !== 1 ? 's' : ''} sent`
+              : `Status updated to ${STATUS_LABELS[confirmModal.newStatus] || confirmModal.newStatus}`,
+          type: 'success',
+        });
+        setTimeout(() => setToast(null), 4000);
+      }
       setConfirmModal(null);
       setError(null);
       if (expandedTrail === confirmModal.introId && emailLogs[confirmModal.introId]) {
@@ -331,22 +389,30 @@ export default function IntrosPage() {
     }
   };
 
-  const handleFollowUp = async (id: string) => {
-    if (!token) return;
-    if (!window.confirm('Send "How did it go?" follow-up email?')) return;
+  const requestFollowUp = (intro: WarmIntroRecord) => {
+    setFollowUpModal({
+      id: intro.id,
+      name: intro.name,
+      company: intro.job_company || 'the company',
+    });
+  };
+
+  const confirmFollowUp = async () => {
+    if (!token || !followUpModal) return;
+    setFollowUpLoading(true);
     try {
-      await sendIntroFollowUp(token, id);
+      await sendIntroFollowUp(token, followUpModal.id);
       setError(null);
-      const el = document.getElementById(`followup-${id}`);
-      if (el) {
-        el.textContent = 'Sent ✓';
-        el.classList.add('opacity-50', 'pointer-events-none');
-      }
-      if (expandedTrail === id && emailLogs[id]) {
-        fetchEmailLogs(id);
+      setToast({ message: 'Follow-up email sent', type: 'success' });
+      setTimeout(() => setToast(null), 4000);
+      setFollowUpModal(null);
+      if (expandedTrail === followUpModal.id && emailLogs[followUpModal.id]) {
+        setTimeout(() => fetchEmailLogs(followUpModal.id), 1500);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send follow-up');
+    } finally {
+      setFollowUpLoading(false);
     }
   };
 
@@ -479,7 +545,7 @@ export default function IntrosPage() {
               key={intro.id}
               intro={intro}
               onStatusChange={requestStatusChange}
-              onFollowUp={handleFollowUp}
+              onFollowUp={requestFollowUp}
               emailTrailExpanded={expandedTrail === intro.id}
               onToggleTrail={() => toggleEmailTrail(intro.id)}
               emailLogs={emailLogs[intro.id]}
@@ -632,6 +698,53 @@ export default function IntrosPage() {
           </div>
         </div>
       )}
+
+      {/* ─── Follow-up Confirmation Modal ─── */}
+      {followUpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 border-l-4 border-l-purple-400">
+            <h3 className="text-lg font-bold text-gray-900">Send Follow-up</h3>
+            <p className="text-sm text-gray-600">
+              Send a "How did it go?" check-in email to <strong>{followUpModal.name}</strong> about
+              their intro to {followUpModal.company}?
+            </p>
+            <div className="rounded-xl bg-purple-50 border border-purple-200 p-3">
+              <p className="text-[11px] font-semibold text-purple-700 uppercase tracking-wider">
+                Email that will send
+              </p>
+              <p className="text-sm text-purple-800 mt-1">
+                Will email {followUpModal.name}: "How did it go with {followUpModal.company}?"
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setFollowUpModal(null)}
+                className="flex-1 text-sm px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmFollowUp}
+                disabled={followUpLoading}
+                className="flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:opacity-40"
+              >
+                {followUpLoading ? 'Sending...' : 'Send Follow-up'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Toast ─── */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 rounded-xl shadow-lg px-4 py-3 text-sm font-medium transition-all ${
+            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }
@@ -745,7 +858,7 @@ function IntroCard({
 }: {
   intro: WarmIntroRecord;
   onStatusChange: (intro: WarmIntroRecord, status: string) => void;
-  onFollowUp: (id: string) => void;
+  onFollowUp: (intro: WarmIntroRecord) => void;
   emailTrailExpanded: boolean;
   onToggleTrail: () => void;
   emailLogs?: EmailLog[];
@@ -936,7 +1049,17 @@ function IntroCard({
                 {intro.email_count} email{intro.email_count !== 1 ? 's' : ''}
               </span>
             )}
-            {intro.last_email_at && <span>Last: {getRelativeTimeLabel(intro.last_email_at)}</span>}
+            {intro.last_email_at && intro.email_types?.length > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                {EVENT_SHORT[intro.email_types[intro.email_types.length - 1]] ||
+                  intro.email_types[intro.email_types.length - 1]}{' '}
+                {getRelativeTimeLabel(intro.last_email_at)}
+              </span>
+            )}
+            {intro.last_email_at && (!intro.email_types || intro.email_types.length === 0) && (
+              <span>Last: {getRelativeTimeLabel(intro.last_email_at)}</span>
+            )}
           </div>
         </div>
 
@@ -1074,7 +1197,7 @@ function PrimaryAction({
 }: {
   intro: WarmIntroRecord;
   onStatusChange: (intro: WarmIntroRecord, status: string) => void;
-  onFollowUp: (id: string) => void;
+  onFollowUp: (intro: WarmIntroRecord) => void;
 }) {
   switch (intro.status) {
     case 'pending':
@@ -1127,8 +1250,7 @@ function PrimaryAction({
     case 'connected':
       return (
         <button
-          id={`followup-${intro.id}`}
-          onClick={() => onFollowUp(intro.id)}
+          onClick={() => onFollowUp(intro)}
           className="text-xs px-3.5 py-2 rounded-lg font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors flex flex-col items-center"
         >
           <span>Send Follow-up</span>
@@ -1228,6 +1350,7 @@ const EVENT_SHORT: Record<string, string> = {
   warm_intro_connection_contact: 'Intro email → hiring contact',
   warm_intro_no_response: 'No response → requester',
   warm_intro_follow_up: 'Follow-up → requester',
+  warm_intro_accepted_nudge: 'Accepted nudge → admin',
   warm_intro_nudge_day5: 'Day 5 nudge → admin',
   warm_intro_nudge_day10: 'Day 10 nudge → admin',
   warm_intro_requester_update_day5: 'Day 5 update → requester',

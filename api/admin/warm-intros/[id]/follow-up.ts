@@ -41,6 +41,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Follow-up only available for connected intros' });
     }
 
+    // Check if follow-up was already sent (dedup)
+    const { data: existingLogs } = await supabase
+      .from('email_logs')
+      .select('id')
+      .eq('related_warm_intro_id', id)
+      .eq('event_type', 'warm_intro_follow_up')
+      .eq('status', 'sent')
+      .limit(1);
+
+    if (existingLogs && existingLogs.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'Follow-up was already sent',
+        already_sent: true,
+      });
+    }
+
     // Fetch job details
     const { data: job } = await supabase
       .from(getJobsTable())

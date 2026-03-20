@@ -18,6 +18,8 @@ interface PostHogData {
   uniqueUsers7d: number;
   topPages: { path: string; views: number }[];
   sessionCount7d: number;
+  funnelEvents: { event: string; label: string; count: number }[];
+  utmBreakdown: { source: string; count: number }[];
 }
 
 interface SentryData {
@@ -143,11 +145,69 @@ async function fetchPostHog(): Promise<PostHogData | null> {
       topPages.sort((a, b) => b.views - a.views);
     }
 
+    // Funnel events: job views → apply clicks → warm intros
+    const funnelEvents: PostHogData['funnelEvents'] = [];
+    const funnelQueries = [
+      { id: 'job_detail_viewed', label: 'Job Views' },
+      { id: 'job_apply_clicked', label: 'Apply Clicks' },
+      { id: 'warm_intro_requested', label: 'Intro Requests' },
+      { id: 'job_submitted', label: 'Jobs Submitted' },
+    ];
+    try {
+      const eventsParam = funnelQueries.map((e) => `{"id":"${e.id}","math":"total"}`).join(',');
+      const funnelRes = await fetch(
+        `${host}/api/projects/${projectId}/insights/trend/?events=[${eventsParam}]&date_from=-7d`,
+        { headers: { Authorization: `Bearer ${apiKey}` } },
+      );
+      if (funnelRes.ok) {
+        const funnelData = await funnelRes.json();
+        for (let i = 0; i < (funnelData.result || []).length; i++) {
+          const r = funnelData.result[i];
+          const count = r.data
+            ? r.data.reduce((s: number, v: number) => s + v, 0)
+            : r.aggregated_value || 0;
+          funnelEvents.push({
+            event: funnelQueries[i].id,
+            label: funnelQueries[i].label,
+            count: Math.round(count),
+          });
+        }
+      }
+    } catch {
+      // Non-critical — continue without funnel data
+    }
+
+    // UTM source breakdown
+    const utmBreakdown: PostHogData['utmBreakdown'] = [];
+    try {
+      const utmRes = await fetch(
+        `${host}/api/projects/${projectId}/insights/trend/?events=[{"id":"$pageview","math":"total"}]&breakdown=$initial_utm_source&breakdown_type=person&date_from=-7d`,
+        { headers: { Authorization: `Bearer ${apiKey}` } },
+      );
+      if (utmRes.ok) {
+        const utmData = await utmRes.json();
+        for (const r of (utmData.result || []).slice(0, 10)) {
+          const source = r.breakdown_value || r.label || 'direct';
+          const count = r.data
+            ? r.data.reduce((s: number, v: number) => s + v, 0)
+            : r.aggregated_value || 0;
+          if (count > 0) {
+            utmBreakdown.push({ source, count: Math.round(count) });
+          }
+        }
+        utmBreakdown.sort((a, b) => b.count - a.count);
+      }
+    } catch {
+      // Non-critical
+    }
+
     return {
       pageviews7d,
       uniqueUsers7d,
       topPages: topPages.slice(0, 8),
       sessionCount7d,
+      funnelEvents,
+      utmBreakdown,
     };
   } catch {
     return null;

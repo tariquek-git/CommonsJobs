@@ -21,7 +21,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get clicks with job info (last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [clicksResult, warmIntrosResult, jobsByStatusResult] = await Promise.all([
+    const [
+      clicksResult,
+      warmIntrosResult,
+      jobsByStatusResult,
+      allIntrosResult,
+      recentEmailsResult,
+    ] = await Promise.all([
       // Clicks in last 30 days (single query for both daily counts and top jobs)
       supabase
         .from(getClicksTable())
@@ -38,6 +44,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Jobs by status
       supabase.from(getJobsTable()).select('status'),
+
+      // All warm intros for pipeline summary
+      supabase.from('warm_intros').select('status, contact_response').limit(500),
+
+      // Recent email activity
+      supabase
+        .from('email_logs')
+        .select(
+          'event_type, recipient, subject, status, created_at, related_job_id, related_warm_intro_id',
+        )
+        .order('created_at', { ascending: false })
+        .limit(15),
     ]);
 
     const clicksData = clicksResult.data || [];
@@ -82,6 +100,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       statusCounts[job.status] = (statusCounts[job.status] || 0) + 1;
     }
 
+    // Warm intro pipeline summary
+    const introPipeline: Record<string, number> = {
+      pending: 0,
+      contacted: 0,
+      accepted: 0,
+      connected: 0,
+      followed_up: 0,
+      declined: 0,
+      no_response: 0,
+    };
+    const contactResponses: Record<string, number> = {
+      accepted: 0,
+      declined: 0,
+      more_info: 0,
+    };
+    const allIntros = allIntrosResult.data || [];
+    for (const intro of allIntros) {
+      if (intro.status in introPipeline) introPipeline[intro.status]++;
+      else introPipeline[intro.status] = 1;
+      if (intro.contact_response && intro.contact_response in contactResponses) {
+        contactResponses[intro.contact_response]++;
+      }
+    }
+    const totalIntros = allIntros.length;
+    const connectionRate =
+      totalIntros > 0 ? Math.round((introPipeline.connected / totalIntros) * 100) : 0;
+
+    // Recent email activity feed
+    const recentEmails = (recentEmailsResult.data || []).map((e) => ({
+      event_type: e.event_type,
+      recipient: e.recipient,
+      subject: e.subject,
+      status: e.status,
+      created_at: e.created_at,
+      job_id: e.related_job_id,
+      intro_id: e.related_warm_intro_id,
+    }));
+
     return res.status(200).json({
       clicksByDay,
       introsByDay,
@@ -91,6 +147,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         clicks30d: clicksData.length,
         intros30d: warmIntrosResult.data?.length || 0,
       },
+      introPipeline: {
+        ...introPipeline,
+        total: totalIntros,
+        connectionRate,
+        contactResponses,
+      },
+      recentEmails,
     });
   } catch (err) {
     const { logger } = await import('../../lib/logger.js');

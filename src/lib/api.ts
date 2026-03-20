@@ -228,6 +228,27 @@ export interface AnalyticsData {
   topJobs: { id: string; title: string; company: string; clicks: number }[];
   statusCounts: Record<string, number>;
   totals: { clicks30d: number; intros30d: number };
+  introPipeline: {
+    pending: number;
+    contacted: number;
+    accepted: number;
+    connected: number;
+    followed_up: number;
+    declined: number;
+    no_response: number;
+    total: number;
+    connectionRate: number;
+    contactResponses: { accepted: number; declined: number; more_info: number };
+  };
+  recentEmails: {
+    event_type: string;
+    recipient: string;
+    subject: string;
+    status: string;
+    created_at: string;
+    job_id: string | null;
+    intro_id: string | null;
+  }[];
 }
 
 export async function getAnalytics(token: string): Promise<AnalyticsData> {
@@ -244,6 +265,8 @@ export interface ExternalAnalytics {
     uniqueUsers7d: number;
     topPages: { path: string; views: number }[];
     sessionCount7d: number;
+    funnelEvents: { event: string; label: string; count: number }[];
+    utmBreakdown: { source: string; count: number }[];
   } | null;
   sentry: {
     unresolvedIssues: number;
@@ -319,12 +342,18 @@ export async function getWarmIntros(
   });
 }
 
+export interface EmailResult {
+  type: string;
+  status: 'sent' | 'failed' | 'skipped';
+  error?: string;
+}
+
 export async function updateWarmIntroStatus(
   token: string,
   id: string,
   status: string,
   extra?: { contact_name?: string; contact_email?: string; contact_role?: string },
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; emails?: EmailResult[] }> {
   return request(`/admin/warm-intros/${id}/status`, {
     method: 'PATCH',
     headers: authHeaders(token),

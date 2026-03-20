@@ -143,12 +143,9 @@ export default function IntroResponsePage() {
                 >
                   Not right now
                 </button>
-                <button
-                  onClick={() => handleSubmit('more_info')}
-                  className="w-full text-center text-sm text-brand-500 hover:text-brand-600 font-medium py-2 transition-colors"
-                >
-                  I need more info first
-                </button>
+                <p className="text-center text-xs text-gray-400 pt-1">
+                  Questions? Reply to the outreach email instead.
+                </p>
               </div>
             </div>
           )}
@@ -181,10 +178,8 @@ export default function IntroResponsePage() {
               </div>
               <h2 className="text-lg font-bold text-gray-900">
                 {action === 'accepted'
-                  ? 'Thanks! Introduction incoming.'
-                  : action === 'more_info'
-                    ? 'Got it.'
-                    : 'Thanks for letting us know.'}
+                  ? "You're connected! Intro emails sent."
+                  : 'Thanks for letting us know.'}
               </h2>
               <p className="text-sm text-gray-600">{message}</p>
               <Link

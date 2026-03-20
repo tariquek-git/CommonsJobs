@@ -22,12 +22,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const adminUsername = getEnv('ADMIN_USERNAME');
     const adminPasswordHash = getEnv('ADMIN_PASSWORD_HASH');
 
-    if (body.username !== adminUsername) {
-      return res.status(401).json({ error: 'Invalid credentials', code: 'UNAUTHORIZED' });
-    }
+    // Always run bcrypt comparison to prevent timing-based username enumeration
+    const dummyHash = '$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012';
+    const hashToCheck = body.username === adminUsername ? adminPasswordHash : dummyHash;
+    const valid = await verifyPassword(body.password, hashToCheck);
 
-    const valid = await verifyPassword(body.password, adminPasswordHash);
-    if (!valid) {
+    if (body.username !== adminUsername || !valid) {
       return res.status(401).json({ error: 'Invalid credentials', code: 'UNAUTHORIZED' });
     }
 

@@ -118,12 +118,25 @@ export default apiHandler(
           // Send branded outreach to hiring contact with accept/decline buttons
           const cName = contact_name || job?.submitter_name;
           const cEmail = contact_email || job?.submitter_email;
-          if (
-            cName &&
-            cEmail &&
-            intro.response_token &&
-            !alreadySent.has('warm_intro_outreach_contact')
-          ) {
+          if (!cName || !cEmail) {
+            emailResults.push({
+              type: 'warm_intro_outreach_contact',
+              status: 'skipped',
+              error: 'Missing contact name or email — provide them to send the outreach',
+            });
+          } else if (!intro.response_token) {
+            emailResults.push({
+              type: 'warm_intro_outreach_contact',
+              status: 'skipped',
+              error: 'Missing response token — contact cannot accept/decline via email',
+            });
+          } else if (alreadySent.has('warm_intro_outreach_contact')) {
+            emailResults.push({
+              type: 'warm_intro_outreach_contact',
+              status: 'skipped',
+              error: 'Already sent — dedup prevented duplicate',
+            });
+          } else {
             await trySendEmail(
               () =>
                 email.sendOutreachToContact({

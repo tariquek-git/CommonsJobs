@@ -5,7 +5,7 @@ import path from 'path';
 
 export default defineConfig({
   build: {
-    sourcemap: true, // Required for Sentry source maps
+    sourcemap: 'hidden', // Maps uploaded to Sentry but not served publicly
     rollupOptions: {
       output: {
         manualChunks: {

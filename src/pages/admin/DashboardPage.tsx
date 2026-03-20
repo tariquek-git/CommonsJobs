@@ -343,6 +343,227 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Conversion Funnel + UTM Traffic */}
+      {external?.posthog && !externalLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Funnel */}
+          {external.posthog.funnelEvents.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                Conversion Funnel (7d) — PostHog
+              </h3>
+              <div className="space-y-3">
+                {external.posthog.funnelEvents.map((step, i) => {
+                  const maxCount = external.posthog!.funnelEvents[0]?.count || 1;
+                  const prev = i > 0 ? external.posthog!.funnelEvents[i - 1]?.count : null;
+                  const rate = prev && prev > 0 ? Math.round((step.count / prev) * 100) : null;
+                  return (
+                    <div key={step.event}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-700">{step.label}</span>
+                        <div className="flex items-center gap-2">
+                          {rate !== null && (
+                            <span className="text-[10px] text-gray-400">{rate}%</span>
+                          )}
+                          <span className="text-sm font-semibold text-gray-900 tabular-nums">
+                            {step.count.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.max((step.count / maxCount) * 100, step.count > 0 ? 4 : 0)}%`,
+                            backgroundColor:
+                              ['#635BFF', '#FF3B8B', '#F59E0B', '#10B981'][i] || '#635BFF',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* UTM Traffic Breakdown */}
+          {external.posthog.utmBreakdown.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                Traffic Sources (7d) — PostHog
+              </h3>
+              <div className="space-y-2">
+                {external.posthog.utmBreakdown.map((src, i) => {
+                  const maxViews = external.posthog!.utmBreakdown[0]?.count || 1;
+                  return (
+                    <div key={src.source} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-5 text-right shrink-0 tabular-nums">
+                        {i + 1}.
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm text-gray-900 capitalize">
+                            {src.source === '' || src.source === 'null' ? 'Direct' : src.source}
+                          </span>
+                          <span className="text-sm font-semibold text-violet-600 tabular-nums shrink-0 ml-3">
+                            {src.count.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-violet-500 rounded-full"
+                            style={{ width: `${(src.count / maxViews) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Warm Intro Pipeline + Recent Email Activity */}
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Intro Pipeline Summary */}
+          {analytics.introPipeline && analytics.introPipeline.total > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Intro Pipeline
+                </h3>
+                <Link
+                  to="/admin/intros"
+                  className="text-[10px] text-brand-600 hover:text-brand-700 font-medium"
+                >
+                  View all →
+                </Link>
+              </div>
+              {/* Headline stats */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="text-center p-2 rounded-lg bg-gray-50">
+                  <p className="text-xl font-bold text-gray-900">{analytics.introPipeline.total}</p>
+                  <p className="text-[10px] text-gray-500">Total</p>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-emerald-50">
+                  <p className="text-xl font-bold text-emerald-600">
+                    {analytics.introPipeline.connected}
+                  </p>
+                  <p className="text-[10px] text-gray-500">Connected</p>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-brand-50">
+                  <p className="text-xl font-bold text-brand-600">
+                    {analytics.introPipeline.connectionRate}%
+                  </p>
+                  <p className="text-[10px] text-gray-500">Success Rate</p>
+                </div>
+              </div>
+              {/* Status breakdown */}
+              <div className="space-y-1.5">
+                {[
+                  { key: 'pending', label: 'Pending', color: 'bg-amber-500' },
+                  { key: 'contacted', label: 'Contacted', color: 'bg-blue-500' },
+                  { key: 'accepted', label: 'Accepted', color: 'bg-emerald-500' },
+                  { key: 'connected', label: 'Connected', color: 'bg-emerald-600' },
+                  { key: 'followed_up', label: 'Followed Up', color: 'bg-violet-500' },
+                  { key: 'declined', label: 'Declined', color: 'bg-red-400' },
+                  { key: 'no_response', label: 'No Response', color: 'bg-gray-400' },
+                ].map(({ key, label, color }) => {
+                  const count =
+                    (analytics.introPipeline as unknown as Record<string, number>)[key] || 0;
+                  if (count === 0) return null;
+                  return (
+                    <Link
+                      key={key}
+                      to={`/admin/intros?status=${key}`}
+                      className="flex items-center justify-between py-1 px-1 rounded hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${color}`} />
+                        <span className="text-xs text-gray-700">{label}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-900 tabular-nums">
+                        {count}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              {/* Contact responses */}
+              {analytics.introPipeline.contactResponses && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                    Contact Responses
+                  </p>
+                  <div className="flex gap-3">
+                    {analytics.introPipeline.contactResponses.accepted > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
+                        ✓ {analytics.introPipeline.contactResponses.accepted} accepted
+                      </span>
+                    )}
+                    {analytics.introPipeline.contactResponses.declined > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">
+                        ✗ {analytics.introPipeline.contactResponses.declined} declined
+                      </span>
+                    )}
+                    {analytics.introPipeline.contactResponses.more_info > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                        ? {analytics.introPipeline.contactResponses.more_info} more info
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Recent Email Activity */}
+          {analytics.recentEmails && analytics.recentEmails.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Recent Emails
+                </h3>
+                <span className="text-[10px] text-gray-400">
+                  Last {analytics.recentEmails.length}
+                </span>
+              </div>
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {analytics.recentEmails.map((email, i) => {
+                  const icon =
+                    email.status === 'sent' ? '✓' : email.status === 'failed' ? '✗' : '·';
+                  const iconColor =
+                    email.status === 'sent'
+                      ? 'text-emerald-500'
+                      : email.status === 'failed'
+                        ? 'text-red-500'
+                        : 'text-gray-400';
+                  const label = email.event_type
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                  return (
+                    <div key={`${email.created_at}-${i}`} className="flex items-start gap-2 py-1.5">
+                      <span className={`text-xs mt-0.5 ${iconColor}`}>{icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-900 truncate">{label}</p>
+                        <p className="text-[10px] text-gray-400 truncate">→ {email.recipient}</p>
+                      </div>
+                      <span className="text-[10px] text-gray-400 shrink-0">
+                        {timeAgo(new Date(email.created_at).getTime())}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* PostHog top pages + Vercel deployment */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top Pages */}

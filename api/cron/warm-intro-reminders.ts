@@ -35,7 +35,7 @@ export default apiHandler(
     const { data: intros, error: introErr } = await supabase
       .from('warm_intros')
       .select('id, name, email, job_id, status, created_at, status_updated_at, response_token')
-      .in('status', ['pending', 'contacted', 'connected'])
+      .in('status', ['pending', 'contacted', 'accepted', 'connected'])
       .order('created_at', { ascending: true });
 
     if (introErr) {
@@ -59,6 +59,7 @@ export default apiHandler(
         'warm_intro_requester_update_day5',
         'warm_intro_requester_update_day10',
         'warm_intro_contact_nudge',
+        'warm_intro_accepted_nudge',
         'warm_intro_follow_up',
       ])
       .eq('status', 'sent');
@@ -106,7 +107,33 @@ export default apiHandler(
         (now - new Date(intro.status_updated_at || intro.created_at).getTime()) / 86400000,
       );
 
-      // ── PENDING: nudge admin + requester at Day 5 and Day 10 ──
+      // ── PENDING: auto-close at Day 14, nudge at Day 5 and Day 10 ──
+      if (intro.status === 'pending' && statusAge >= 14) {
+        // Auto-close: move to no_response and notify requester
+        await trySend(
+          () =>
+            sendNudgeRequester({
+              introId: intro.id,
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              jobTitle: job.title,
+              jobCompany: job.company,
+              jobId: intro.job_id,
+              day: 10, // reuse day 10 template for final notice
+            }),
+          `${intro.id}:warm_intro_auto_closed`,
+          alreadySent,
+          counts,
+        );
+
+        await supabase
+          .from('warm_intros')
+          .update({ status: 'no_response', status_updated_at: new Date().toISOString() })
+          .eq('id', intro.id);
+
+        continue; // Skip further processing for this intro
+      }
+
       if (intro.status === 'pending') {
         const baseOpts = {
           introId: intro.id,
@@ -148,6 +175,35 @@ export default apiHandler(
         }
       }
 
+      // ── CONTACTED: auto-close at Day 14 if no response from contact ──
+      if (intro.status === 'contacted' && statusAge >= 14) {
+        const noResponseSent = await trySend(
+          async () => {
+            const email = await import('../../lib/email.js');
+            await email.sendIntroNoResponse({
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              jobTitle: job.title,
+              jobCompany: job.company,
+              jobId: intro.job_id,
+              introId: intro.id,
+            });
+          },
+          `${intro.id}:warm_intro_no_response`,
+          alreadySent,
+          counts,
+        );
+
+        if (noResponseSent) {
+          await supabase
+            .from('warm_intros')
+            .update({ status: 'no_response', status_updated_at: new Date().toISOString() })
+            .eq('id', intro.id);
+        }
+
+        continue;
+      }
+
       // ── CONTACTED: nudge hiring contact at Day 5 ──
       if (intro.status === 'contacted' && statusAge >= 5) {
         const contactName = job.submitter_name;
@@ -171,6 +227,25 @@ export default apiHandler(
             counts,
           );
         }
+      }
+
+      // ── ACCEPTED: nudge admin at Day 3 — contact said yes, send the intro! ──
+      if (intro.status === 'accepted' && statusAge >= 3) {
+        await trySend(
+          () =>
+            sendNudgeAdmin({
+              introId: intro.id,
+              requesterName: intro.name,
+              requesterEmail: intro.email,
+              jobTitle: job.title,
+              jobCompany: job.company,
+              jobId: intro.job_id,
+              day: 3,
+            }),
+          `${intro.id}:warm_intro_accepted_nudge`,
+          alreadySent,
+          counts,
+        );
       }
 
       // ── CONNECTED: auto follow-up at Day 7 ──

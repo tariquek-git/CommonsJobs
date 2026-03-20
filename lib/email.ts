@@ -25,6 +25,11 @@ function esc(str: string): string {
     .replace(/>/g, '&gt;');
 }
 
+/** Strip control characters and newlines from email subjects to prevent header injection */
+function safeSubject(str: string): string {
+  return str.replace(/[\r\n\t\x00-\x1f]/g, ' ').trim();
+}
+
 const DOMAIN = 'fintechcommons.com';
 const SITE_URL = `https://www.${DOMAIN}`;
 const FROM_TARIQUE = `Tarique @ Fintech Commons <tarique@${DOMAIN}>`;
@@ -45,7 +50,7 @@ function brandedHtml(opts: {
 
   const ctaBlock = opts.cta
     ? `<tr><td style="padding:24px 0 0;">
-        <a href="${opts.cta.url}" style="display:inline-block;background:#635BFF;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${esc(opts.cta.label)}</a>
+        <a href="${esc(opts.cta.url)}" style="display:inline-block;background:#635BFF;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${esc(opts.cta.label)}</a>
        </td></tr>`
     : '';
 
@@ -145,7 +150,7 @@ async function send(opts: SendOpts): Promise<boolean> {
     const result = await resend.emails.send({
       from: opts.from || FROM_TARIQUE,
       to: opts.to,
-      subject: opts.subject,
+      subject: safeSubject(opts.subject),
       html,
       text: opts.text,
       replyTo: opts.replyTo || getEnv('ADMIN_NOTIFICATION_EMAIL', `tarique@${DOMAIN}`),
@@ -343,12 +348,12 @@ export async function sendWarmIntroThankYou(opts: {
     body: `
       <p style="margin:0 0 12px;">Your warm intro request for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> is in.</p>
       <p style="margin:0 0 12px;">I'll put your name in front of the right person. Most intros happen within a few business days.</p>
-      <p style="margin:0 0 12px;">I know not every intro leads somewhere. That's the reality of hiring. But a warm intro always beats a cold apply, and I want you to keep putting yourself out there.</p>
+      <p style="margin:0 0 12px;">A warm intro is one of the best ways to stand out. I'll keep you posted as things move forward.</p>
       <p style="margin:0;">Questions? Reply here. It comes straight to me.</p>
     `,
     preheader: `I'll put your name in front of the right person.`,
     cta: { label: 'Browse More Roles', url: SITE_URL },
-    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll put your name in front of the right person. Most intros happen within a few business days.\n\nI know not every intro leads somewhere. That's the reality of hiring. But a warm intro always beats a cold apply, and I want you to keep putting yourself out there.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
+    text: `Hi ${firstName},\n\nYour warm intro request for ${opts.jobTitle} at ${opts.jobCompany} is in.\n\nI'll put your name in front of the right person. Most intros happen within a few business days.\n\nA warm intro is one of the best ways to stand out. I'll keep you posted as things move forward.\n\nQuestions? Reply here.\n\nCheers,\nTarique\nFintech Commons`,
     eventType: 'warm_intro_thank_you',
     jobId: opts.jobId,
     introId: opts.introId,
@@ -836,30 +841,61 @@ export async function sendNudgeAdmin(opts: {
   jobTitle: string;
   jobCompany: string;
   jobId: string;
-  day: 5 | 10;
+  day: 3 | 5 | 10;
 }): Promise<boolean> {
   const adminEmail = getEnv('ADMIN_NOTIFICATION_EMAIL');
   if (!adminEmail) return false;
 
+  // Day 3 = accepted nudge (contact said yes, admin hasn't sent intro)
+  const isAcceptedNudge = opts.day === 3;
   const isDay5 = opts.day === 5;
-  const eventType = isDay5 ? 'warm_intro_nudge_day5' : 'warm_intro_nudge_day10';
+  const eventType = isAcceptedNudge
+    ? 'warm_intro_accepted_nudge'
+    : isDay5
+      ? 'warm_intro_nudge_day5'
+      : 'warm_intro_nudge_day10';
+
+  const subject = isAcceptedNudge
+    ? `🟢 Contact said yes — send the intro for ${opts.requesterName} → ${opts.jobCompany}`
+    : isDay5
+      ? `⏰ Pending ${opts.day}d — ${opts.requesterName} wants an intro at ${opts.jobCompany}`
+      : `🔴 Still pending ${opts.day}d — ${opts.requesterName}'s request at ${opts.jobCompany}`;
+
+  const heading = isAcceptedNudge
+    ? 'The contact said yes — time to connect them! 🟢'
+    : isDay5
+      ? 'Time to reach out. ⏰'
+      : 'This one needs your attention. 🔴';
+
+  const callout = isAcceptedNudge
+    ? 'The hiring contact accepted 3+ days ago. Send the introduction email so both sides can connect.'
+    : isDay5
+      ? "They're waiting. A quick outreach goes a long way."
+      : "It's been 10 days. Close this out or reach out today.";
+
+  const calloutBg = isAcceptedNudge ? '#ECFDF5' : '#FFF7ED';
+  const calloutBorder = isAcceptedNudge ? '#10B981' : '#F59E0B';
+  const calloutColor = isAcceptedNudge ? '#065F46' : '#92400E';
 
   return send({
     to: adminEmail,
-    subject: isDay5
-      ? `⏰ Pending ${opts.day}d — ${opts.requesterName} wants an intro at ${opts.jobCompany}`
-      : `🔴 Still pending ${opts.day}d — ${opts.requesterName}'s request at ${opts.jobCompany}`,
-    heading: isDay5 ? 'Time to reach out. ⏰' : 'This one needs your attention. 🔴',
+    subject,
+    heading,
     body: `
-      <p style="margin:0 0 12px;"><strong>${esc(opts.requesterName)}</strong> requested a warm intro for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong> ${opts.day} days ago.</p>
-      <p style="margin:0 0 12px;padding:12px 16px;background:#FFF7ED;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:14px;color:#92400E;">
-        ${isDay5 ? "They're waiting. A quick outreach goes a long way." : "It's been 10 days. Close this out or reach out today."}
+      <p style="margin:0 0 12px;"><strong>${esc(opts.requesterName)}</strong> requested a warm intro for <strong>${esc(opts.jobTitle)}</strong> at <strong>${esc(opts.jobCompany)}</strong>${isAcceptedNudge ? ' — and the contact already said yes' : ` ${opts.day} days ago`}.</p>
+      <p style="margin:0 0 12px;padding:12px 16px;background:${calloutBg};border-left:3px solid ${calloutBorder};border-radius:0 6px 6px 0;font-size:14px;color:${calloutColor};">
+        ${callout}
       </p>
       <p style="margin:0 0 6px;"><strong>Requester:</strong> ${esc(opts.requesterName)} &lt;${esc(opts.requesterEmail)}&gt;</p>
     `,
-    preheader: `${opts.requesterName}'s intro request has been pending ${opts.day} days`,
-    cta: { label: 'Open Connection Requests', url: `${SITE_URL}/admin/intros` },
-    text: `${opts.requesterName} requested a warm intro for ${opts.jobTitle} at ${opts.jobCompany} ${opts.day} days ago.\n\n${isDay5 ? "They're waiting. A quick outreach goes a long way." : "It's been 10 days. Close this out or reach out today."}\n\nRequester: ${opts.requesterName} (${opts.requesterEmail})\n\n${SITE_URL}/admin/intros`,
+    preheader: isAcceptedNudge
+      ? `Contact accepted — send the intro for ${opts.requesterName}`
+      : `${opts.requesterName}'s intro request has been pending ${opts.day} days`,
+    cta: {
+      label: isAcceptedNudge ? 'Send the Introduction' : 'Open Connection Requests',
+      url: `${SITE_URL}/admin/intros?status=${isAcceptedNudge ? 'accepted' : 'pending'}`,
+    },
+    text: `${opts.requesterName} requested a warm intro for ${opts.jobTitle} at ${opts.jobCompany}${isAcceptedNudge ? ' — and the contact already said yes' : ` ${opts.day} days ago`}.\n\n${callout}\n\nRequester: ${opts.requesterName} (${opts.requesterEmail})\n\n${SITE_URL}/admin/intros`,
     from: FROM_NOREPLY,
     eventType,
     jobId: opts.jobId,

@@ -37,6 +37,12 @@ export default apiHandler(
     if (linkedin && linkedin.length > 500) {
       return res.status(400).json({ error: 'LinkedIn URL too long', code: 'VALIDATION_ERROR' });
     }
+    if (
+      (referrer_name && referrer_name.length > 200) ||
+      (referrer_company && referrer_company.length > 200)
+    ) {
+      return res.status(400).json({ error: 'Referrer info too long', code: 'VALIDATION_ERROR' });
+    }
 
     const ip = getClientIP(req);
     const ipHash = createHash('sha256').update(ip).digest('hex');
