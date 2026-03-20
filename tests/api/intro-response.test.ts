@@ -39,6 +39,15 @@ const mockFrom = vi.fn().mockImplementation((table: string) => {
       }),
     };
   }
+  if (table === 'email_logs') {
+    return {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }),
+    };
+  }
   // jobs table
   return {
     select: vi.fn().mockReturnValue({
@@ -74,9 +83,10 @@ vi.mock('../../lib/logger.js', () => ({
 vi.mock('../../lib/email.js', () => ({
   notifyAdminIntroAccepted: vi.fn().mockResolvedValue(true),
   notifyAdminIntroDeclined: vi.fn().mockResolvedValue(true),
-  notifyAdminIntroMoreInfo: vi.fn().mockResolvedValue(true),
   sendIntroAccepted: vi.fn().mockResolvedValue(true),
   sendIntroDeclined: vi.fn().mockResolvedValue(true),
+  sendIntroToRequester: vi.fn().mockResolvedValue(true),
+  sendIntroToContact: vi.fn().mockResolvedValue(true),
 }));
 
 import handler from '../../api/intro-response';
@@ -187,12 +197,12 @@ describe('POST /api/intro-response', () => {
     expect((res._json as { action: string }).action).toBe('declined');
   });
 
-  it('accepts valid more_info response', async () => {
+  it('rejects more_info as invalid action', async () => {
     const req = mockReq({ body: { token: 'valid-token', action: 'more_info' } });
     const res = mockRes();
     await handler(req, res);
-    expect(res._status).toBe(200);
-    expect((res._json as { action: string }).action).toBe('more_info');
+    expect(res._status).toBe(400);
+    expect((res._json as { error: string }).error).toContain('Invalid action');
   });
 
   it('accepts optional note with response', async () => {

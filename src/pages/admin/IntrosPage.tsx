@@ -472,6 +472,9 @@ export default function IntrosPage() {
         onFilter={(status) => setSearchParams(status ? { status } : {})}
       />
 
+      {/* Quick Stats */}
+      <QuickStats intros={allIntros} />
+
       {/* Search & Sort */}
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
@@ -864,225 +867,247 @@ function IntroCard({
   emailLogs?: EmailLog[];
   loadingLogs: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div
       className={`bg-white rounded-xl border border-gray-200 border-l-4 ${CARD_BORDER[intro.status] || CARD_BORDER.pending} ${intro.needs_reminder ? 'ring-2 ring-red-200' : intro.is_stale ? 'ring-1 ring-amber-200' : ''}`}
     >
-      <div className="p-5 space-y-3">
-        {/* Step tracker + context */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <StepTracker currentStatus={intro.status} />
-            <p className="text-xs text-gray-500 italic">{STATUS_CONTEXT[intro.status]}</p>
+      {/* ── Compact header (always visible) ── */}
+      <div className="p-4 cursor-pointer select-none" onClick={() => setExpanded(!expanded)}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Expand chevron */}
+            <svg
+              className={`h-4 w-4 text-gray-400 shrink-0 transition-transform ${expanded ? 'rotate-90' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+
+            {/* Name + role summary */}
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-800 truncate">
+                <span className="font-semibold">{intro.name}</span>
+                <span className="text-gray-400 mx-1.5">→</span>
+                <span className="font-semibold">{intro.job_company}</span>
+                {intro.job_title && (
+                  <span className="text-gray-500 font-normal"> · {intro.job_title}</span>
+                )}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <StatusBadge status={intro.status} />
+                {intro.contact_response && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                      intro.contact_response === 'accepted'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-red-100 text-red-600'
+                    }`}
+                  >
+                    {intro.contact_response === 'accepted' ? 'Contact said yes' : 'Contact passed'}
+                  </span>
+                )}
+                {intro.needs_reminder && (
+                  <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium bg-red-100 text-red-700">
+                    {intro.days_in_status}d — needs action
+                  </span>
+                )}
+                {!intro.needs_reminder && intro.is_stale && (
+                  <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium bg-amber-100 text-amber-700">
+                    {intro.days_in_status}d stale
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="text-[11px] text-gray-400">
+
+          {/* Right side: time + primary action */}
+          <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[11px] text-gray-400 hidden sm:block">
               {getRelativeTimeLabel(intro.created_at)}
             </span>
-            {intro.needs_reminder ? (
-              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-red-100 text-red-700">
-                {intro.days_in_status}d — auto-reminder sent, needs action
-              </span>
-            ) : intro.is_stale ? (
-              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700">
-                {intro.days_in_status}d — nudge email sent
-              </span>
-            ) : null}
+            <PrimaryAction intro={intro} onStatusChange={onStatusChange} onFollowUp={onFollowUp} />
           </div>
         </div>
+      </div>
 
-        {/* Human-story headline */}
-        <p className="text-sm font-medium text-gray-800">
-          <span className="font-semibold">{intro.name}</span>
-          {' wants to be introduced to '}
-          <span className="font-semibold">{intro.job_company}</span>
-          {intro.job_title ? ` for the ${intro.job_title} role` : ''}
-        </p>
+      {/* ── Expanded details ── */}
+      {expanded && (
+        <div className="px-5 pb-5 pt-0 space-y-3 border-t border-gray-100">
+          {/* Step tracker + context */}
+          <div className="pt-3 space-y-2">
+            <StepTracker currentStatus={intro.status} />
+            <NextStepGuidance intro={intro} />
+          </div>
 
-        {/* Next step guidance */}
-        <NextStepGuidance intro={intro} />
-
-        {/* Relationship Grid: Requester → Job → Submitter */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* REQUESTER */}
-          <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              Requester
-            </p>
-            <p className="text-sm font-semibold text-gray-900">{intro.name}</p>
-            <div className="flex flex-col gap-0.5">
-              <a
-                href={`mailto:${intro.email}`}
-                className="text-xs text-brand-500 hover:underline truncate"
-              >
-                {intro.email}
-              </a>
-              {intro.linkedin && (
-                <a
-                  href={intro.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  LinkedIn ↗
-                </a>
-              )}
-            </div>
-            {intro.referrer_name && (
-              <p className="text-[11px] text-gray-400">
-                via {intro.referrer_name}
-                {intro.referrer_company ? ` (${intro.referrer_company})` : ''}
+          {/* Relationship Grid: Requester → Job → Submitter */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* REQUESTER */}
+            <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                Requester
               </p>
-            )}
-          </div>
-
-          {/* JOB */}
-          <div className="bg-blue-50/50 rounded-lg p-3 space-y-1.5">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Job</p>
-            <p className="text-sm font-semibold text-gray-900">{intro.job_title}</p>
-            <p className="text-xs text-gray-600">{intro.job_company}</p>
-            <div className="flex items-center gap-2">
-              <span
-                className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
-                  intro.job_status === 'active'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-100 text-gray-500'
-                }`}
-              >
-                {intro.job_status || 'unknown'}
-              </span>
-              {intro.job_apply_url && (
+              <p className="text-sm font-semibold text-gray-900">{intro.name}</p>
+              <div className="flex flex-col gap-0.5">
                 <a
-                  href={intro.job_apply_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-brand-500 hover:underline"
+                  href={`mailto:${intro.email}`}
+                  className="text-xs text-brand-500 hover:underline truncate"
                 >
-                  View listing ↗
+                  {intro.email}
                 </a>
-              )}
-            </div>
-          </div>
-
-          {/* SUBMITTER / CONTACT */}
-          <div className="bg-purple-50/50 rounded-lg p-3 space-y-1.5">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              Hiring Contact
-            </p>
-            {intro.job_submitter_name ? (
-              <>
-                <p className="text-sm font-semibold text-gray-900">{intro.job_submitter_name}</p>
-                {intro.job_submitter_email && (
+                {intro.linkedin && (
                   <a
-                    href={`mailto:${intro.job_submitter_email}`}
-                    className="text-xs text-brand-500 hover:underline truncate block"
+                    href={intro.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
                   >
-                    {intro.job_submitter_email}
+                    LinkedIn ↗
                   </a>
                 )}
-              </>
-            ) : (
-              <p className="text-xs text-gray-400 italic">No contact info on file</p>
-            )}
-            {intro.contact_response && (
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  intro.contact_response === 'accepted'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : intro.contact_response === 'declined'
-                      ? 'bg-red-100 text-red-600'
-                      : 'bg-amber-100 text-amber-700'
-                }`}
-              >
-                {intro.contact_response === 'accepted'
-                  ? 'Said yes'
-                  : intro.contact_response === 'declined'
-                    ? 'Passed'
-                    : 'Wants more info'}
-              </span>
-            )}
-            {!intro.contact_response && intro.status === 'contacted' && intro.response_token && (
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/intro-response?token=${intro.response_token}`;
-                  navigator.clipboard.writeText(url);
-                  const el = document.getElementById(`copy-${intro.id}`);
-                  if (el) {
-                    el.textContent = 'Copied!';
-                    setTimeout(() => {
-                      if (el) el.textContent = 'Copy response link';
-                    }, 2000);
-                  }
-                }}
-                id={`copy-${intro.id}`}
-                className="text-[10px] text-purple-500 hover:text-purple-700 hover:underline transition-colors"
-              >
-                Copy response link
-              </button>
-            )}
+              </div>
+              {intro.referrer_name && (
+                <p className="text-[11px] text-gray-400">
+                  via {intro.referrer_name}
+                  {intro.referrer_company ? ` (${intro.referrer_company})` : ''}
+                </p>
+              )}
+            </div>
+
+            {/* JOB */}
+            <div className="bg-blue-50/50 rounded-lg p-3 space-y-1.5">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                Job
+              </p>
+              <p className="text-sm font-semibold text-gray-900">{intro.job_title}</p>
+              <p className="text-xs text-gray-600">{intro.job_company}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                    intro.job_status === 'active'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {intro.job_status || 'unknown'}
+                </span>
+                {intro.job_apply_url && (
+                  <a
+                    href={intro.job_apply_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-brand-500 hover:underline"
+                  >
+                    View listing ↗
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* SUBMITTER / CONTACT */}
+            <div className="bg-purple-50/50 rounded-lg p-3 space-y-1.5">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                Hiring Contact
+              </p>
+              {intro.job_submitter_name ? (
+                <>
+                  <p className="text-sm font-semibold text-gray-900">{intro.job_submitter_name}</p>
+                  {intro.job_submitter_email && (
+                    <a
+                      href={`mailto:${intro.job_submitter_email}`}
+                      className="text-xs text-brand-500 hover:underline truncate block"
+                    >
+                      {intro.job_submitter_email}
+                    </a>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-gray-400 italic">No contact info on file</p>
+              )}
+              {!intro.contact_response && intro.status === 'contacted' && intro.response_token && (
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/intro-response?token=${intro.response_token}`;
+                    navigator.clipboard.writeText(url);
+                    const el = document.getElementById(`copy-${intro.id}`);
+                    if (el) {
+                      el.textContent = 'Copied!';
+                      setTimeout(() => {
+                        if (el) el.textContent = 'Copy response link';
+                      }, 2000);
+                    }
+                  }}
+                  id={`copy-${intro.id}`}
+                  className="text-[10px] text-purple-500 hover:text-purple-700 hover:underline transition-colors"
+                >
+                  Copy response link
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Message (if any) */}
-        {intro.message && <MessageBlock label="Requester's note" text={intro.message} />}
+          {/* Message (if any) */}
+          {intro.message && <MessageBlock label="Requester's note" text={intro.message} />}
 
-        {/* Contact response (from hiring contact via accept/decline page) */}
-        {intro.contact_response && (
-          <ContactResponseBlock
-            response={intro.contact_response}
-            note={intro.contact_note}
-            respondedAt={intro.contact_responded_at}
-            contactName={intro.job_submitter_name}
-          />
-        )}
+          {/* Contact response (from hiring contact via accept/decline page) */}
+          {intro.contact_response && (
+            <ContactResponseBlock
+              response={intro.contact_response}
+              note={intro.contact_note}
+              respondedAt={intro.contact_responded_at}
+              contactName={intro.job_submitter_name}
+            />
+          )}
 
-        {/* Bottom bar: Actions + Meta */}
-        <div className="flex items-center justify-between gap-3 pt-1 border-t border-gray-100">
-          <div className="flex items-center gap-2 flex-wrap">
-            <PrimaryAction intro={intro} onStatusChange={onStatusChange} onFollowUp={onFollowUp} />
+          {/* Bottom bar: Secondary actions + Meta */}
+          <div className="flex items-center justify-between gap-3 pt-1 border-t border-gray-100">
             <SecondaryActions intro={intro} onStatusChange={onStatusChange} />
+
+            <div className="flex items-center gap-3 text-[11px] text-gray-400 shrink-0">
+              {intro.email_count > 0 && (
+                <span>
+                  {intro.email_count} email{intro.email_count !== 1 ? 's' : ''}
+                </span>
+              )}
+              {intro.last_email_at && intro.email_types?.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                  {EVENT_SHORT[intro.email_types[intro.email_types.length - 1]] ||
+                    intro.email_types[intro.email_types.length - 1]}{' '}
+                  {getRelativeTimeLabel(intro.last_email_at)}
+                </span>
+              )}
+              {intro.last_email_at && (!intro.email_types || intro.email_types.length === 0) && (
+                <span>Last: {getRelativeTimeLabel(intro.last_email_at)}</span>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 text-[11px] text-gray-400 shrink-0">
-            {intro.email_count > 0 && (
-              <span>
-                {intro.email_count} email{intro.email_count !== 1 ? 's' : ''}
-              </span>
-            )}
-            {intro.last_email_at && intro.email_types?.length > 0 && (
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                {EVENT_SHORT[intro.email_types[intro.email_types.length - 1]] ||
-                  intro.email_types[intro.email_types.length - 1]}{' '}
-                {getRelativeTimeLabel(intro.last_email_at)}
-              </span>
-            )}
-            {intro.last_email_at && (!intro.email_types || intro.email_types.length === 0) && (
-              <span>Last: {getRelativeTimeLabel(intro.last_email_at)}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Email trail toggle */}
-        <button
-          onClick={onToggleTrail}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <svg
-            className={`h-3 w-3 transition-transform ${emailTrailExpanded ? 'rotate-90' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
+          {/* Email trail toggle */}
+          <button
+            onClick={onToggleTrail}
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-          Email trail{logs ? ` (${logs.length})` : ''}
-        </button>
+            <svg
+              className={`h-3 w-3 transition-transform ${emailTrailExpanded ? 'rotate-90' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+            Email trail{logs ? ` (${logs.length})` : ''}
+          </button>
 
-        {/* Email trail content */}
-        {emailTrailExpanded && <EmailTrail logs={logs} loading={loadingLogs} />}
-      </div>
+          {/* Email trail content */}
+          {emailTrailExpanded && <EmailTrail logs={logs} loading={loadingLogs} />}
+        </div>
+      )}
     </div>
   );
 }
@@ -1446,6 +1471,67 @@ function HowItWorks() {
   );
 }
 
+// ─── Quick Stats ───
+
+function QuickStats({ intros }: { intros: WarmIntroRecord[] }) {
+  if (intros.length === 0) return null;
+
+  const connected = intros.filter(
+    (i) => i.status === 'connected' || i.status === 'followed_up',
+  ).length;
+  const terminal = intros.filter(
+    (i) =>
+      i.status === 'connected' ||
+      i.status === 'followed_up' ||
+      i.status === 'declined' ||
+      i.status === 'no_response',
+  ).length;
+  const connectionRate = terminal > 0 ? Math.round((connected / terminal) * 100) : 0;
+
+  const needsAction = intros.filter(
+    (i) => i.status === 'pending' || i.status === 'accepted',
+  ).length;
+
+  const connectedIntros = intros.filter(
+    (i) => (i.status === 'connected' || i.status === 'followed_up') && i.created_at,
+  );
+  const avgDays =
+    connectedIntros.length > 0
+      ? Math.round(
+          connectedIntros.reduce((sum, i) => {
+            const created = new Date(i.created_at).getTime();
+            const updated = i.updated_at ? new Date(i.updated_at).getTime() : Date.now();
+            return sum + (updated - created) / (1000 * 60 * 60 * 24);
+          }, 0) / connectedIntros.length,
+        )
+      : null;
+
+  return (
+    <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-center">
+        <p className="text-2xl font-bold text-emerald-600">{connectionRate}%</p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+          Connection rate
+        </p>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-center">
+        <p className="text-2xl font-bold text-gray-800">{avgDays !== null ? `${avgDays}d` : '—'}</p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+          Avg to connect
+        </p>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-center">
+        <p className={`text-2xl font-bold ${needsAction > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+          {needsAction}
+        </p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+          Need your action
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Empty State ───
 
 function EmptyState({ filter }: { filter: string }) {
@@ -1584,12 +1670,7 @@ function NextStepGuidance({ intro }: { intro: WarmIntroRecord }) {
       isAction = true;
       break;
     case 'contacted':
-      if (intro.contact_response === 'more_info') {
-        msg = `${submitter} wants more info before deciding. Follow up with them directly.`;
-        isAction = true;
-      } else {
-        msg = `Waiting for ${submitter} to accept or decline via email link`;
-      }
+      msg = `Waiting for ${submitter} to accept or decline via email link`;
       break;
     case 'accepted':
       msg = `${submitter} said yes! Send the introduction emails now`;

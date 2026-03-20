@@ -27,7 +27,6 @@ describe('IntroResponsePage', () => {
     expect(screen.getByText('Warm Intro Request')).toBeInTheDocument();
     expect(screen.getByText('Yes, make the intro')).toBeInTheDocument();
     expect(screen.getByText('Not right now')).toBeInTheDocument();
-    expect(screen.getByText('I need more info first')).toBeInTheDocument();
   });
 
   it('shows optional note textarea', () => {
@@ -46,7 +45,7 @@ describe('IntroResponsePage', () => {
     fireEvent.click(screen.getByText('Yes, make the intro'));
 
     await waitFor(() => {
-      expect(screen.getByText('Thanks! Introduction incoming.')).toBeInTheDocument();
+      expect(screen.getByText("You're connected! Intro emails sent.")).toBeInTheDocument();
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
