@@ -298,6 +298,11 @@ export interface WarmIntroRecord {
   email_count: number;
   last_email_at: string | null;
   email_types: string[];
+  // Contact response (from hiring contact via response page)
+  contact_response: string | null;
+  contact_responded_at: string | null;
+  contact_note: string | null;
+  response_token: string | null;
   // Timing
   days_in_status: number;
   is_stale: boolean;

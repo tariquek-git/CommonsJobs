@@ -24,34 +24,93 @@ const BROWSER_HEADERS: Record<string, string> = {
 };
 
 // Known job board API patterns — fetch structured data directly when possible
-function getApiUrl(url: string): string | null {
+interface JobBoardApi {
+  apiUrl: string;
+  board: 'greenhouse' | 'ashby';
+}
+
+function getJobBoardApi(url: string): JobBoardApi | null {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname;
 
     // Greenhouse: board page → JSON API
-    // e.g. https://boards.greenhouse.io/company/jobs/12345 → API
     const ghMatch = url.match(/boards\.greenhouse\.io\/([^/]+)\/jobs\/(\d+)/);
     if (ghMatch) {
-      return `https://boards-api.greenhouse.io/v1/boards/${ghMatch[1]}/jobs/${ghMatch[2]}`;
+      return {
+        apiUrl: `https://boards-api.greenhouse.io/v1/boards/${ghMatch[1]}/jobs/${ghMatch[2]}`,
+        board: 'greenhouse',
+      };
     }
 
-    // Lever: job page → JSON by appending /apply (or commit data from page)
-    if (host === 'jobs.lever.co') {
-      // Lever embeds JSON-LD; regular fetch with good headers usually works
-      return null;
-    }
+    // Lever: embeds JSON-LD; regular fetch with good headers usually works
+    if (host === 'jobs.lever.co') return null;
 
     // Ashby: job page → API
     const ashbyMatch = url.match(/jobs\.ashbyhq\.com\/([^/]+)\/([a-f0-9-]+)/);
     if (ashbyMatch) {
-      return `https://api.ashbyhq.com/posting-api/job-board/${ashbyMatch[1]}/posting/${ashbyMatch[2]}`;
+      return {
+        apiUrl: `https://api.ashbyhq.com/posting-api/job-board/${ashbyMatch[1]}/posting/${ashbyMatch[2]}`,
+        board: 'ashby',
+      };
     }
 
     return null;
   } catch {
     return null;
   }
+}
+
+// Parse structured JSON from known job board APIs directly (no AI needed)
+function stripHtml(html: string): string {
+  return html
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseGreenhouseJob(json: Record<string, unknown>): Record<string, string | null> {
+  const loc = json.location as Record<string, unknown> | undefined;
+  const content = (json.content as string) || '';
+  const description = stripHtml(content);
+  const locationStr = loc?.name as string | undefined;
+
+  return {
+    title: (json.title as string) || null,
+    company: (json.company_name as string) || null,
+    description: description || null,
+    location: locationStr || null,
+    country: null,
+    company_url: null,
+    salary_range: null,
+    employment_type: null,
+    work_arrangement: locationStr?.toLowerCase().includes('remote') ? 'Remote' : null,
+  };
+}
+
+function parseAshbyJob(json: Record<string, unknown>): Record<string, string | null> {
+  const info = json.info as Record<string, unknown> | undefined;
+  const descHtml = (info?.descriptionHtml as string) || (json.descriptionHtml as string) || '';
+  const description = stripHtml(descHtml);
+  const locationStr = (json.locationName as string) || (info?.location as string) || null;
+
+  return {
+    title: (json.title as string) || (info?.title as string) || null,
+    company: (json.organizationName as string) || null,
+    description: description || null,
+    location: locationStr,
+    country: null,
+    company_url: null,
+    salary_range: (json.compensationTierSummary as string) || null,
+    employment_type: (json.employmentType as string) || null,
+    work_arrangement: locationStr?.toLowerCase().includes('remote') ? 'Remote' : null,
+  };
 }
 
 // Fetch with realistic browser behavior
@@ -163,13 +222,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'URL not allowed', code: 'BAD_REQUEST' });
     }
 
-    // Strategy 1: Try known job board APIs first (structured data, no anti-bot)
-    const apiUrl = getApiUrl(url);
-    if (apiUrl) {
+    // Strategy 1: Try known job board APIs first (structured JSON, no anti-bot, no AI needed)
+    const boardApi = getJobBoardApi(url);
+    if (boardApi) {
       try {
-        const apiResult = await fetchWithBrowserHeaders(apiUrl, 10000);
+        const apiResult = await fetchWithBrowserHeaders(boardApi.apiUrl, 10000);
         if (apiResult.ok && apiResult.html.length > 100) {
-          logger.info('Fetched via job board API', { endpoint: 'scrape-url', url, apiUrl });
+          try {
+            const json = JSON.parse(apiResult.html);
+            const parsed =
+              boardApi.board === 'greenhouse' ? parseGreenhouseJob(json) : parseAshbyJob(json);
+
+            // If we got a title and description, return directly (skip AI)
+            if (parsed.title && parsed.description) {
+              logger.info('Parsed directly from job board API', {
+                endpoint: 'scrape-url',
+                url,
+                board: boardApi.board,
+              });
+              return res.status(200).json({ result: parsed, fallback: false });
+            }
+          } catch {
+            // JSON parse failed — fall through to AI extraction
+          }
+
+          // Fallback: send raw API response to AI extractor
+          logger.info('Job board API → AI extraction', { endpoint: 'scrape-url', url });
           const result = await scrapeAndExtract(apiResult.html);
           return res.status(200).json(result);
         }

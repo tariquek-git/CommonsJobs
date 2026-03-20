@@ -50,7 +50,7 @@ export default apiHandler(
     let query = supabase
       .from('warm_intros')
       .select(
-        'id, name, email, linkedin, message, status, created_at, status_updated_at, job_id, referrer_name, referrer_company',
+        'id, name, email, linkedin, message, status, created_at, status_updated_at, job_id, referrer_name, referrer_company, contact_response, contact_responded_at, contact_note, response_token',
       );
 
     if (statusFilter) {

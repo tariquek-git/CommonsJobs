@@ -110,7 +110,7 @@ const PIPELINE_CONFIG: Record<string, PipelineCfg> = {
 
 const STATUS_CONTEXT: Record<string, string> = {
   pending: 'New request — reach out to the hiring contact',
-  contacted: 'Outreach sent — waiting for hiring contact to respond',
+  contacted: 'Outreach sent — waiting for hiring contact to accept/decline via email',
   accepted: 'Contact said yes! Time to send the introduction',
   connected: 'Introduction emails sent to both sides',
   followed_up: '"How did it go?" check-in sent',
@@ -287,7 +287,7 @@ export default function IntrosPage() {
       jobSubmitterName: intro.job_submitter_name || undefined,
       jobSubmitterEmail: intro.job_submitter_email || undefined,
     });
-    if (newStatus === 'connected') {
+    if (newStatus === 'connected' || newStatus === 'contacted') {
       setContactName(intro.job_submitter_name || '');
       setContactEmail(intro.job_submitter_email || '');
       setContactRole('');
@@ -296,14 +296,17 @@ export default function IntrosPage() {
 
   const confirmStatusChange = async () => {
     if (!token || !confirmModal) return;
-    if (confirmModal.newStatus === 'connected' && (!contactName.trim() || !contactEmail.trim())) {
-      setError('Contact name and email are required to make an introduction.');
+    if (
+      (confirmModal.newStatus === 'connected' || confirmModal.newStatus === 'contacted') &&
+      (!contactName.trim() || !contactEmail.trim())
+    ) {
+      setError('Contact name and email are required.');
       return;
     }
     setConfirmLoading(true);
     try {
       const extra =
-        confirmModal.newStatus === 'connected'
+        confirmModal.newStatus === 'connected' || confirmModal.newStatus === 'contacted'
           ? {
               contact_name: contactName.trim(),
               contact_email: contactEmail.trim(),
@@ -512,6 +515,45 @@ export default function IntrosPage() {
               ))}
             </div>
 
+            {/* Contact info for "contacted" */}
+            {confirmModal.newStatus === 'contacted' && (
+              <div className="space-y-3 rounded-xl bg-gray-50 border border-gray-200 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Send outreach to
+                  </p>
+                  {(confirmModal.jobSubmitterName || confirmModal.jobSubmitterEmail) && (
+                    <span className="text-[10px] text-gray-400">Pre-filled from job submitter</span>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Contact Name *</label>
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                    placeholder="e.g. Sarah Chen"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Contact Email *</label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                    placeholder="sarah@company.com"
+                  />
+                </div>
+                {(!contactName.trim() || !contactEmail.trim()) && (
+                  <p className="text-xs text-amber-600">
+                    Contact name and email needed to send the outreach email.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Contact info for "connected" */}
             {confirmModal.newStatus === 'connected' && (
               <div className="space-y-3 rounded-xl bg-gray-50 border border-gray-200 p-4">
@@ -574,7 +616,8 @@ export default function IntrosPage() {
                 onClick={confirmStatusChange}
                 disabled={
                   confirmLoading ||
-                  (confirmModal.newStatus === 'connected' &&
+                  ((confirmModal.newStatus === 'connected' ||
+                    confirmModal.newStatus === 'contacted') &&
                     (!contactName.trim() || !contactEmail.trim()))
                 }
                 className={`flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold transition-colors ${
@@ -811,7 +854,7 @@ function IntroCard({
           {/* SUBMITTER / CONTACT */}
           <div className="bg-purple-50/50 rounded-lg p-3 space-y-1.5">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              Posted by
+              Hiring Contact
             </p>
             {intro.job_submitter_name ? (
               <>
@@ -826,13 +869,59 @@ function IntroCard({
                 )}
               </>
             ) : (
-              <p className="text-xs text-gray-400 italic">No submitter info</p>
+              <p className="text-xs text-gray-400 italic">No contact info on file</p>
+            )}
+            {intro.contact_response && (
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  intro.contact_response === 'accepted'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : intro.contact_response === 'declined'
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                {intro.contact_response === 'accepted'
+                  ? 'Said yes'
+                  : intro.contact_response === 'declined'
+                    ? 'Passed'
+                    : 'Wants more info'}
+              </span>
+            )}
+            {!intro.contact_response && intro.status === 'contacted' && intro.response_token && (
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/intro-response?token=${intro.response_token}`;
+                  navigator.clipboard.writeText(url);
+                  const el = document.getElementById(`copy-${intro.id}`);
+                  if (el) {
+                    el.textContent = 'Copied!';
+                    setTimeout(() => {
+                      if (el) el.textContent = 'Copy response link';
+                    }, 2000);
+                  }
+                }}
+                id={`copy-${intro.id}`}
+                className="text-[10px] text-purple-500 hover:text-purple-700 hover:underline transition-colors"
+              >
+                Copy response link
+              </button>
             )}
           </div>
         </div>
 
         {/* Message (if any) */}
-        {intro.message && <MessageBlock text={intro.message} />}
+        {intro.message && <MessageBlock label="Requester's note" text={intro.message} />}
+
+        {/* Contact response (from hiring contact via accept/decline page) */}
+        {intro.contact_response && (
+          <ContactResponseBlock
+            response={intro.contact_response}
+            note={intro.contact_note}
+            respondedAt={intro.contact_responded_at}
+            contactName={intro.job_submitter_name}
+          />
+        )}
 
         {/* Bottom bar: Actions + Meta */}
         <div className="flex items-center justify-between gap-3 pt-1 border-t border-gray-100">
@@ -889,13 +978,18 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Collapsible Message ───
 
-function MessageBlock({ text }: { text: string }) {
+function MessageBlock({ text, label }: { text: string; label?: string }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = text.length > 120;
   const display = isLong && !expanded ? text.slice(0, 120) + '...' : text;
 
   return (
     <div className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2.5">
+      {label && (
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+          {label}
+        </p>
+      )}
       <span className="italic">&ldquo;{display}&rdquo;</span>
       {isLong && (
         <button
@@ -905,6 +999,68 @@ function MessageBlock({ text }: { text: string }) {
           {expanded ? 'less' : 'more'}
         </button>
       )}
+    </div>
+  );
+}
+
+// ─── Contact Response Block ───
+
+const RESPONSE_CONFIG: Record<string, { label: string; bg: string; border: string; icon: string }> =
+  {
+    accepted: {
+      label: 'Accepted',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
+      icon: '✓',
+    },
+    declined: {
+      label: 'Declined',
+      bg: 'bg-red-50',
+      border: 'border-red-200',
+      icon: '✕',
+    },
+    more_info: {
+      label: 'Wants more info',
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+      icon: '?',
+    },
+  };
+
+function ContactResponseBlock({
+  response,
+  note,
+  respondedAt,
+  contactName,
+}: {
+  response: string;
+  note: string | null;
+  respondedAt: string | null;
+  contactName: string | null;
+}) {
+  const cfg = RESPONSE_CONFIG[response] || {
+    label: response,
+    bg: 'bg-gray-50',
+    border: 'border-gray-200',
+    icon: '·',
+  };
+
+  return (
+    <div className={`rounded-lg ${cfg.bg} border ${cfg.border} px-3 py-2.5 space-y-1`}>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+          Contact Response
+        </p>
+        {respondedAt && (
+          <span className="text-[10px] text-gray-400">{getRelativeTimeLabel(respondedAt)}</span>
+        )}
+      </div>
+      <p className="text-sm font-medium text-gray-800">
+        <span className="mr-1.5">{cfg.icon}</span>
+        {contactName || 'Hiring contact'} {cfg.label.toLowerCase()}
+        {response === 'more_info' ? '' : ' this intro'}
+      </p>
+      {note && <p className="text-sm text-gray-600 italic mt-1">&ldquo;{note}&rdquo;</p>}
     </div>
   );
 }
@@ -1294,20 +1450,46 @@ function StepTracker({ currentStatus }: { currentStatus: string }) {
 
 function NextStepGuidance({ intro }: { intro: WarmIntroRecord }) {
   const submitter = intro.job_submitter_name || intro.job_company;
-  const messages: Record<string, string> = {
-    pending: `Next: Reach out to ${submitter} about introducing ${intro.name}`,
-    contacted: `Waiting for ${submitter} to accept or decline (check email for their response)`,
-    accepted: `${submitter} said yes! Send the introduction emails now`,
-    connected: 'Both sides introduced. Send a follow-up in a few days',
-    followed_up: 'Check-in sent — waiting for reply',
-    declined: 'Contact passed. Requester has been notified.',
-    no_response: 'This intro is closed',
-  };
-  const msg = messages[intro.status] || '';
-  if (!msg) return null;
 
-  const isAction = intro.status === 'pending' || intro.status === 'accepted';
-  const isDone = ['connected', 'followed_up', 'declined', 'no_response'].includes(intro.status);
+  let msg = '';
+  let isAction = false;
+  let isDone = false;
+
+  switch (intro.status) {
+    case 'pending':
+      msg = `Next: Reach out to ${submitter} about introducing ${intro.name}`;
+      isAction = true;
+      break;
+    case 'contacted':
+      if (intro.contact_response === 'more_info') {
+        msg = `${submitter} wants more info before deciding. Follow up with them directly.`;
+        isAction = true;
+      } else {
+        msg = `Waiting for ${submitter} to accept or decline via email link`;
+      }
+      break;
+    case 'accepted':
+      msg = `${submitter} said yes! Send the introduction emails now`;
+      isAction = true;
+      break;
+    case 'connected':
+      msg = 'Both sides introduced. Send a follow-up in a few days to check in.';
+      break;
+    case 'followed_up':
+      msg = 'Check-in sent — waiting for reply';
+      isDone = true;
+      break;
+    case 'declined':
+      msg = 'Contact passed. Requester has been notified.';
+      isDone = true;
+      break;
+    case 'no_response':
+      msg = 'This intro is closed — no response from hiring contact.';
+      isDone = true;
+      break;
+  }
+
+  if (!msg) return null;
 
   return (
     <p
