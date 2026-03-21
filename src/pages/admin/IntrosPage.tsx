@@ -108,7 +108,7 @@ const PIPELINE_CONFIG: Record<string, PipelineCfg> = {
   },
 };
 
-const STATUS_CONTEXT: Record<string, string> = {
+const _STATUS_CONTEXT: Record<string, string> = {
   pending: 'New request — reach out to the hiring contact',
   contacted: 'Outreach sent — waiting for hiring contact to accept/decline via email',
   accepted: 'Contact said yes! Time to send the introduction',
@@ -1500,7 +1500,7 @@ function QuickStats({ intros }: { intros: WarmIntroRecord[] }) {
       ? Math.round(
           connectedIntros.reduce((sum, i) => {
             const created = new Date(i.created_at).getTime();
-            const updated = i.updated_at ? new Date(i.updated_at).getTime() : Date.now();
+            const updated = new Date(i.updated_at ?? i.created_at).getTime();
             return sum + (updated - created) / (1000 * 60 * 60 * 24);
           }, 0) / connectedIntros.length,
         )

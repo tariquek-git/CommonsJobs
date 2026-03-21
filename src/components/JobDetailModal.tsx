@@ -4,6 +4,7 @@ import { formatDate, getRelativeTimeLabel } from '../lib/date';
 import { trackClick } from '../lib/api';
 import { shareJob, getUtmParams, isSafeUrl } from '../lib/utils';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import WarmIntroModal from './WarmIntroModal';
 import CompanyLogo from './CompanyLogo';
 import { usePostHog } from '@posthog/react';
@@ -13,54 +14,13 @@ interface JobDetailModalProps {
   onClose: () => void;
 }
 
-function CollapsibleSection({
-  title,
-  icon,
-  defaultOpen = false,
-  children,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <div className="border border-gray-200/60 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="text-gray-400">{icon}</span>
-          <span className="text-sm font-semibold text-gray-700">{title}</span>
-        </div>
-        <svg
-          className={`h-4 w-4 text-gray-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-out ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
-      >
-        <div className="px-4 pb-4 pt-0">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const posthog = usePostHog();
+  useFocusTrap(overlayRef, !!job);
 
   useEffect(() => {
     if (!job) return;
@@ -98,11 +58,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
         window.history.replaceState(null, '', previousUrl);
       }
     };
-  }, [job, onClose]);
-
-  useEffect(() => {
-    if (!job) setShowIntro(false);
-  }, [job]);
+  }, [job, onClose, posthog]);
 
   if (!job) return null;
 

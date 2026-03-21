@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { requestWarmIntro } from '../lib/api';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import type { Job } from '../lib/types';
 import { usePostHog } from '@posthog/react';
 
@@ -11,6 +12,7 @@ interface WarmIntroModalProps {
 
 export default function WarmIntroModal({ job, onClose }: WarmIntroModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(overlayRef);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [linkedin, setLinkedin] = useState('');

@@ -27,7 +27,7 @@ const mockJobsData = [
 
 // Helper to create a chain that resolves at any point
 function chain(resolvedValue: unknown) {
-  const self: Record<string, unknown> = {};
+  const _self: Record<string, unknown> = {};
   const make = (): unknown =>
     new Proxy(() => {}, {
       get(_t, prop: string) {
@@ -48,8 +48,8 @@ function chain(resolvedValue: unknown) {
 
 let introsResult: unknown;
 let jobsResult: unknown;
-let introSingleResult: unknown;
-let updateResult: unknown;
+let _introSingleResult: unknown;
+let _updateResult: unknown;
 let emailLogsResult: unknown;
 
 const mockFrom = vi.fn().mockImplementation((table: string) => {

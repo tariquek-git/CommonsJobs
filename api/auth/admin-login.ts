@@ -23,7 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const adminPasswordHash = getEnv('ADMIN_PASSWORD_HASH');
 
     // Always run bcrypt comparison to prevent timing-based username enumeration
-    const dummyHash = '$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012';
+    // This must be a valid bcrypt hash so bcrypt.compare() takes consistent time
+    const dummyHash = '$2a$10$Xo8w/MioJhSDxWR9mOjjeuht8qFwXSaMZDn1Wp//8V8hoTGQLxLcm';
     const hashToCheck = body.username === adminUsername ? adminPasswordHash : dummyHash;
     const valid = await verifyPassword(body.password, hashToCheck);
 

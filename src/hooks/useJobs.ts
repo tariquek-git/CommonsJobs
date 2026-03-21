@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { searchJobs } from '../lib/api';
 import type { Job, SortOption, SearchMeta } from '../lib/types';
@@ -53,7 +53,14 @@ export function useJobs(): UseJobsReturn {
     });
   };
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const fetchJobs = useCallback(async () => {
+    // Cancel any in-flight request before starting a new one
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
@@ -63,18 +70,26 @@ export function useJobs(): UseJobsReturn {
         tags: tags.length > 0 ? tags : undefined,
         category: category || undefined,
       });
-      setJobs(result.jobs);
-      setMeta(result.meta);
+      if (!controller.signal.aborted) {
+        setJobs(result.jobs);
+        setMeta(result.meta);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load jobs');
-      setJobs([]);
+      if (!controller.signal.aborted) {
+        setError(err instanceof Error ? err.message : 'Failed to load jobs');
+        setJobs([]);
+      }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort, tags.join(','), category]);
 
   useEffect(() => {
     fetchJobs();
+    return () => abortRef.current?.abort();
   }, [fetchJobs]);
 
   return {

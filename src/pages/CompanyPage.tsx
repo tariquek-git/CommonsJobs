@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { usePostHog } from '@posthog/react';
 import { searchJobs } from '../lib/api';
 import type { Job } from '../lib/types';
@@ -11,7 +11,6 @@ import BottomNav from '../components/BottomNav';
 
 export default function CompanyPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const posthog = usePostHog();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +23,6 @@ export default function CompanyPage() {
     document.title = `${companyName} Jobs | Fintech Commons`;
     posthog?.capture('page_viewed', { page: 'company', company: companyName });
 
-    setLoading(true);
     searchJobs({ sort: 'newest', page: 1, limit: 50 })
       .then((res) => {
         const companyJobs = res.jobs.filter(

@@ -1,6 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { usePostHog } from '@posthog/react';
+import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 
 // Lazy-load all pages for smaller initial bundle
@@ -48,35 +49,37 @@ export default function App() {
 
   return (
     <>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/job/:id" element={<JobPage />} />
-          <Route path="/company/:slug" element={<CompanyPage />} />
-          <Route path="/submit" element={<SubmitPage />} />
-          <Route path="/intro-response" element={<IntroResponsePage />} />
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/job/:id" element={<JobPage />} />
+            <Route path="/company/:slug" element={<CompanyPage />} />
+            <Route path="/submit" element={<SubmitPage />} />
+            <Route path="/intro-response" element={<IntroResponsePage />} />
 
-          {/* Admin routes — nested under AdminPage (handles auth + layout) */}
-          <Route path="/admin" element={<AdminPage />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="jobs" element={<JobsPage />} />
-            <Route path="jobs/new" element={<JobEditorPage />} />
-            <Route path="jobs/:id" element={<JobEditorPage />} />
-            <Route path="intros" element={<IntrosPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="email" element={<EmailPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+            {/* Admin routes — nested under AdminPage (handles auth + layout) */}
+            <Route path="/admin" element={<AdminPage />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="jobs" element={<JobsPage />} />
+              <Route path="jobs/new" element={<JobEditorPage />} />
+              <Route path="jobs/:id" element={<JobEditorPage />} />
+              <Route path="intros" element={<IntrosPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="email" element={<EmailPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       {/* Hide footer on admin pages */}
       {!isAdmin && <Footer />}
     </>

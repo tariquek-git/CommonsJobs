@@ -27,6 +27,7 @@ export function useInView(options?: IntersectionObserverInit) {
 
     observer.observe(el);
     return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- options should be stable; re-observing on every render is wasteful
   }, []);
 
   return { ref, inView };

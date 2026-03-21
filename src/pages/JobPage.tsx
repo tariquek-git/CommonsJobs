@@ -84,7 +84,6 @@ export default function JobPage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
     getJob(id)
       .then((data) => {
         setJob(data);

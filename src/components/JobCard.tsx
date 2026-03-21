@@ -21,6 +21,8 @@ function getDaysUntilExpiry(expiresAt: string | null): number | null {
 export default memo(function JobCard({ job, onSelect, className = '' }: JobCardProps) {
   const posthog = usePostHog();
   const navigate = useNavigate();
+  // Capture current time once on mount to avoid impure Date.now() in render
+  const [now] = useState(Date.now);
   const [showCopied, setShowCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
@@ -165,19 +167,11 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
                   Featured
                 </span>
               )}
-              {(() => {
-                const diffDays = Math.floor(
-                  (Date.now() - new Date(job.posted_date).getTime()) / (1000 * 60 * 60 * 24),
-                );
-                if (diffDays < 3) {
-                  return (
-                    <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
-                      New
-                    </span>
-                  );
-                }
-                return null;
-              })()}
+              {new Date(job.posted_date).getTime() > now - 3 * 86_400_000 && (
+                <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                  New
+                </span>
+              )}
               <span className="text-xs text-gray-600 tabular-nums">
                 {getRelativeTimeLabel(job.posted_date)}
               </span>
@@ -200,7 +194,7 @@ export default memo(function JobCard({ job, onSelect, className = '' }: JobCardP
               const loc = job.location;
               const arr = job.work_arrangement;
               const isRemote = arr?.toLowerCase() === 'remote';
-              const isHybrid = arr?.toLowerCase() === 'hybrid';
+              const _isHybrid = arr?.toLowerCase() === 'hybrid';
               const locationIsRemote = loc?.toLowerCase() === 'remote';
 
               // Show location pin (skip if location is just "Remote" and arrangement is already Remote)

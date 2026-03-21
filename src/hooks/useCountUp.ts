@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 
 export function useCountUp(target: number, duration = 600, active = true) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(() => (!active || target === 0 ? target : 0));
 
   useEffect(() => {
-    if (!active || target === 0) {
-      setCount(target);
-      return;
-    }
+    if (!active || target === 0) return;
 
     let start = 0;
     const startTime = performance.now();

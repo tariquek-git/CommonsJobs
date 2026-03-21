@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
 type ResponseState = 'loading' | 'confirm' | 'submitting' | 'success' | 'error' | 'already';
@@ -7,19 +7,12 @@ export default function IntroResponsePage() {
   const [params] = useSearchParams();
   const token = params.get('token');
   const actionFromUrl = params.get('action');
-  const [state, setState] = useState<ResponseState>('loading');
+  const [state, setState] = useState<ResponseState>(token ? 'confirm' : 'error');
   const [action, setAction] = useState<string>(actionFromUrl || '');
   const [note, setNote] = useState('');
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    if (!token) {
-      setState('error');
-      setMessage('Invalid link — this intro response link appears to be broken.');
-      return;
-    }
-    setState('confirm');
-  }, [token]);
+  const [message, setMessage] = useState(
+    token ? '' : 'Invalid link — this intro response link appears to be broken.',
+  );
 
   const handleSubmit = async (selectedAction?: string) => {
     const finalAction = selectedAction || action;
