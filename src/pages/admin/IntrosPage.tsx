@@ -496,6 +496,7 @@ export default function IntrosPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, email, job, company..."
+            aria-label="Search connection requests"
             className="w-full text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           />
           {searchQuery && (
@@ -510,6 +511,7 @@ export default function IntrosPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'stale')}
+          aria-label="Sort connection requests"
           className="text-xs border border-gray-200 rounded-lg px-3 py-2 text-gray-600 bg-white"
         >
           <option value="newest">Newest first</option>
@@ -560,182 +562,31 @@ export default function IntrosPage() {
 
       {/* ─── Confirmation Modal ─── */}
       {confirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div
-            className={`bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border-l-4 ${CARD_BORDER[confirmModal.newStatus] || 'border-l-gray-300'}`}
-          >
-            <h3 className="text-lg font-bold text-gray-900">
-              {STATUS_LABELS[confirmModal.newStatus]}: {confirmModal.introName}
-            </h3>
-
-            <p className="text-sm text-gray-500">
-              {confirmModal.jobTitle} at {confirmModal.jobCompany}
-            </p>
-
-            {/* What emails will fire */}
-            <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 space-y-1.5">
-              <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider">
-                Emails that will send
-              </p>
-              {getEmailPreview(confirmModal.newStatus, confirmModal).map((line, i) => (
-                <p key={i} className="text-sm text-blue-800">
-                  {line}
-                </p>
-              ))}
-            </div>
-
-            {/* Contact info for "contacted" */}
-            {confirmModal.newStatus === 'contacted' && (
-              <div className="space-y-3 rounded-xl bg-gray-50 border border-gray-200 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Send outreach to
-                  </p>
-                  {(confirmModal.jobSubmitterName || confirmModal.jobSubmitterEmail) && (
-                    <span className="text-[10px] text-gray-400">Pre-filled from job submitter</span>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Contact Name *</label>
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                    placeholder="e.g. Sarah Chen"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Contact Email *</label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                    placeholder="sarah@company.com"
-                  />
-                </div>
-                {(!contactName.trim() || !contactEmail.trim()) && (
-                  <p className="text-xs text-amber-600">
-                    Contact name and email needed to send the outreach email.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Contact info for "connected" */}
-            {confirmModal.newStatus === 'connected' && (
-              <div className="space-y-3 rounded-xl bg-gray-50 border border-gray-200 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Introducing them to
-                  </p>
-                  {(confirmModal.jobSubmitterName || confirmModal.jobSubmitterEmail) && (
-                    <span className="text-[10px] text-gray-400">Pre-filled from job submitter</span>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Name *</label>
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                    placeholder="e.g. Sarah Chen"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Email *</label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                    placeholder="sarah@company.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Role (optional)</label>
-                  <input
-                    type="text"
-                    value={contactRole}
-                    onChange={(e) => setContactRole(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-                    placeholder="e.g. Engineering Manager"
-                  />
-                </div>
-                {(!contactName.trim() || !contactEmail.trim()) && (
-                  <p className="text-xs text-red-500">Both name and email are required.</p>
-                )}
-              </div>
-            )}
-
-            {/* Buttons */}
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setConfirmModal(null);
-                  setError(null);
-                }}
-                className="flex-1 text-sm px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmStatusChange}
-                disabled={
-                  confirmLoading ||
-                  ((confirmModal.newStatus === 'connected' ||
-                    confirmModal.newStatus === 'contacted') &&
-                    (!contactName.trim() || !contactEmail.trim()))
-                }
-                className={`flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold transition-colors ${
-                  confirmModal.newStatus === 'no_response'
-                    ? 'bg-gray-700 text-white hover:bg-gray-800'
-                    : 'bg-brand-500 text-white hover:bg-brand-600'
-                } disabled:opacity-40 disabled:cursor-not-allowed`}
-              >
-                {confirmLoading ? 'Sending...' : 'Confirm & Send'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmStatusModal
+          modal={confirmModal}
+          loading={confirmLoading}
+          contactName={contactName}
+          contactEmail={contactEmail}
+          contactRole={contactRole}
+          onContactNameChange={setContactName}
+          onContactEmailChange={setContactEmail}
+          onContactRoleChange={setContactRole}
+          onConfirm={confirmStatusChange}
+          onCancel={() => {
+            setConfirmModal(null);
+            setError(null);
+          }}
+        />
       )}
 
       {/* ─── Follow-up Confirmation Modal ─── */}
       {followUpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 border-l-4 border-l-purple-400">
-            <h3 className="text-lg font-bold text-gray-900">Send Follow-up</h3>
-            <p className="text-sm text-gray-600">
-              Send a "How did it go?" check-in email to <strong>{followUpModal.name}</strong> about
-              their intro to {followUpModal.company}?
-            </p>
-            <div className="rounded-xl bg-purple-50 border border-purple-200 p-3">
-              <p className="text-[11px] font-semibold text-purple-700 uppercase tracking-wider">
-                Email that will send
-              </p>
-              <p className="text-sm text-purple-800 mt-1">
-                Will email {followUpModal.name}: "How did it go with {followUpModal.company}?"
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setFollowUpModal(null)}
-                className="flex-1 text-sm px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmFollowUp}
-                disabled={followUpLoading}
-                className="flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:opacity-40"
-              >
-                {followUpLoading ? 'Sending...' : 'Send Follow-up'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <FollowUpConfirmModal
+          modal={followUpModal}
+          loading={followUpLoading}
+          onConfirm={confirmFollowUp}
+          onCancel={() => setFollowUpModal(null)}
+        />
       )}
 
       {/* ─── Toast ─── */}
@@ -755,6 +606,246 @@ export default function IntrosPage() {
 // ════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
 // ════════════════════════════════════════════════════════════
+
+// ─── Confirm Status Modal ───
+
+function ConfirmStatusModal({
+  modal,
+  loading,
+  contactName,
+  contactEmail,
+  contactRole,
+  onContactNameChange,
+  onContactEmailChange,
+  onContactRoleChange,
+  onConfirm,
+  onCancel,
+}: {
+  modal: ConfirmModalState;
+  loading: boolean;
+  contactName: string;
+  contactEmail: string;
+  contactRole: string;
+  onContactNameChange: (v: string) => void;
+  onContactEmailChange: (v: string) => void;
+  onContactRoleChange: (v: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const needsContact = modal.newStatus === 'connected' || modal.newStatus === 'contacted';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-label={`Confirm status change to ${STATUS_LABELS[modal.newStatus]}`}
+    >
+      <div
+        className={`bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border-l-4 ${CARD_BORDER[modal.newStatus] || 'border-l-gray-300'}`}
+      >
+        <h3 className="text-lg font-bold text-gray-900">
+          {STATUS_LABELS[modal.newStatus]}: {modal.introName}
+        </h3>
+
+        <p className="text-sm text-gray-500">
+          {modal.jobTitle} at {modal.jobCompany}
+        </p>
+
+        {/* What emails will fire */}
+        <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 space-y-1.5">
+          <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider">
+            Emails that will send
+          </p>
+          {getEmailPreview(modal.newStatus, modal).map((line, i) => (
+            <p key={i} className="text-sm text-blue-800">
+              {line}
+            </p>
+          ))}
+        </div>
+
+        {/* Contact info for "contacted" */}
+        {modal.newStatus === 'contacted' && (
+          <ContactInfoFields
+            heading="Send outreach to"
+            prefilled={!!(modal.jobSubmitterName || modal.jobSubmitterEmail)}
+            contactName={contactName}
+            contactEmail={contactEmail}
+            onNameChange={onContactNameChange}
+            onEmailChange={onContactEmailChange}
+            warningText="Contact name and email needed to send the outreach email."
+          />
+        )}
+
+        {/* Contact info for "connected" */}
+        {modal.newStatus === 'connected' && (
+          <ContactInfoFields
+            heading="Introducing them to"
+            prefilled={!!(modal.jobSubmitterName || modal.jobSubmitterEmail)}
+            contactName={contactName}
+            contactEmail={contactEmail}
+            contactRole={contactRole}
+            onNameChange={onContactNameChange}
+            onEmailChange={onContactEmailChange}
+            onRoleChange={onContactRoleChange}
+            warningText="Both name and email are required."
+          />
+        )}
+
+        {/* Buttons */}
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={onCancel}
+            className="flex-1 text-sm px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading || (needsContact && (!contactName.trim() || !contactEmail.trim()))}
+            className={`flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold transition-colors ${
+              modal.newStatus === 'no_response'
+                ? 'bg-gray-700 text-white hover:bg-gray-800'
+                : 'bg-brand-500 text-white hover:bg-brand-600'
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {loading ? 'Sending...' : 'Confirm & Send'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Contact Info Fields (shared by contacted + connected modals) ───
+
+function ContactInfoFields({
+  heading,
+  prefilled,
+  contactName,
+  contactEmail,
+  contactRole,
+  onNameChange,
+  onEmailChange,
+  onRoleChange,
+  warningText,
+}: {
+  heading: string;
+  prefilled: boolean;
+  contactName: string;
+  contactEmail: string;
+  contactRole?: string;
+  onNameChange: (v: string) => void;
+  onEmailChange: (v: string) => void;
+  onRoleChange?: (v: string) => void;
+  warningText: string;
+}) {
+  return (
+    <div className="space-y-3 rounded-xl bg-gray-50 border border-gray-200 p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+          {heading}
+        </p>
+        {prefilled && (
+          <span className="text-[10px] text-gray-400">Pre-filled from job submitter</span>
+        )}
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">
+          {onRoleChange ? 'Name *' : 'Contact Name *'}
+        </label>
+        <input
+          type="text"
+          value={contactName}
+          onChange={(e) => onNameChange(e.target.value)}
+          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          placeholder="e.g. Sarah Chen"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">
+          {onRoleChange ? 'Email *' : 'Contact Email *'}
+        </label>
+        <input
+          type="email"
+          value={contactEmail}
+          onChange={(e) => onEmailChange(e.target.value)}
+          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          placeholder="sarah@company.com"
+        />
+      </div>
+      {onRoleChange && (
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Role (optional)</label>
+          <input
+            type="text"
+            value={contactRole || ''}
+            onChange={(e) => onRoleChange(e.target.value)}
+            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+            placeholder="e.g. Engineering Manager"
+          />
+        </div>
+      )}
+      {(!contactName.trim() || !contactEmail.trim()) && (
+        <p className={`text-xs ${onRoleChange ? 'text-red-500' : 'text-amber-600'}`}>
+          {warningText}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Follow-up Confirm Modal ───
+
+function FollowUpConfirmModal({
+  modal,
+  loading,
+  onConfirm,
+  onCancel,
+}: {
+  modal: { id: string; name: string; company: string };
+  loading: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-label="Confirm follow-up email"
+    >
+      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 border-l-4 border-l-purple-400">
+        <h3 className="text-lg font-bold text-gray-900">Send Follow-up</h3>
+        <p className="text-sm text-gray-600">
+          Send a &quot;How did it go?&quot; check-in email to <strong>{modal.name}</strong> about
+          their intro to {modal.company}?
+        </p>
+        <div className="rounded-xl bg-purple-50 border border-purple-200 p-3">
+          <p className="text-[11px] font-semibold text-purple-700 uppercase tracking-wider">
+            Email that will send
+          </p>
+          <p className="text-sm text-purple-800 mt-1">
+            Will email {modal.name}: &quot;How did it go with {modal.company}?&quot;
+          </p>
+        </div>
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={onCancel}
+            className="flex-1 text-sm px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 text-sm px-4 py-2.5 rounded-xl font-semibold bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:opacity-40"
+          >
+            {loading ? 'Sending...' : 'Send Follow-up'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Pipeline Header ───
 

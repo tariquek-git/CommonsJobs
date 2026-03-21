@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getFilters, type FiltersResponse } from '../lib/api';
+import { FILTER_CACHE_TTL_MS } from '../lib/constants';
 
 const CACHE_KEY = 'fc_filters';
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface CachedFilters {
   categories: FiltersResponse['categories'];
@@ -15,7 +15,7 @@ function getCached(): CachedFilters | null {
     const raw = sessionStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as CachedFilters;
-    if (Date.now() - data.cachedAt > CACHE_TTL) return null;
+    if (Date.now() - data.cachedAt > FILTER_CACHE_TTL_MS) return null;
     return data;
   } catch {
     return null;

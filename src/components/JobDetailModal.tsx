@@ -8,6 +8,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import WarmIntroModal from './WarmIntroModal';
 import CompanyLogo from './CompanyLogo';
 import { usePostHog } from '@posthog/react';
+import { CloseIcon, LocationPinIcon, StarIcon } from './Icons';
 
 interface JobDetailModalProps {
   job: Job | null;
@@ -110,6 +111,9 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
         onClick={(e) => {
           if (e.target === overlayRef.current) onClose();
         }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${job.title} at ${job.company}`}
       >
         <div
           className={`w-full glass-panel p-0 overflow-hidden animate-slide-up ${

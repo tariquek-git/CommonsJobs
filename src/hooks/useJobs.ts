@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { searchJobs } from '../lib/api';
 import type { Job, SortOption, SearchMeta } from '../lib/types';
-
-const PAGE_SIZE = 50;
+import { PAGE_SIZE } from '../lib/constants';
 
 interface UseJobsReturn {
   jobs: Job[];

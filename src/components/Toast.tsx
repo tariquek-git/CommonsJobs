@@ -1,4 +1,6 @@
 import { useState, useCallback, createContext, useContext } from 'react';
+import { CloseIcon } from './Icons';
+import { TOAST_DURATION_MS, TOAST_EXIT_MS } from '../lib/constants';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -27,14 +29,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, exiting: true } : t)));
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 300);
+    }, TOAST_EXIT_MS);
   }, []);
 
   const toast = useCallback(
     (message: string, type: ToastType = 'info') => {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       setToasts((prev) => [...prev, { id, message, type }]);
-      setTimeout(() => removeToast(id), 4000);
+      setTimeout(() => removeToast(id), TOAST_DURATION_MS);
     },
     [removeToast],
   );
@@ -122,16 +124,7 @@ function ToastContainer({
             className="ml-1 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Dismiss notification"
           >
-            <svg
-              className="h-3.5 w-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <CloseIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       ))}
