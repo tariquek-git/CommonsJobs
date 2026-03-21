@@ -1,42 +1,30 @@
 import type { SortOption } from '../lib/types';
-import type { SearchMeta } from '../lib/types';
-import type { FiltersResponse } from '../lib/api';
+import { useFilterContext } from '../contexts/FilterContext';
 import { useCountUp } from '../hooks/useCountUp';
 
-interface FilterRailProps {
-  sort: SortOption;
-  onSortChange: (sort: SortOption) => void;
-  meta: SearchMeta | null;
-  tags: string[];
-  onTagsChange: (tags: string[]) => void;
-  category: string | null;
-  onCategoryChange: (category: string | null) => void;
-  availableCategories: FiltersResponse['categories'];
-  availableTags: FiltersResponse['tags'];
-}
-
-export default function FilterRail({
-  sort,
-  onSortChange,
-  meta,
-  tags,
-  onTagsChange,
-  category,
-  onCategoryChange,
-  availableCategories,
-  availableTags,
-}: FilterRailProps) {
+export default function FilterRail() {
+  const {
+    sort,
+    setSort,
+    meta,
+    tags,
+    setTags,
+    category,
+    setCategory,
+    availableCategories,
+    availableTags,
+  } = useFilterContext();
   const roleCount = useCountUp(meta?.total ?? 0, 600, !!meta);
 
   const toggleCategory = (cat: string) => {
-    onCategoryChange(category === cat ? null : cat);
+    setCategory(category === cat ? null : cat);
   };
 
   const toggleTag = (tag: string) => {
     if (tags.includes(tag)) {
-      onTagsChange(tags.filter((t) => t !== tag));
+      setTags(tags.filter((t) => t !== tag));
     } else {
-      onTagsChange([...tags, tag]);
+      setTags([...tags, tag]);
     }
   };
 
@@ -53,7 +41,7 @@ export default function FilterRail({
             {(['newest', 'oldest'] as SortOption[]).map((option) => (
               <button
                 key={option}
-                onClick={() => onSortChange(option)}
+                onClick={() => setSort(option)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                   sort === option
                     ? 'bg-brand-50 text-brand-500 font-semibold'
@@ -116,8 +104,8 @@ export default function FilterRail({
         {hasFilters && (
           <button
             onClick={() => {
-              onCategoryChange(null);
-              onTagsChange([]);
+              setCategory(null);
+              setTags([]);
             }}
             className="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-600 hover:text-gray-700 transition-colors"
           >

@@ -1,32 +1,20 @@
-import type { SortOption, SearchMeta } from '../lib/types';
-import type { FiltersResponse } from '../lib/api';
+import type { SortOption } from '../lib/types';
+import { useFilterContext } from '../contexts/FilterContext';
 import { usePostHog } from '@posthog/react';
 
-interface SortStripProps {
-  sort: SortOption;
-  onSortChange: (sort: SortOption) => void;
-  meta: SearchMeta | null;
-  onRefresh: () => void;
-  tags: string[];
-  onTagsChange: (tags: string[]) => void;
-  category: string | null;
-  onCategoryChange: (category: string | null) => void;
-  availableCategories: FiltersResponse['categories'];
-  availableTags: FiltersResponse['tags'];
-}
-
-export default function SortStrip({
-  sort,
-  onSortChange,
-  meta,
-  onRefresh,
-  tags,
-  onTagsChange,
-  category,
-  onCategoryChange,
-  availableCategories,
-  availableTags,
-}: SortStripProps) {
+export default function SortStrip() {
+  const {
+    sort,
+    setSort,
+    meta,
+    refresh,
+    tags,
+    setTags,
+    category,
+    setCategory,
+    availableCategories,
+    availableTags,
+  } = useFilterContext();
   const posthog = usePostHog();
 
   const hasFilters = !!(category || tags.length > 0);
@@ -38,14 +26,14 @@ export default function SortStrip({
         tag,
         action: 'removed',
       });
-      onTagsChange(tags.filter((t) => t !== tag));
+      setTags(tags.filter((t) => t !== tag));
     } else {
       posthog?.capture('job_filter_applied', {
         filter_type: 'tag',
         tag,
         action: 'added',
       });
-      onTagsChange([...tags, tag]);
+      setTags([...tags, tag]);
     }
   };
 
@@ -56,7 +44,7 @@ export default function SortStrip({
       category: cat,
       action: category === cat ? 'removed' : 'added',
     });
-    onCategoryChange(newCategory);
+    setCategory(newCategory);
   };
 
   const handleSortChange = (value: SortOption) => {
@@ -64,7 +52,7 @@ export default function SortStrip({
       filter_type: 'sort',
       sort: value,
     });
-    onSortChange(value);
+    setSort(value);
   };
 
   return (
@@ -83,7 +71,7 @@ export default function SortStrip({
             <option value="oldest">Oldest first</option>
           </select>
         </div>
-        <button onClick={onRefresh} className="btn-ghost text-xs p-2" aria-label="Refresh">
+        <button onClick={refresh} className="btn-ghost text-xs p-2" aria-label="Refresh">
           <svg
             className="h-4 w-4"
             fill="none"
@@ -120,8 +108,8 @@ export default function SortStrip({
           {hasFilters && (
             <button
               onClick={() => {
-                onCategoryChange(null);
-                onTagsChange([]);
+                setCategory(null);
+                setTags([]);
               }}
               className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-700"
             >

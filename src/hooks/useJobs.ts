@@ -3,10 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { searchJobs } from '../lib/api';
 import type { Job, SortOption, SearchMeta } from '../lib/types';
 
+const PAGE_SIZE = 50;
+
 interface UseJobsReturn {
   jobs: Job[];
   meta: SearchMeta | null;
   loading: boolean;
+  loadingMore: boolean;
   error: string | null;
   sort: SortOption;
   setSort: (sort: SortOption) => void;
@@ -15,6 +18,8 @@ interface UseJobsReturn {
   category: string | null;
   setCategory: (category: string | null) => void;
   refresh: () => void;
+  loadMore: () => void;
+  hasMore: boolean;
 }
 
 export function useJobs(): UseJobsReturn {
@@ -22,7 +27,9 @@ export function useJobs(): UseJobsReturn {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [meta, setMeta] = useState<SearchMeta | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const sortParam = searchParams.get('sort');
   const sort: SortOption = sortParam === 'oldest' ? 'oldest' : 'newest';
@@ -55,47 +62,75 @@ export function useJobs(): UseJobsReturn {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchJobs = useCallback(async () => {
-    // Cancel any in-flight request before starting a new one
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const fetchJobs = useCallback(
+    async (pageNum: number, append: boolean) => {
+      // Cancel any in-flight request before starting a new one
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await searchJobs({
-        sort,
-        limit: 50,
-        tags: tags.length > 0 ? tags : undefined,
-        category: category || undefined,
-      });
-      if (!controller.signal.aborted) {
-        setJobs(result.jobs);
-        setMeta(result.meta);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
       }
-    } catch (err) {
-      if (!controller.signal.aborted) {
-        setError(err instanceof Error ? err.message : 'Failed to load jobs');
-        setJobs([]);
+      setError(null);
+
+      try {
+        const result = await searchJobs({
+          sort,
+          limit: PAGE_SIZE,
+          page: pageNum,
+          tags: tags.length > 0 ? tags : undefined,
+          category: category || undefined,
+        });
+        if (!controller.signal.aborted) {
+          if (append) {
+            setJobs((prev) => [...prev, ...result.jobs]);
+          } else {
+            setJobs(result.jobs);
+          }
+          setMeta(result.meta);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : 'Failed to load jobs');
+          if (!append) {
+            setJobs([]);
+          }
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
-    }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, tags.join(','), category]);
+    [sort, tags.join(','), category],
+  );
 
+  // Reset to page 1 when filters change
   useEffect(() => {
-    fetchJobs();
+    setPage(1);
+    fetchJobs(1, false);
     return () => abortRef.current?.abort();
   }, [fetchJobs]);
+
+  const hasMore = meta ? jobs.length < meta.total : false;
+
+  const loadMore = useCallback(() => {
+    if (!hasMore || loadingMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchJobs(nextPage, true);
+  }, [hasMore, loadingMore, page, fetchJobs]);
 
   return {
     jobs,
     meta,
     loading,
+    loadingMore,
     error,
     sort,
     setSort,
@@ -103,6 +138,11 @@ export function useJobs(): UseJobsReturn {
     setTags,
     category,
     setCategory,
-    refresh: fetchJobs,
+    refresh: () => {
+      setPage(1);
+      fetchJobs(1, false);
+    },
+    loadMore,
+    hasMore,
   };
 }
