@@ -113,7 +113,54 @@ function parseAshbyJob(json: Record<string, unknown>): Record<string, string | n
   };
 }
 
-// Fetch with realistic browser behavior
+// Resolve hostname to IP and validate it's not a private address (DNS rebinding protection)
+async function validateResolvedHost(hostname: string): Promise<boolean> {
+  // Skip resolution for known safe job board domains
+  const safeDomains = [
+    'boards.greenhouse.io',
+    'boards-api.greenhouse.io',
+    'jobs.lever.co',
+    'jobs.ashbyhq.com',
+    'api.ashbyhq.com',
+    'webcache.googleusercontent.com',
+  ];
+  if (safeDomains.includes(hostname)) return true;
+
+  try {
+    const dns = await import('dns');
+    const { resolve4 } = dns.promises;
+    const ips = await resolve4(hostname);
+    return !ips.some((ip) => {
+      const parts = ip.split('.').map(Number);
+      const [a, b] = parts;
+      return (
+        a === 10 || // 10.0.0.0/8
+        (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12
+        (a === 192 && b === 168) || // 192.168.0.0/16
+        (a === 169 && b === 254) || // 169.254.0.0/16 (cloud metadata)
+        a === 127 || // 127.0.0.0/8
+        a === 0 // 0.0.0.0/8
+      );
+    });
+  } catch {
+    // DNS resolution failed — block to be safe
+    return false;
+  }
+}
+
+// Validate a URL is safe to fetch (not private, not a redirect to private)
+function validateRedirectUrl(location: string): boolean {
+  try {
+    const redirected = new URL(location);
+    if (!['http:', 'https:'].includes(redirected.protocol)) return false;
+    if (isPrivateHostname(redirected.hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Fetch with realistic browser behavior + SSRF-safe redirect handling
 async function fetchWithBrowserHeaders(
   url: string,
   timeoutMs = 12000,
@@ -122,18 +169,51 @@ async function fetchWithBrowserHeaders(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: BROWSER_HEADERS,
-      redirect: 'follow',
-    });
-    clearTimeout(timer);
-    if (!response.ok) {
-      return { html: '', ok: false, status: response.status };
+    // Use manual redirect to validate each hop
+    let currentUrl = url;
+    let redirectCount = 0;
+    const maxRedirects = 5;
+
+    while (redirectCount < maxRedirects) {
+      const response = await fetch(currentUrl, {
+        signal: controller.signal,
+        headers: BROWSER_HEADERS,
+        redirect: 'manual',
+      });
+
+      // Handle redirects manually — validate each target
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get('location');
+        if (!location) break;
+
+        // Resolve relative redirects
+        const absoluteUrl = new URL(location, currentUrl).toString();
+
+        if (!validateRedirectUrl(absoluteUrl)) {
+          logger.warn('SSRF: redirect to private URL blocked', {
+            endpoint: 'scrape-url',
+            from: currentUrl,
+            to: absoluteUrl,
+          });
+          return { html: '', ok: false, status: 403 };
+        }
+
+        currentUrl = absoluteUrl;
+        redirectCount++;
+        continue;
+      }
+
+      clearTimeout(timer);
+      if (!response.ok) {
+        return { html: '', ok: false, status: response.status };
+      }
+      const html = await response.text();
+      return { html, ok: true, status: response.status };
     }
-    const html = await response.text();
-    return { html, ok: true, status: response.status };
-  } catch (err) {
+
+    clearTimeout(timer);
+    return { html: '', ok: false, status: 0 }; // Too many redirects
+  } catch {
     clearTimeout(timer);
     return { html: '', ok: false, status: 0 };
   }
@@ -222,6 +302,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'URL not allowed', code: 'BAD_REQUEST' });
     }
 
+    // DNS rebinding protection: resolve hostname and validate resolved IPs
+    const hostSafe = await validateResolvedHost(parsed.hostname);
+    if (!hostSafe) {
+      logger.warn('SSRF: DNS resolved to private IP', {
+        endpoint: 'scrape-url',
+        hostname: parsed.hostname,
+      });
+      return res.status(400).json({ error: 'URL not allowed', code: 'BAD_REQUEST' });
+    }
+
     // Strategy 1: Try known job board APIs first (structured JSON, no anti-bot, no AI needed)
     const boardApi = getJobBoardApi(url);
     if (boardApi) {
@@ -279,7 +369,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
             Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           },
-          redirect: 'follow',
+          redirect: 'manual',
         });
         clearTimeout(timer);
         if (googlebotResponse.ok) {

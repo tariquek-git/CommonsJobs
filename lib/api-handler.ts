@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { timingSafeEqual } from 'crypto';
 import { requireAdmin, extractToken } from './auth.js';
 import { getClientIP, rateLimitOrReject } from './rate-limit.js';
 import { logger } from './logger.js';
@@ -40,8 +41,12 @@ export function apiHandler(config: HandlerConfig, fn: HandlerFn) {
       if (!cronSecret) {
         return res.status(500).json({ error: 'CRON_SECRET not configured' });
       }
-      const authHeader = req.headers.authorization;
-      if (authHeader !== `Bearer ${cronSecret}`) {
+      const authHeader = req.headers.authorization || '';
+      const expected = `Bearer ${cronSecret}`;
+      // Timing-safe comparison to prevent secret enumeration
+      const authBuf = Buffer.from(authHeader);
+      const expectedBuf = Buffer.from(expected);
+      if (authBuf.length !== expectedBuf.length || !timingSafeEqual(authBuf, expectedBuf)) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
     }

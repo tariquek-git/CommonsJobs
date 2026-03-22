@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAdmin } from '../../../lib/auth';
 import { getEnv } from '../../../lib/env';
+import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../../lib/rate-limit';
+
+/** Strip control characters and newlines from email subjects to prevent header injection */
+function safeSubject(str: string): string {
+  return str.replace(/[\r\n\t\x00-\x1f]/g, ' ').trim();
+}
 
 /**
  * POST /api/admin/email/send
@@ -23,6 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireAdmin(req as unknown as Request)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  const ip = getClientIP(req as unknown as Request);
+  if (rateLimitOrReject(ip, RATE_LIMITS.adminRead, res)) return;
 
   const resendKey = getEnv('RESEND_API_KEY', '');
   if (!resendKey) {
@@ -61,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         from: `Fintech Commons <noreply@${getEnv('RESEND_DOMAIN', 'fintechcommons.com')}>`,
         to: [to],
-        subject,
+        subject: safeSubject(subject),
         text: body,
         reply_to: replyTo || getEnv('ADMIN_NOTIFICATION_EMAIL', ''),
       }),

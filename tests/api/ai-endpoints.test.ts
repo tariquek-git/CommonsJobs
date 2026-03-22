@@ -42,6 +42,13 @@ vi.mock('../../lib/env.js', () => ({
   validateEnv: () => {},
 }));
 
+// Mock dns.promises.resolve4 for SSRF DNS validation
+vi.mock('dns', () => ({
+  promises: {
+    resolve4: vi.fn().mockResolvedValue(['203.0.113.1']), // safe public IP
+  },
+}));
+
 // Mock global fetch for scrape-url
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
@@ -180,10 +187,11 @@ describe('POST /api/ai/scrape-url', () => {
         location: 'New York, NY',
       },
     });
-    // Default: successful HTML fetch
+    // Default: successful HTML fetch (with headers for manual redirect handling)
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
+      headers: new Map(),
       text: () =>
         Promise.resolve(
           '<html><body>' +
@@ -280,6 +288,7 @@ describe('POST /api/ai/scrape-url', () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 403,
+      headers: new Map(),
       text: () => Promise.resolve(''),
     });
     const req = mockReq({ body: { url: 'https://blocked-site.example.com/job/1' } });

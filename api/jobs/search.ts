@@ -24,7 +24,9 @@ export default apiHandler(
       .eq('status', 'active');
 
     if (body.location) {
-      query = query.ilike('location', `%${body.location}%`);
+      // Escape SQL LIKE wildcards to prevent pattern abuse / DB scan attacks
+      const safeLoc = body.location.replace(/[%_\\]/g, '\\$&');
+      query = query.ilike('location', `%${safeLoc}%`);
     }
     if (body.tags && body.tags.length > 0) {
       query = query.overlaps('tags', body.tags);
