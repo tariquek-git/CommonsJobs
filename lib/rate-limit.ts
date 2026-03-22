@@ -37,8 +37,10 @@ async function getRedis() {
   if (redisInitAttempted) return redisClient;
   redisInitAttempted = true;
 
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Support both Vercel integration naming (KV_REST_API_*) and manual naming
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
 
   if (!url || !token) return null;
 
