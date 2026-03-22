@@ -37,7 +37,7 @@ public/           → Static assets (favicon, OG image, robots.txt)
 
 ```bash
 # Clone and install
-git clone <repo-url> && cd commonsjobs
+git clone <repo-url> && cd commons-jobs
 npm install
 
 # Configure environment

@@ -1,4 +1,4 @@
-# CLAUDE.md — Fintech Commons (CommonsJobs)
+# CLAUDE.md — Fintech Commons (commons-jobs)
 
 ## Project Overview
 
