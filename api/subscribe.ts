@@ -51,7 +51,7 @@ export default apiHandler({ methods: ['GET', 'POST'], name: 'subscribe' }, async
 
   // POST — Subscribe to job alerts (rate limited)
   const ip = getClientIP(req);
-  if (rateLimitOrReject(ip, RATE_LIMITS.submission, res)) return;
+  if (await rateLimitOrReject(ip, RATE_LIMITS.submission, res)) return;
 
   const body = req.body as {
     email?: string;

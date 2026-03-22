@@ -54,7 +54,7 @@ export function apiHandler(config: HandlerConfig, fn: HandlerFn) {
     // Rate limiting
     if (config.rateLimit) {
       const ip = getClientIP(req);
-      if (rateLimitOrReject(ip, config.rateLimit, res)) return;
+      if (await rateLimitOrReject(ip, config.rateLimit, res)) return;
     }
 
     // Execute handler with error boundary

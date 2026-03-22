@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ip = getClientIP(req as unknown as Request);
-  if (rateLimitOrReject(ip, RATE_LIMITS.jobDetail, res)) return;
+  if (await rateLimitOrReject(ip, RATE_LIMITS.jobDetail, res)) return;
 
   try {
     const { id } = req.query;

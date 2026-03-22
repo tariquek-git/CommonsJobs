@@ -10,7 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ip = getClientIP(req);
-  if (rateLimitOrReject(ip, RATE_LIMITS.adminLogin, res)) return;
+  if (await rateLimitOrReject(ip, RATE_LIMITS.adminLogin, res)) return;
 
   try {
     const body = req.body as AdminLoginPayload;

@@ -24,7 +24,7 @@ vi.mock('../../lib/env.js', () => ({
 
 vi.mock('../../lib/rate-limit.js', () => ({
   getClientIP: () => '127.0.0.1',
-  rateLimitOrReject: vi.fn().mockReturnValue(false),
+  rateLimitOrReject: vi.fn().mockResolvedValue(false),
   RATE_LIMITS: {
     click: { limit: 200, windowMs: 60000 },
   },
@@ -101,7 +101,7 @@ describe('POST /api/jobs/[id]/click', () => {
   });
 
   it('returns 429 when rate limited', async () => {
-    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
+    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
     const req = mockReq({ query: { id: 'c83dda7c-3725-4c09-9d15-9e8f2c3052c9' } });
     const res = mockRes();
     await handler(req, res);

@@ -24,7 +24,7 @@ vi.mock('bcryptjs', () => ({
 // Mock rate-limit
 vi.mock('../../lib/rate-limit.js', () => ({
   getClientIP: () => '127.0.0.1',
-  rateLimitOrReject: vi.fn().mockReturnValue(false),
+  rateLimitOrReject: vi.fn().mockResolvedValue(false),
   RATE_LIMITS: {
     adminLogin: { limit: 5, windowMs: 300000 },
   },
@@ -85,7 +85,7 @@ describe('POST /api/auth/admin-login', () => {
   });
 
   it('returns 429 when rate limited', async () => {
-    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
+    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
     const req = mockReq({ body: { username: 'admin', password: 'pass' } });
     const res = mockRes();
     await handler(req, res);

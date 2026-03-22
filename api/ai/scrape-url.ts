@@ -277,7 +277,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const ip = getClientIP(req);
-  if (rateLimitOrReject(ip, RATE_LIMITS.aiScrape, res)) return;
+  if (await rateLimitOrReject(ip, RATE_LIMITS.aiScrape, res)) return;
 
   try {
     const { url } = req.body as { url: string };

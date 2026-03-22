@@ -168,6 +168,13 @@ export async function adminLogin(payload: AdminLoginPayload): Promise<AdminLogin
   });
 }
 
+export async function adminLogout(token: string): Promise<void> {
+  await fetch(`${BASE}/auth/admin-logout`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  }).catch(() => {}); // Best-effort — token cleared client-side regardless
+}
+
 export async function getRuntime(token: string): Promise<RuntimeInfo> {
   return request('/admin/runtime', {
     headers: authHeaders(token),

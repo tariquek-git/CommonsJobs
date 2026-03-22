@@ -1,5 +1,5 @@
-import { useState, useCallback, createContext, useContext } from 'react';
-import { adminLogin } from '../lib/api';
+import { useState, useCallback, useRef, createContext, useContext } from 'react';
+import { adminLogin, adminLogout } from '../lib/api';
 
 interface AdminAuthContext {
   token: string | null;
@@ -43,7 +43,12 @@ export function useAdminAuthProvider(): AdminAuthContext {
     }
   }, []);
 
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
   const logout = useCallback(() => {
+    // Revoke token server-side (best-effort)
+    if (tokenRef.current) adminLogout(tokenRef.current);
     setToken(null);
     sessionStorage.removeItem('admin_token');
   }, []);

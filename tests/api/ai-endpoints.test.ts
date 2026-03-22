@@ -27,7 +27,7 @@ vi.mock('../../lib/ai.js', () => ({
 
 vi.mock('../../lib/rate-limit.js', () => ({
   getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
-  rateLimitOrReject: vi.fn().mockReturnValue(false),
+  rateLimitOrReject: vi.fn().mockResolvedValue(false),
   RATE_LIMITS: {
     aiScrape: { limit: 10, windowMs: 60000 },
   },
@@ -160,7 +160,7 @@ describe('POST /api/ai/generate-summary', () => {
   });
 
   it('handles rate limiting', async () => {
-    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
+    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
     const req = mockReq({
       body: { description: 'Some description content here.', title: 'Test' },
     });
@@ -276,7 +276,7 @@ describe('POST /api/ai/scrape-url', () => {
   });
 
   it('handles rate limiting', async () => {
-    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
+    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
     const req = mockReq({ body: { url: 'https://example.com/job' } });
     const res = mockRes();
     await scrapeUrlHandler(req, res);

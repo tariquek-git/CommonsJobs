@@ -19,7 +19,7 @@ vi.mock('../../lib/env.js', () => ({
 
 vi.mock('../../lib/rate-limit.js', () => ({
   getClientIP: () => '127.0.0.1',
-  rateLimitOrReject: vi.fn().mockReturnValue(false),
+  rateLimitOrReject: vi.fn().mockResolvedValue(false),
   RATE_LIMITS: {
     submission: { limit: 5, windowMs: 3600000 },
   },
@@ -104,7 +104,7 @@ describe('POST /api/jobs/submissions', () => {
   });
 
   it('returns 429 when rate limited', async () => {
-    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
+    (rateLimitOrReject as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
     const req = mockReq({
       body: { title: 'Engineer', company: 'Acme' },
     });

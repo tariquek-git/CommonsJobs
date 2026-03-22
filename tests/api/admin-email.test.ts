@@ -82,7 +82,7 @@ vi.mock('../../lib/logger.js', () => ({
 
 vi.mock('../../lib/rate-limit.js', () => ({
   getClientIP: () => '127.0.0.1',
-  rateLimitOrReject: vi.fn().mockReturnValue(false),
+  rateLimitOrReject: vi.fn().mockResolvedValue(false),
   RATE_LIMITS: {
     adminRead: { limit: 60, windowMs: 60000 },
   },

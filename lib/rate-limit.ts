@@ -1,6 +1,6 @@
-// In-memory rate limiter with per-endpoint configuration.
-// On serverless each instance has its own store — provides burst protection
-// per instance. Acceptable for MVP traffic; upgrade to Redis/Upstash at scale.
+// Rate limiter with Upstash Redis (distributed) and in-memory fallback.
+// Redis provides consistent rate limiting across all serverless instances.
+// Falls back to in-memory if UPSTASH_REDIS_REST_URL is not configured.
 
 import { createHash } from 'crypto';
 
@@ -9,9 +9,9 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-const store = new Map<string, RateLimitEntry>();
+// ─── In-memory fallback store ───
 
-// Periodic cleanup: remove expired entries to prevent memory leaks
+const memStore = new Map<string, RateLimitEntry>();
 const CLEANUP_INTERVAL_MS = 60_000;
 let lastCleanup = Date.now();
 
@@ -19,12 +19,39 @@ function cleanupExpired() {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
-  for (const [key, entry] of store) {
-    if (now > entry.resetAt) {
-      store.delete(key);
-    }
+  for (const [key, entry] of memStore) {
+    if (now > entry.resetAt) memStore.delete(key);
   }
 }
+
+// ─── Redis client (lazy init) ───
+
+let redisClient: {
+  incr: (key: string) => Promise<number>;
+  expire: (key: string, seconds: number) => Promise<unknown>;
+  ttl: (key: string) => Promise<number>;
+} | null = null;
+let redisInitAttempted = false;
+
+async function getRedis() {
+  if (redisInitAttempted) return redisClient;
+  redisInitAttempted = true;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url || !token) return null;
+
+  try {
+    const { Redis } = await import('@upstash/redis');
+    redisClient = new Redis({ url, token });
+    return redisClient;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Client IP extraction ───
 
 export function getClientIP(
   request: Request | { headers: Record<string, string | string[] | undefined> },
@@ -46,27 +73,61 @@ export function getClientIP(
     if (first) return first;
   }
 
-  // Fallback: hash user-agent to avoid all anonymous requests sharing one bucket
   const ua = getHeader('user-agent') || '';
   return 'anon_' + createHash('md5').update(ua).digest('hex').slice(0, 16);
 }
 
-export function checkRateLimit(
+// ─── Rate limit check ───
+
+async function checkRateLimitRedis(
+  ip: string,
+  limit: number,
+  windowMs: number,
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  const redis = await getRedis();
+
+  if (!redis) {
+    // Fallback to in-memory
+    return checkRateLimitMemory(ip, limit, windowMs);
+  }
+
+  try {
+    const windowSec = Math.ceil(windowMs / 1000);
+    const key = `rl:${ip}:${windowSec}`;
+
+    const count = await redis.incr(key);
+    if (count === 1) {
+      await redis.expire(key, windowSec);
+    }
+
+    const ttl = await redis.ttl(key);
+    const resetAt = Date.now() + ttl * 1000;
+
+    return {
+      allowed: count <= limit,
+      remaining: Math.max(0, limit - count),
+      resetAt,
+    };
+  } catch {
+    // Redis error — fall back to in-memory
+    return checkRateLimitMemory(ip, limit, windowMs);
+  }
+}
+
+function checkRateLimitMemory(
   ip: string,
   limit: number,
   windowMs: number,
 ): { allowed: boolean; remaining: number; resetAt: number } {
   cleanupExpired();
-
   const now = Date.now();
   const key = `rl:${ip}`;
 
-  let entry = store.get(key);
+  let entry = memStore.get(key);
   if (!entry || now > entry.resetAt) {
     entry = { count: 0, resetAt: now + windowMs };
-    store.set(key, entry);
+    memStore.set(key, entry);
   }
-
   entry.count++;
 
   return {
@@ -74,6 +135,18 @@ export function checkRateLimit(
     remaining: Math.max(0, limit - entry.count),
     resetAt: entry.resetAt,
   };
+}
+
+// Synchronous wrapper for backward compatibility — starts Redis check but
+// uses memory result immediately if Redis isn't ready yet.
+export function checkRateLimit(
+  ip: string,
+  limit: number,
+  windowMs: number,
+): { allowed: boolean; remaining: number; resetAt: number } {
+  // If Redis is already initialized, we can't use it synchronously.
+  // The sync API falls back to memory. Use rateLimitOrReject for full Redis support.
+  return checkRateLimitMemory(ip, limit, windowMs);
 }
 
 // Pre-configured rate limits for each endpoint type
@@ -89,16 +162,16 @@ export const RATE_LIMITS = {
   adminRead: { limit: 30, windowMs: 60 * 1000 },
 } as const;
 
-/** Check rate limit and send 429 if exceeded. Returns true if request was blocked. */
-export function rateLimitOrReject(
+/** Check rate limit (async, uses Redis when available) and send 429 if exceeded. */
+export async function rateLimitOrReject(
   ip: string,
   config: { limit: number; windowMs: number },
   res: {
     status: (code: number) => { json: (body: unknown) => unknown };
     setHeader: (k: string, v: string) => void;
   },
-): boolean {
-  const result = checkRateLimit(ip, config.limit, config.windowMs);
+): Promise<boolean> {
+  const result = await checkRateLimitRedis(ip, config.limit, config.windowMs);
   res.setHeader('X-RateLimit-Limit', String(config.limit));
   res.setHeader('X-RateLimit-Remaining', String(result.remaining));
   res.setHeader('X-RateLimit-Reset', String(Math.ceil(result.resetAt / 1000)));
