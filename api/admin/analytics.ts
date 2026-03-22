@@ -138,6 +138,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       intro_id: e.related_warm_intro_id,
     }));
 
+    // Cache for 5 minutes, serve stale for 10 min while revalidating
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+
     return res.status(200).json({
       clicksByDay,
       introsByDay,

@@ -1,29 +1,6 @@
 import { getRelativeTimeLabel } from '../../lib/date';
 import type { EmailLog } from '../../lib/api';
-
-// ─── Email event type short labels ───
-
-export const EVENT_SHORT: Record<string, string> = {
-  warm_intro_admin_notification: 'Admin notified',
-  warm_intro_thank_you: 'Thank-you sent',
-  warm_intro_contacted: '"I\'m on it" → requester',
-  warm_intro_outreach_contact: 'Outreach → hiring contact',
-  warm_intro_contact_nudge: 'Nudge → hiring contact',
-  warm_intro_accepted_admin: 'Contact accepted → admin',
-  warm_intro_declined_admin: 'Contact declined → admin',
-  warm_intro_more_info_admin: 'More info needed → admin',
-  warm_intro_accepted_requester: '"They said yes!" → requester',
-  warm_intro_declined_requester: '"They passed" → requester',
-  warm_intro_connection_requester: 'Intro email → requester',
-  warm_intro_connection_contact: 'Intro email → hiring contact',
-  warm_intro_no_response: 'No response → requester',
-  warm_intro_follow_up: 'Follow-up → requester',
-  warm_intro_accepted_nudge: 'Accepted nudge → admin',
-  warm_intro_nudge_day5: 'Day 5 nudge → admin',
-  warm_intro_nudge_day10: 'Day 10 nudge → admin',
-  warm_intro_requester_update_day5: 'Day 5 update → requester',
-  warm_intro_requester_update_day10: 'Day 10 update → requester',
-};
+import { EVENT_SHORT } from './introConstants';
 
 // ─── Email Row ───
 

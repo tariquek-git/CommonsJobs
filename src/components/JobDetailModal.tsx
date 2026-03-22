@@ -8,7 +8,6 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import WarmIntroModal from './WarmIntroModal';
 import CompanyLogo from './CompanyLogo';
 import { usePostHog } from '@posthog/react';
-import { CloseIcon, LocationPinIcon, StarIcon } from './Icons';
 
 interface JobDetailModalProps {
   job: Job | null;

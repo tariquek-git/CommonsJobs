@@ -1,5 +1,9 @@
 const REQUIRED_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ADMIN_TOKEN_SECRET'] as const;
 
+// These aren't required at startup but will cause runtime failures if missing.
+// We warn instead of throwing so the app can still boot for local dev / partial testing.
+const WARN_VARS = ['ANTHROPIC_API_KEY', 'RESEND_API_KEY', 'CRON_SECRET'] as const;
+
 const OPTIONAL_VARS = {
   STORAGE_PROVIDER: 'supabase',
   SUPABASE_JOBS_TABLE: 'jobs',
@@ -21,6 +25,12 @@ export function validateEnv(): void {
   const secret = process.env.ADMIN_TOKEN_SECRET;
   if (secret && secret.length < 32) {
     throw new Error('ADMIN_TOKEN_SECRET must be at least 32 characters');
+  }
+
+  // Warn about optional-but-important vars
+  const missingWarn = WARN_VARS.filter((key) => !process.env[key]);
+  if (missingWarn.length > 0) {
+    console.warn(`[env] Missing optional vars (features will degrade): ${missingWarn.join(', ')}`);
   }
 }
 
