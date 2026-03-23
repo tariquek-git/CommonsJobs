@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { getClientIP, rateLimitOrReject, RATE_LIMITS } from '../../lib/rate-limit.js';
+import { logger } from '../../lib/logger.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -21,6 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('status', 'active');
 
     if (error) {
+      logger.error('Filters query failed', {
+        endpoint: 'jobs/filters',
+        error: error.message,
+        code: error.code,
+      });
       return res.status(500).json({ error: 'Failed to fetch filters' });
     }
 

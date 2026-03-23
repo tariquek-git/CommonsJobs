@@ -2,6 +2,7 @@ import type { SearchRequest, SearchResponse, Job } from '../../shared/types.js';
 import { getSupabase, getJobsTable } from '../../lib/supabase.js';
 import { RATE_LIMITS } from '../../lib/rate-limit.js';
 import { apiHandler } from '../../lib/api-handler.js';
+import { logger } from '../../lib/logger.js';
 
 export default apiHandler(
   { methods: ['POST'], rateLimit: RATE_LIMITS.search, name: 'jobs/search' },
@@ -61,6 +62,11 @@ export default apiHandler(
     }
 
     if (error) {
+      logger.error('Search query failed', {
+        endpoint: 'jobs/search',
+        error: error.message,
+        code: error.code,
+      });
       return res.status(500).json({ error: 'Search failed', code: 'SEARCH_ERROR' });
     }
 
