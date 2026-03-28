@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const CARD_STUDIO_URL = 'https://cardstudio.fintechcommons.io/admin';
+const CARD_STUDIO_URL = 'https://cardstudio.fintechcommons.com/admin';
 
 export default function CardStudioPage() {
   const [loading, setLoading] = useState(true);
