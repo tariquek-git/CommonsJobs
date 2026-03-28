@@ -20,6 +20,10 @@ const IntrosPage = lazy(() => import('./pages/admin/IntrosPage'));
 const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'));
 const EmailPage = lazy(() => import('./pages/admin/EmailPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const CardStudioPage = lazy(() => import('./pages/admin/CardStudioPage'));
+const FlowOfFundsPage = lazy(() => import('./pages/admin/FlowOfFundsPage'));
+const WatermarkRequestsPage = lazy(() => import('./pages/admin/WatermarkRequestsPage'));
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 
 function NotFound() {
   return (
@@ -62,6 +66,7 @@ export default function App() {
             <Route path="/job/:id" element={<JobPage />} />
             <Route path="/company/:slug" element={<CompanyPage />} />
             <Route path="/submit" element={<SubmitPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/intro-response" element={<IntroResponsePage />} />
 
             {/* Admin routes — nested under AdminPage (handles auth + layout) */}
@@ -73,6 +78,9 @@ export default function App() {
               <Route path="intros" element={<IntrosPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="email" element={<EmailPage />} />
+              <Route path="card-studio" element={<CardStudioPage />} />
+              <Route path="flow-of-funds" element={<FlowOfFundsPage />} />
+              <Route path="watermark-requests" element={<WatermarkRequestsPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
 

@@ -59,6 +59,39 @@ const NAV_ITEMS = [
     ),
   },
   {
+    to: '/admin/card-studio',
+    label: 'Card Studio',
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
+      />
+    ),
+  },
+  {
+    to: '/admin/flow-of-funds',
+    label: 'Flow of Funds',
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+      />
+    ),
+  },
+  {
+    to: '/admin/watermark-requests',
+    label: 'Watermark Req.',
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    ),
+  },
+  {
     to: '/admin/settings',
     label: 'Settings',
     icon: (
