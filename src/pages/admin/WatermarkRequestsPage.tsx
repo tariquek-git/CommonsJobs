@@ -3,6 +3,7 @@ import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface WatermarkRequest {
   id: string;
+  approve_token: string;
   name: string;
   email: string;
   reason: string;
@@ -37,7 +38,10 @@ export default function WatermarkRequestsPage() {
 
     try {
       const url = new URL(`${SUPABASE_URL}/rest/v1/watermark_requests`);
-      url.searchParams.set('select', 'id,name,email,reason,status,code,created_at,approved_at');
+      url.searchParams.set(
+        'select',
+        'id,approve_token,name,email,reason,status,code,created_at,approved_at',
+      );
       url.searchParams.set('order', 'created_at.desc');
       url.searchParams.set('limit', '200');
       if (filter !== 'all') url.searchParams.set('status', `eq.${filter}`);
@@ -178,7 +182,7 @@ export default function WatermarkRequestsPage() {
                   </p>
                   {req.status === 'pending' && (
                     <a
-                      href={`https://flow.fintechcommons.com/api/watermark-approve?token=${req.id}`}
+                      href={`https://flow.fintechcommons.com/api/watermark-approve?token=${req.approve_token}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md px-2 py-1 transition-colors"
